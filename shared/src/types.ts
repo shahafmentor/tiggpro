@@ -1,0 +1,252 @@
+// User and Authentication Types
+export interface User {
+  id: string;
+  email: string;
+  displayName: string;
+  avatarUrl?: string;
+  // Provider-specific fields
+  googleId?: string;
+  appleId?: string;
+  provider: AuthProvider;
+  // Metadata
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export enum AuthProvider {
+  GOOGLE = 'google',
+  APPLE = 'apple',
+  // Future providers
+  FACEBOOK = 'facebook',
+  MICROSOFT = 'microsoft',
+}
+
+export enum UserRole {
+  PARENT = 'parent',
+  CHILD = 'child',
+}
+
+export enum TenantMemberRole {
+  ADMIN = 'admin',     // Tenant owner
+  PARENT = 'parent',   // Can manage children and chores
+  CHILD = 'child',     // Can complete chores
+}
+
+// Tenant Types (formerly Family - more flexible for future)
+export interface Tenant {
+  id: string;
+  name: string;
+  tenantCode: string;
+  type: TenantType;
+  createdBy: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export enum TenantType {
+  FAMILY = 'family',
+  // Future: SCHOOL = 'school', ORGANIZATION = 'organization'
+}
+
+export interface TenantMember {
+  id: string;
+  tenantId: string;
+  userId: string;
+  role: TenantMemberRole;
+  invitedBy?: string;
+  joinedAt: Date;
+  isActive: boolean;
+}
+
+// Chore Types
+export interface Chore {
+  id: string;
+  tenantId: string;
+  title: string;
+  description: string;
+  pointsReward: number;
+  gamingTimeMinutes: number;
+  difficultyLevel: DifficultyLevel;
+  estimatedDurationMinutes: number;
+  isRecurring: boolean;
+  recurrencePattern?: RecurrencePattern;
+  createdBy: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export enum DifficultyLevel {
+  EASY = 'easy',
+  MEDIUM = 'medium',
+  HARD = 'hard',
+}
+
+export interface RecurrencePattern {
+  type: 'daily' | 'weekly' | 'monthly';
+  daysOfWeek?: number[]; // 0-6, Sunday = 0
+  dayOfMonth?: number; // 1-31
+}
+
+// Chore Assignment Types
+export interface ChoreAssignment {
+  id: string;
+  choreId: string;
+  assignedTo: string;
+  assignedBy: string;
+  dueDate: Date;
+  priority: Priority;
+  status: AssignmentStatus;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export enum Priority {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+}
+
+export enum AssignmentStatus {
+  PENDING = 'pending',
+  SUBMITTED = 'submitted',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+  OVERDUE = 'overdue',
+}
+
+// Submission Types
+export interface ChoreSubmission {
+  id: string;
+  assignmentId: string;
+  submittedBy: string;
+  submissionNotes?: string;
+  mediaUrls: string[];
+  submittedAt: Date;
+  reviewedAt?: Date;
+  reviewedBy?: string;
+  reviewStatus: ReviewStatus;
+  reviewFeedback?: string;
+  pointsAwarded?: number;
+  gamingTimeAwarded?: number;
+}
+
+export enum ReviewStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+}
+
+// Gamification Types
+export interface UserPoints {
+  id: string;
+  userId: string;
+  tenantId: string;
+  totalPoints: number;
+  availableGamingMinutes: number;
+  usedGamingMinutes: number;
+  currentStreakDays: number;
+  longestStreakDays: number;
+  level: number;
+  updatedAt: Date;
+}
+
+export interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  iconUrl: string;
+  badgeColor: string;
+  requirementType: RequirementType;
+  requirementValue: number;
+  isActive: boolean;
+}
+
+export enum RequirementType {
+  STREAK = 'streak',
+  POINTS = 'points',
+  CHORES_COMPLETED = 'chores_completed',
+  LEVEL = 'level',
+}
+
+export interface UserAchievement {
+  id: string;
+  userId: string;
+  achievementId: string;
+  earnedAt: Date;
+  tenantId: string;
+}
+
+// Notification Types
+export interface Notification {
+  id: string;
+  userId: string;
+  tenantId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  data?: Record<string, any>;
+  isRead: boolean;
+  sentAt: Date;
+  readAt?: Date;
+}
+
+export enum NotificationType {
+  CHORE_ASSIGNED = 'chore_assigned',
+  SUBMISSION_PENDING = 'submission_pending',
+  CHORE_APPROVED = 'chore_approved',
+  CHORE_REJECTED = 'chore_rejected',
+  ACHIEVEMENT_EARNED = 'achievement_earned',
+}
+
+// API Response Types
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+// Request/Response DTOs
+export interface CreateChoreDto {
+  title: string;
+  description: string;
+  pointsReward: number;
+  gamingTimeMinutes: number;
+  difficultyLevel: DifficultyLevel;
+  estimatedDurationMinutes: number;
+  isRecurring: boolean;
+  recurrencePattern?: RecurrencePattern;
+}
+
+export interface SubmitChoreDto {
+  submissionNotes?: string;
+  mediaUrls: string[];
+}
+
+export interface ReviewSubmissionDto {
+  reviewStatus: ReviewStatus;
+  reviewFeedback?: string;
+  pointsAwarded?: number;
+  gamingTimeAwarded?: number;
+}
+
+export interface CreateTenantDto {
+  name: string;
+  type: TenantType;
+}
+
+export interface UpdateProfileDto {
+  displayName?: string;
+  avatarUrl?: string;
+}
