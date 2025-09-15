@@ -163,7 +163,10 @@ export class TenantsService {
     let code: string;
     let isUnique = false;
     let attempts = 0;
-    const maxAttempts = 5; // Reduced since nanoid has much lower collision probability
+    const maxAttempts = 5; // Reduced since
+    //
+    //
+    // d has much lower collision probability
 
     while (!isUnique && attempts < maxAttempts) {
       code = this.generateCode(); // Use nanoid generator

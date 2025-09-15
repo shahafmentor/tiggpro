@@ -1,5 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException, SetMetadata } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { DataSource } from 'typeorm';
 
 export interface ResourceOwnershipConfig {
   entity: string;
@@ -9,7 +10,10 @@ export interface ResourceOwnershipConfig {
 
 @Injectable()
 export class ResourceOwnershipGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(
+    private reflector: Reflector,
+    private dataSource: DataSource,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const ownershipConfig = this.reflector.getAllAndOverride<ResourceOwnershipConfig>('resourceOwnership', [
@@ -29,18 +33,35 @@ export class ResourceOwnershipGuard implements CanActivate {
       return false;
     }
 
-    // For now, we'll implement a basic check
-    // In a real implementation, this would query the database to verify ownership
-    // based on the entity and userIdField specified in the config
+    try {
+      // Get the repository for the specified entity
+      const repository = this.dataSource.getRepository(ownershipConfig.entity);
 
-    // This is a placeholder implementation that would need to be expanded
-    // with actual database queries based on the entity type
+      // Query the resource to check ownership
+      const resource = await repository.findOne({
+        where: { id: resourceId },
+      });
 
-    // Example usage would be:
-    // @ResourceOwnership({ entity: 'Chore', userIdField: 'createdBy' })
-    // This would check if the current user is the creator of the chore
+      if (!resource) {
+        throw new ForbiddenException('Resource not found');
+      }
 
-    return true; // Placeholder - implement actual ownership logic
+      // Check if the user owns the resource
+      const ownerUserId = resource[ownershipConfig.userIdField];
+
+      if (ownerUserId !== user.id) {
+        throw new ForbiddenException('You do not have permission to access this resource');
+      }
+
+      return true;
+    } catch (error) {
+      if (error instanceof ForbiddenException) {
+        throw error;
+      }
+      // Log the error for debugging but don't expose internal details
+      console.error('ResourceOwnershipGuard error:', error);
+      throw new ForbiddenException('Unable to verify resource ownership');
+    }
   }
 }
 

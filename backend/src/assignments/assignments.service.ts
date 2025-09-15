@@ -1,0 +1,201 @@
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ChoreAssignment, ChoreSubmission, TenantMember, Chore } from '@/entities';
+import { SubmitAssignmentDto, ReviewSubmissionDto } from './dto';
+import { AssignmentStatus, ReviewStatus, TenantMemberRole } from '@tiggpro/shared';
+import { PointsService } from '@/gamification/services/points.service';
+
+@Injectable()
+export class AssignmentsService {
+  constructor(
+    @InjectRepository(ChoreAssignment)
+    private assignmentRepository: Repository<ChoreAssignment>,
+    @InjectRepository(ChoreSubmission)
+    private submissionRepository: Repository<ChoreSubmission>,
+    @InjectRepository(TenantMember)
+    private tenantMemberRepository: Repository<TenantMember>,
+    @InjectRepository(Chore)
+    private choreRepository: Repository<Chore>,
+    private pointsService: PointsService,
+  ) {}
+
+  async getUserAssignments(tenantId: string, userId: string): Promise<ChoreAssignment[]> {
+    // Verify user is member of tenant
+    await this.verifyUserMembership(tenantId, userId);
+
+    return this.assignmentRepository.find({
+      where: { assignedTo: userId },
+      relations: ['chore'],
+      order: { dueDate: 'ASC' },
+    });
+  }
+
+  async getAssignmentById(assignmentId: string, tenantId: string, userId: string): Promise<ChoreAssignment> {
+    const assignment = await this.assignmentRepository.findOne({
+      where: { id: assignmentId },
+      relations: ['chore'],
+    });
+
+    if (!assignment) {
+      throw new NotFoundException('Assignment not found');
+    }
+
+    // Verify the chore belongs to the tenant
+    const chore = await this.choreRepository.findOne({
+      where: { id: assignment.choreId, tenantId },
+    });
+
+    if (!chore) {
+      throw new NotFoundException('Assignment not found in this tenant');
+    }
+
+    // Verify user has access (assigned user, or admin/parent)
+    const userRole = await this.getUserRole(tenantId, userId);
+    if (assignment.assignedTo !== userId && ![TenantMemberRole.ADMIN, TenantMemberRole.PARENT].includes(userRole)) {
+      throw new ForbiddenException('You can only view your own assignments');
+    }
+
+    return assignment;
+  }
+
+  async submitAssignment(assignmentId: string, tenantId: string, submitDto: SubmitAssignmentDto, userId: string): Promise<ChoreSubmission> {
+    const assignment = await this.getAssignmentById(assignmentId, tenantId, userId);
+
+    // Verify user is the assignee
+    if (assignment.assignedTo !== userId) {
+      throw new ForbiddenException('You can only submit your own assignments');
+    }
+
+    // Verify assignment is in pending status
+    if (assignment.status !== AssignmentStatus.PENDING) {
+      throw new BadRequestException('This assignment cannot be submitted');
+    }
+
+    // Check if there's already a pending submission
+    const existingSubmission = await this.submissionRepository.findOne({
+      where: { assignmentId, reviewStatus: ReviewStatus.PENDING },
+    });
+
+    if (existingSubmission) {
+      throw new BadRequestException('There is already a pending submission for this assignment');
+    }
+
+    // Create submission
+    const submission = this.submissionRepository.create({
+      assignmentId,
+      submittedBy: userId,
+      submissionNotes: submitDto.submissionNotes,
+      mediaUrls: submitDto.mediaUrls || [],
+      reviewStatus: ReviewStatus.PENDING,
+    });
+
+    const savedSubmission = await this.submissionRepository.save(submission);
+
+    // Update assignment status
+    assignment.status = AssignmentStatus.SUBMITTED;
+    await this.assignmentRepository.save(assignment);
+
+    return savedSubmission;
+  }
+
+  async reviewSubmission(submissionId: string, tenantId: string, reviewDto: ReviewSubmissionDto, reviewerId: string): Promise<ChoreSubmission> {
+    const submission = await this.submissionRepository.findOne({
+      where: { id: submissionId },
+      relations: ['assignment', 'assignment.chore'],
+    });
+
+    if (!submission) {
+      throw new NotFoundException('Submission not found');
+    }
+
+    // Verify the submission belongs to this tenant
+    if (submission.assignment.chore.tenantId !== tenantId) {
+      throw new NotFoundException('Submission not found in this tenant');
+    }
+
+    // Verify user has permission to review (ADMIN or PARENT)
+    await this.verifyUserPermission(tenantId, reviewerId, [TenantMemberRole.ADMIN, TenantMemberRole.PARENT]);
+
+    // Verify submission is pending review
+    if (submission.reviewStatus !== ReviewStatus.PENDING) {
+      throw new BadRequestException('This submission has already been reviewed');
+    }
+
+    // Update submission with review
+    submission.reviewStatus = reviewDto.reviewStatus;
+    submission.reviewFeedback = reviewDto.reviewFeedback;
+    submission.reviewedBy = reviewerId;
+    submission.reviewedAt = new Date();
+
+    // Set points and gaming time (use chore defaults if not specified)
+    if (reviewDto.reviewStatus === ReviewStatus.APPROVED) {
+      submission.pointsAwarded = reviewDto.pointsAwarded ?? submission.assignment.chore.pointsReward;
+      submission.gamingTimeAwarded = reviewDto.gamingTimeAwarded ?? submission.assignment.chore.gamingTimeMinutes;
+    } else {
+      submission.pointsAwarded = 0;
+      submission.gamingTimeAwarded = 0;
+    }
+
+    const savedSubmission = await this.submissionRepository.save(submission);
+
+    // Update assignment status
+    const assignment = submission.assignment;
+    assignment.status = reviewDto.reviewStatus === ReviewStatus.APPROVED
+      ? AssignmentStatus.APPROVED
+      : AssignmentStatus.REJECTED;
+    await this.assignmentRepository.save(assignment);
+
+    // 🎮 AWARD POINTS AND TRIGGER ACHIEVEMENTS if approved
+    if (reviewDto.reviewStatus === ReviewStatus.APPROVED && (savedSubmission.pointsAwarded || 0) > 0) {
+      try {
+        await this.pointsService.awardPoints(
+          submission.assignment.assignedTo,
+          tenantId,
+          savedSubmission
+        );
+      } catch (error) {
+        // Log error but don't fail the review if points award fails
+        console.error('Failed to award points for submission:', savedSubmission.id, error);
+      }
+    }
+
+    return savedSubmission;
+  }
+
+  async getPendingSubmissions(tenantId: string, userId: string): Promise<ChoreSubmission[]> {
+    // Verify user has permission to view submissions (ADMIN or PARENT)
+    await this.verifyUserPermission(tenantId, userId, [TenantMemberRole.ADMIN, TenantMemberRole.PARENT]);
+
+    return this.submissionRepository.find({
+      where: { reviewStatus: ReviewStatus.PENDING },
+      relations: ['assignment', 'assignment.chore'],
+      order: { submittedAt: 'ASC' },
+    });
+  }
+
+  private async verifyUserMembership(tenantId: string, userId: string): Promise<TenantMember> {
+    const membership = await this.tenantMemberRepository.findOne({
+      where: { tenantId, userId, isActive: true },
+    });
+
+    if (!membership) {
+      throw new ForbiddenException('User is not a member of this tenant');
+    }
+
+    return membership;
+  }
+
+  private async verifyUserPermission(tenantId: string, userId: string, allowedRoles: TenantMemberRole[]): Promise<void> {
+    const membership = await this.verifyUserMembership(tenantId, userId);
+
+    if (!allowedRoles.includes(membership.role)) {
+      throw new ForbiddenException('Insufficient permissions for this action');
+    }
+  }
+
+  private async getUserRole(tenantId: string, userId: string): Promise<TenantMemberRole> {
+    const membership = await this.verifyUserMembership(tenantId, userId);
+    return membership.role;
+  }
+}

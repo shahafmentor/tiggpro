@@ -9,18 +9,24 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse as ApiDoc, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { AuthService } from '@/auth/auth.service';
 import { SyncUserDto, UpdateProfileDto } from '@/auth/dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
-import type { ApiResponse } from '@tiggpro/shared';
+import type { ApiResponse as ApiResponseType } from '@tiggpro/shared';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('sync-user')
   @HttpCode(HttpStatus.OK)
-  async syncUser(@Body() syncUserDto: SyncUserDto): Promise<ApiResponse> {
+  @ApiOperation({ summary: 'Sync user from OAuth provider' })
+  @ApiBody({ type: SyncUserDto })
+  @ApiDoc({ status: 200, description: 'User synced successfully' })
+  @ApiDoc({ status: 400, description: 'Invalid user data' })
+  async syncUser(@Body() syncUserDto: SyncUserDto): Promise<ApiResponseType> {
     try {
       const user = await this.authService.syncUser(syncUserDto);
       const loginResponse = await this.authService.login(user);
@@ -40,7 +46,11 @@ export class AuthController {
 
   @Get('profile')
   @UseGuards(JwtAuthGuard)
-  async getProfile(@Request() req: { user: { id: string } }): Promise<ApiResponse> {
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiDoc({ status: 200, description: 'Profile retrieved successfully' })
+  @ApiDoc({ status: 401, description: 'Unauthorized' })
+  async getProfile(@Request() req: { user: { id: string } }): Promise<ApiResponseType> {
     try {
       const user = await this.authService.validateUserById(req.user.id);
 
@@ -76,7 +86,7 @@ export class AuthController {
   @Get('validate')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  validateToken(@Request() req: { user: any }): ApiResponse {
+  validateToken(@Request() req: { user: any }): ApiResponseType {
     // If we reach here, the JWT is valid
     return {
       success: true,
@@ -90,7 +100,7 @@ export class AuthController {
   async updateProfile(
     @Body() updateProfileDto: UpdateProfileDto,
     @Request() req: { user: { id: string } },
-  ): Promise<ApiResponse> {
+  ): Promise<ApiResponseType> {
     try {
       const updatedUser = await this.authService.updateProfile(req.user.id, updateProfileDto);
 

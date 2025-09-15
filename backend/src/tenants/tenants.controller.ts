@@ -10,6 +10,7 @@ import {
   HttpStatus,
   Delete,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse as ApiDoc, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { TenantsService } from './tenants.service';
 import { CreateTenantDto, InviteMemberDto, JoinTenantDto } from './dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
@@ -19,6 +20,8 @@ import { Roles } from '@/auth/decorators/roles.decorator';
 import { TenantMemberRole } from '@tiggpro/shared';
 import type { ApiResponse } from '@tiggpro/shared';
 
+@ApiTags('tenants')
+@ApiBearerAuth()
 @Controller('tenants')
 @UseGuards(JwtAuthGuard)
 export class TenantsController {
@@ -26,6 +29,9 @@ export class TenantsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Create a new tenant (family/organization)' })
+  @ApiDoc({ status: 201, description: 'Tenant created successfully' })
+  @ApiDoc({ status: 400, description: 'Invalid tenant data' })
   async createTenant(
     @Body() createTenantDto: CreateTenantDto,
     @Request() req: { user: { id: string } },

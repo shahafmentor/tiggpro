@@ -6,6 +6,10 @@ import { AppController } from '@/app.controller';
 import { AppService } from '@/app.service';
 import { AuthModule } from '@/auth/auth.module';
 import { TenantsModule } from '@/tenants/tenants.module';
+import { ChoresModule } from '@/chores/chores.module';
+import { AssignmentsModule } from '@/assignments/assignments.module';
+import { GamificationModule } from '@/gamification/gamification.module';
+import { HealthModule } from '@/health/health.module';
 import { validate } from '@/config/validation';
 import databaseConfig from '@/config/database.config';
 import appConfig from '@/config/app.config';
@@ -33,6 +37,10 @@ import {
     // Feature modules
     AuthModule,
     TenantsModule,
+    ChoresModule,
+    AssignmentsModule,
+    GamificationModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [
