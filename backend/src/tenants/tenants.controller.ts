@@ -1,0 +1,179 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  UseGuards,
+  Request,
+  HttpCode,
+  HttpStatus,
+  Delete,
+} from '@nestjs/common';
+import { TenantsService } from './tenants.service';
+import { CreateTenantDto, InviteMemberDto, JoinTenantDto } from './dto';
+import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
+import { TenantMembershipGuard } from '@/auth/guards/tenant-membership.guard';
+import { RolesGuard } from '@/auth/guards/roles.guard';
+import { Roles } from '@/auth/decorators/roles.decorator';
+import { TenantMemberRole } from '@tiggpro/shared';
+import type { ApiResponse } from '@tiggpro/shared';
+
+@Controller('tenants')
+@UseGuards(JwtAuthGuard)
+export class TenantsController {
+  constructor(private readonly tenantsService: TenantsService) {}
+
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  async createTenant(
+    @Body() createTenantDto: CreateTenantDto,
+    @Request() req: { user: { id: string } },
+  ): Promise<ApiResponse> {
+    try {
+      const tenant = await this.tenantsService.createTenant(createTenantDto, req.user.id);
+
+      return {
+        success: true,
+        data: tenant,
+        message: 'Tenant created successfully',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create tenant',
+      };
+    }
+  }
+
+  @Get(':tenantId/members')
+  @UseGuards(TenantMembershipGuard)
+  async getTenantMembers(
+    @Param('tenantId') tenantId: string,
+  ): Promise<ApiResponse> {
+    try {
+      const members = await this.tenantsService.getTenantMembers(tenantId);
+
+      return {
+        success: true,
+        data: members.map(member => ({
+          id: member.id,
+          userId: member.userId,
+          role: member.role,
+          joinedAt: member.joinedAt,
+          user: {
+            id: member.user.id,
+            email: member.user.email,
+            displayName: member.user.displayName,
+            avatarUrl: member.user.avatarUrl,
+          },
+        })),
+        message: 'Tenant members retrieved successfully',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get tenant members',
+      };
+    }
+  }
+
+  @Post(':tenantId/invite')
+  @UseGuards(TenantMembershipGuard, RolesGuard)
+  @Roles(TenantMemberRole.ADMIN, TenantMemberRole.PARENT)
+  @HttpCode(HttpStatus.OK)
+  async inviteMember(
+    @Param('tenantId') tenantId: string,
+    @Body() inviteMemberDto: InviteMemberDto,
+    @Request() req: { user: { id: string } },
+  ): Promise<ApiResponse> {
+    try {
+      await this.tenantsService.inviteMember(tenantId, inviteMemberDto, req.user.id);
+
+      return {
+        success: true,
+        message: 'Member invited successfully',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to invite member',
+      };
+    }
+  }
+
+  @Post('join')
+  @HttpCode(HttpStatus.OK)
+  async joinTenant(
+    @Body() joinTenantDto: JoinTenantDto,
+    @Request() req: { user: { id: string } },
+  ): Promise<ApiResponse> {
+    try {
+      const tenant = await this.tenantsService.joinTenant(joinTenantDto, req.user.id);
+
+      return {
+        success: true,
+        data: tenant,
+        message: 'Successfully joined tenant',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to join tenant',
+      };
+    }
+  }
+
+  @Get('my')
+  async getMyTenants(
+    @Request() req: { user: { id: string } },
+  ): Promise<ApiResponse> {
+    try {
+      const tenants = await this.tenantsService.getUserTenants(req.user.id);
+
+      return {
+        success: true,
+        data: tenants.map(membership => ({
+          membershipId: membership.id,
+          role: membership.role,
+          joinedAt: membership.joinedAt,
+          tenant: {
+            id: membership.tenant.id,
+            name: membership.tenant.name,
+            tenantCode: membership.tenant.tenantCode,
+            type: membership.tenant.type,
+          },
+        })),
+        message: 'User tenants retrieved successfully',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get user tenants',
+      };
+    }
+  }
+
+  @Delete(':tenantId/members/:userId')
+  @UseGuards(TenantMembershipGuard, RolesGuard)
+  @Roles(TenantMemberRole.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  async removeMember(
+    @Param('tenantId') tenantId: string,
+    @Param('userId') userId: string,
+  ): Promise<ApiResponse> {
+    try {
+      await this.tenantsService.removeMember(tenantId, userId);
+
+      return {
+        success: true,
+        message: 'Member removed successfully',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to remove member',
+      };
+    }
+  }
+}

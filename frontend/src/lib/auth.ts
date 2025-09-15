@@ -19,7 +19,7 @@ export const authOptions: NextAuthOptions = {
   ],
 
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       // Here we'll sync with our backend
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/sync-user`, {
