@@ -43,8 +43,9 @@ export const authOptions: NextAuthOptions = {
 
         const backendUser = await response.json();
 
-        // Store backend user info in the session
-        user.id = backendUser.id;
+        // Store backend user info and JWT token in the session
+        user.id = backendUser.data.user.id;
+        user.backendToken = backendUser.data.access_token;
 
         return true;
       } catch (error) {
@@ -54,9 +55,9 @@ export const authOptions: NextAuthOptions = {
     },
 
     async jwt({ token, user, account }) {
-      // Persist the OAuth access_token and user info
+      // Persist the backend JWT token and user info
       if (account && user) {
-        token.accessToken = account.access_token;
+        token.accessToken = (user as any).backendToken || account.access_token;
         token.userId = user.id;
         token.provider = account.provider;
       }
@@ -71,6 +72,21 @@ export const authOptions: NextAuthOptions = {
         session.provider = token.provider as string;
       }
       return session;
+    },
+
+    async redirect({ url, baseUrl }) {
+      // Always redirect to dashboard after sign in
+      if (url === baseUrl || url === '/') {
+        return `${baseUrl}/dashboard`
+      }
+      // Handle other redirect scenarios
+      if (url.startsWith('/')) {
+        return `${baseUrl}${url}`
+      }
+      if (new URL(url).origin === baseUrl) {
+        return url
+      }
+      return `${baseUrl}/dashboard`
     },
   },
 

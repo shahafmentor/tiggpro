@@ -341,6 +341,8 @@
 - [x] Authentication component with Google OAuth (AuthButton)
 - [x] NextAuth.js configuration and providers setup
 - [x] Basic landing page with authentication
+- [x] Landing page auto-redirect to dashboard for authenticated users
+- [x] Dashboard navigation buttons in auth components
 - [x] Tenant creation/joining flow (complete family management page)
 - [x] User profile management (profile header with role/stats)
 - [ ] Tenant settings page

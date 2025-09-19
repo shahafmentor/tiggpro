@@ -1,6 +1,7 @@
 'use client'
 
 import { TenantType, TenantMemberRole } from '@tiggpro/shared'
+import { getAuthToken } from '@/lib/auth-utils'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -56,9 +57,15 @@ async function makeAuthenticatedRequest<T>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
   try {
-    // In a real app, you'd get the JWT token from your auth provider
-    // For now, we'll use a placeholder - this should be updated when implementing real auth
-    const token = 'placeholder-jwt-token' // TODO: Get from NextAuth session
+    // Get real JWT token from NextAuth session
+    const token = await getAuthToken()
+
+    if (!token) {
+      return {
+        success: false,
+        error: 'Authentication required. Please sign in.',
+      }
+    }
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,

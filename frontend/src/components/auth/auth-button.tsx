@@ -29,6 +29,9 @@ export function AuthButton() {
             Welcome, {session.user.name}
           </span>
         </div>
+        <Button asChild>
+          <a href="/dashboard">Go to Dashboard</a>
+        </Button>
         <Button onClick={() => signOut()} variant="outline">
           Sign out
         </Button>

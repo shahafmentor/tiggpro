@@ -1,6 +1,7 @@
 'use client'
 
 import { DifficultyLevel, Priority } from '@tiggpro/shared'
+import { getAuthToken } from '@/lib/auth-utils'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -59,8 +60,15 @@ async function makeAuthenticatedRequest<T>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
   try {
-    // TODO: Get JWT token from NextAuth session
-    const token = 'placeholder-jwt-token'
+    // Get real JWT token from NextAuth session
+    const token = await getAuthToken()
+
+    if (!token) {
+      return {
+        success: false,
+        error: 'Authentication required. Please sign in.',
+      }
+    }
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,

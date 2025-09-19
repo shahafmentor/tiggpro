@@ -375,7 +375,9 @@ app/
 - [x] Stats cards for points, level, chores
 - [x] Recent activity feed
 - [x] Quick actions menu
-- [ ] Family/tenant selector
+- [x] Landing page auto-redirect for authenticated users
+- [x] Navigation buttons from landing page to dashboard
+- [ ] Family/tenant selector integration improvements
 - [ ] Performance optimizations (suspense, streaming)
 
 ### Basic Chore Display

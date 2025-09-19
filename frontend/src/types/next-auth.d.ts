@@ -16,6 +16,7 @@ declare module 'next-auth' {
   interface User {
     id: string;
     provider?: AuthProvider;
+    backendToken?: string;
   }
 }
 
