@@ -40,7 +40,7 @@ export default function DebugPage() {
         name: `Debug Family ${Date.now()}`,
         type: 'family' as any
       })
-      
+
       if (result.success) {
         addResult(`✅ Tenant created: ${result.data?.name} (${result.data?.tenantCode})`)
       } else {
@@ -56,7 +56,7 @@ export default function DebugPage() {
     setIsLoading(true)
     try {
       const result = await tenantsApi.getMyTenants()
-      
+
       if (result.success) {
         addResult(`✅ Got ${result.data?.length || 0} tenants`)
         result.data?.forEach((tenant, i) => {

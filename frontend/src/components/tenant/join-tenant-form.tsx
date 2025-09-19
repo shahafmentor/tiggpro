@@ -49,7 +49,7 @@ export function JoinTenantForm({ onSuccess }: JoinTenantFormProps) {
     onSuccess: (response) => {
       if (response.success) {
         toast.success('Successfully joined the family!')
-        queryClient.invalidateQueries({ queryKey: ['tenants'] })
+        queryClient.invalidateQueries({ queryKey: ['tenants', 'my'] })
         form.reset()
         onSuccess?.()
       } else {

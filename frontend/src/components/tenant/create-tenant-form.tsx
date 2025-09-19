@@ -58,7 +58,7 @@ export function CreateTenantForm({ onSuccess }: CreateTenantFormProps) {
     onSuccess: (response) => {
       if (response.success) {
         toast.success('Family created successfully!')
-        queryClient.invalidateQueries({ queryKey: ['tenants'] })
+        queryClient.invalidateQueries({ queryKey: ['tenants', 'my'] })
         form.reset()
         onSuccess?.()
       } else {

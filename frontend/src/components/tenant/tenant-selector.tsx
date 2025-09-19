@@ -1,6 +1,8 @@
 'use client'
 
+import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useSession } from 'next-auth/react'
 import { Check, ChevronDown, Plus, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,18 +20,22 @@ import { cn } from '@/lib/utils'
 
 export function TenantSelector() {
   const { currentTenant, setCurrentTenant } = useTenant()
+  const { data: session, status } = useSession()
 
-  const { data: tenantsResponse, isLoading } = useQuery({
+  const { data: tenantsResponse, isLoading, error } = useQuery({
     queryKey: ['tenants', 'my'],
     queryFn: () => tenantsApi.getMyTenants(),
+    enabled: status === 'authenticated' && !!session,
   })
 
   const tenants = tenantsResponse?.success ? tenantsResponse.data : []
 
   // Auto-select first tenant if none selected and tenants are available
-  if (!currentTenant && tenants.length > 0 && !isLoading) {
-    setCurrentTenant(tenants[0])
-  }
+  useEffect(() => {
+    if (!currentTenant && tenants.length > 0 && !isLoading) {
+      setCurrentTenant(tenants[0])
+    }
+  }, [currentTenant, tenants, isLoading, setCurrentTenant])
 
   if (isLoading) {
     return (
@@ -39,7 +45,12 @@ export function TenantSelector() {
 
   if (tenants.length === 0) {
     return (
-      <Button variant="outline" className="gap-2" size="sm">
+      <Button
+        variant="outline"
+        className="gap-2"
+        size="sm"
+        onClick={() => window.location.href = '/dashboard/family'}
+      >
         <Plus className="h-4 w-4" />
         <span className="hidden sm:inline">Create Family</span>
       </Button>
