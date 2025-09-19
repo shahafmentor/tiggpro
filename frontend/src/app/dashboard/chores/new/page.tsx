@@ -1,14 +1,22 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { CreateChoreForm } from '@/components/chores/create-chore-form'
+import { useTenant } from '@/lib/contexts/tenant-context'
 
 export default function NewChorePage() {
   const router = useRouter()
+  const queryClient = useQueryClient()
+  const { currentTenant } = useTenant()
 
   const handleSuccess = () => {
+    // Invalidate chores query to refetch updated data
+    if (currentTenant) {
+      queryClient.invalidateQueries({ queryKey: ['chores', currentTenant.tenant.id] })
+    }
     router.push('/dashboard/chores')
   }
 

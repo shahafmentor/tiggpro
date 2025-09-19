@@ -244,12 +244,16 @@ app/
 - [x] Sheet component installed & customized
 
 ### Tiggpro-Specific Components
-- [ ] ChoreCard component
-  - [ ] Status variants (pending, completed, overdue)
-  - [ ] Points display
-  - [ ] Media preview
-  - [ ] Assignment info
-  - [ ] Action buttons
+- [x] ChoreCard component
+  - [x] Status variants (pending, completed, overdue, in-progress)
+  - [x] Points display with semantic colors
+  - [x] Difficulty indicators with star icons
+  - [x] Assignment info display
+  - [x] Interactive action buttons (Start, Complete, Urgent)
+  - [x] Click handler for detailed view/editing
+  - [x] Dropdown menu for edit/delete actions
+  - [ ] Media preview for submissions
+  - [ ] Due date indicators with time-based coloring
 
 - [ ] PointsDisplay component
   - [ ] Animated counters
@@ -382,11 +386,15 @@ app/
 
 ### Basic Chore Display
 - [x] Chore list component with role-based views
-- [x] Chore card with status indicators and actions
-- [x] Basic filtering and sorting (search, status, difficulty)
-- [x] Empty states and loading skeletons
-- [x] Actions dropdown menus (edit/delete)
-- [x] Delete confirmation dialogs
+- [x] Interactive chore cards with hover effects and click handlers
+- [x] Status indicators with semantic colors (pending, completed, overdue, in-progress)
+- [x] Comprehensive filtering and sorting (search, status, difficulty)
+- [x] Empty states with actionable buttons ("Add First Chore")
+- [x] Loading skeletons for async data loading
+- [x] Actions dropdown menus (edit/delete) with real API calls
+- [x] Delete confirmation dialogs with proper error handling
+- [x] Real-time data updates with TanStack Query
+- [x] Responsive grid layout (1-col mobile, 2-col tablet, 3-col desktop)
 
 ---
 
@@ -394,19 +402,29 @@ app/
 ### Chore CRUD Operations
 - [x] Create chore form with comprehensive validation (title, description, points, gaming time, difficulty, duration, recurrence)
 - [x] Edit chore modal with pre-populated data
-- [x] Delete chore confirmation dialogs
-- [x] Complete chore API client with all CRUD operations
-- [x] Chore creation page at `/dashboard/chores/new`
+- [x] Delete chore confirmation dialogs with real API integration
+- [x] Complete chore API client with all CRUD operations (getChoresByTenant, createChore, updateChore, deleteChore)
+- [x] Chore creation page at `/dashboard/chores/new` with proper navigation
 - [x] Form preview functionality
 - [x] Recurrence pattern configuration (daily, weekly, monthly)
+- [x] Real-time data integration with TanStack Query
+- [x] Query invalidation for immediate UI updates
+- [x] Proper error handling and user feedback
+- [x] Fixed "Add First Chore" button navigation
 - [ ] Chore assignment interface
 - [ ] Bulk operations for parents
 
 ### Chore Interaction
-- [ ] Chore completion flow
+- [x] Interactive chore cards with click handlers (opens edit modal)
+- [x] Action buttons with user feedback (Start, Complete, Urgent)
+- [x] Event propagation handling for nested interactions
+- [x] Edit/Delete dropdown menu functionality
+- [x] Loading states and skeleton components
+- [x] Real API integration for all CRUD operations
+- [ ] Chore completion flow with assignment submission
 - [ ] Photo submission for proof
-- [ ] Notes and comments
-- [ ] Review and approval interface
+- [ ] Notes and comments system
+- [ ] Review and approval interface for parents
 - [ ] Status change animations
 
 ### Advanced Features

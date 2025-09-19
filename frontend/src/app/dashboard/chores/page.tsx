@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useSession } from 'next-auth/react'
 import {
   Calendar,
   CheckSquare,
@@ -43,11 +45,13 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { EditChoreModal } from '@/components/chores/edit-chore-modal'
-import { Chore } from '@/lib/api/chores'
+import { choresApi, Chore } from '@/lib/api/chores'
 import { DifficultyLevel } from '@tiggpro/shared'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { useTenant } from '@/lib/contexts/tenant-context'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface MockChore {
   id: string
@@ -68,57 +72,58 @@ export default function ChoresPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [difficultyFilter, setDifficultyFilter] = useState('all')
-  const [editingChore, setEditingChore] = useState<MockChore | null>(null)
-  const [deletingChore, setDeletingChore] = useState<MockChore | null>(null)
+  const [editingChore, setEditingChore] = useState<Chore | null>(null)
+  const [deletingChore, setDeletingChore] = useState<Chore | null>(null)
   const router = useRouter()
+  const { data: session } = useSession()
+  const { currentTenant } = useTenant()
+  const queryClient = useQueryClient()
 
-  // TODO: Replace with real data from API
-  const mockChores: MockChore[] = [
-    {
-      id: '1',
-      title: 'Clean bedroom',
-      description: 'Organize toys, make bed, and vacuum',
-      points: 15,
-      difficulty: 'EASY',
-      status: 'PENDING',
-      assignedTo: { name: 'Emma', avatar: '/avatars/emma.jpg' },
-      dueDate: 'Today, 3:00 PM',
-      estimatedTime: 30,
-    },
-    {
-      id: '2',
-      title: 'Wash dishes',
-      description: 'Clean all dishes and put them away',
-      points: 20,
-      difficulty: 'MEDIUM',
-      status: 'COMPLETED',
-      assignedTo: { name: 'You' },
-      dueDate: 'Yesterday',
-      estimatedTime: 20,
-    },
-    {
-      id: '3',
-      title: 'Walk the dog',
-      description: 'Take Max for a 15-minute walk around the block',
-      points: 10,
-      difficulty: 'EASY',
-      status: 'OVERDUE',
-      assignedTo: { name: 'Emma', avatar: '/avatars/emma.jpg' },
-      dueDate: '2 hours ago',
-      estimatedTime: 15,
-    },
-    {
-      id: '4',
-      title: 'Mow the lawn',
-      description: 'Cut grass in front and back yard',
-      points: 50,
-      difficulty: 'HARD',
-      status: 'IN_PROGRESS',
-      assignedTo: { name: 'Dad', avatar: '/avatars/dad.jpg' },
-      dueDate: 'Tomorrow',
-      estimatedTime: 90,
-    },
-  ]
+  // Fetch real chores data
+  const { data: choresResponse, isLoading, error } = useQuery({
+    queryKey: ['chores', currentTenant?.tenant.id],
+    queryFn: () => currentTenant ? choresApi.getChoresByTenant(currentTenant.tenant.id) : null,
+    enabled: !!currentTenant && !!session,
+  })
+
+  const chores: Chore[] = choresResponse?.success ? choresResponse.data : []
+
+  // Convert real chores to display format for compatibility with existing UI
+  const displayChores = chores.map((chore): MockChore => ({
+    id: chore.id,
+    title: chore.title,
+    description: chore.description || 'No description provided',
+    points: chore.pointsReward,
+    difficulty: chore.difficultyLevel.toUpperCase() as 'EASY' | 'MEDIUM' | 'HARD',
+    status: 'PENDING' as const, // TODO: Implement real status based on assignments
+    assignedTo: undefined, // TODO: Implement real assignment data
+    dueDate: 'No due date', // TODO: Implement due dates
+    estimatedTime: chore.estimatedDurationMinutes,
+  }))
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-10 w-48" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <Skeleton className="h-[200px] w-full" />
+          <Skeleton className="h-[200px] w-full" />
+          <Skeleton className="h-[200px] w-full" />
+        </div>
+      </div>
+    )
+  }
+
+  if (!session || !currentTenant) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+        <h2 className="text-2xl font-bold mb-4">No Family Selected</h2>
+        <p className="text-lg mb-8 text-center max-w-md">
+          Please select a family to view and manage chores.
+        </p>
+      </div>
+    )
+  }
 
   const getStatusColor = (status: MockChore['status']) => {
     switch (status) {
@@ -159,7 +164,7 @@ export default function ChoresPage() {
     }
   }
 
-  const filteredChores = mockChores.filter(chore => {
+  const filteredChores = displayChores.filter(chore => {
     const matchesSearch = chore.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          chore.description.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === 'all' || chore.status === statusFilter.toUpperCase()
@@ -229,7 +234,15 @@ export default function ChoresPage() {
       {/* Chore Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filteredChores.map((chore) => (
-          <Card key={chore.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+          <Card
+            key={chore.id}
+            className="hover:shadow-lg transition-shadow cursor-pointer"
+            onClick={() => {
+              // Open chore details/edit modal when clicking the card
+              const originalChore = chores.find(c => c.id === chore.id)
+              if (originalChore) setEditingChore(originalChore)
+            }}
+          >
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -291,13 +304,30 @@ export default function ChoresPage() {
                 </Badge>
                 <div className="flex items-center gap-2">
                   {chore.status === 'PENDING' && (
-                    <Button size="sm" className="h-8">
+                    <Button
+                      size="sm"
+                      className="h-8"
+                      onClick={(e) => {
+                        e.stopPropagation() // Prevent card click
+                        // TODO: Implement start chore functionality
+                        toast.info('Start chore functionality coming soon!')
+                      }}
+                    >
                       <CheckSquare className="h-3 w-3 mr-1" />
                       Start
                     </Button>
                   )}
                   {chore.status === 'IN_PROGRESS' && (
-                    <Button size="sm" variant="outline" className="h-8">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8"
+                      onClick={(e) => {
+                        e.stopPropagation() // Prevent card click
+                        // TODO: Implement complete chore functionality
+                        toast.info('Complete chore functionality coming soon!')
+                      }}
+                    >
                       <CheckSquare className="h-3 w-3 mr-1" />
                       Complete
                     </Button>
@@ -308,7 +338,16 @@ export default function ChoresPage() {
                     </Badge>
                   )}
                   {chore.status === 'OVERDUE' && (
-                    <Button size="sm" variant="destructive" className="h-8">
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="h-8"
+                      onClick={(e) => {
+                        e.stopPropagation() // Prevent card click
+                        // TODO: Implement urgent chore functionality
+                        toast.info('Urgent chore handling coming soon!')
+                      }}
+                    >
                       <Clock className="h-3 w-3 mr-1" />
                       Urgent
                     </Button>
@@ -317,17 +356,28 @@ export default function ChoresPage() {
                   {/* Actions Menu */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setEditingChore(chore)}>
+                      <DropdownMenuItem onClick={() => {
+                        const originalChore = chores.find(c => c.id === chore.id)
+                        if (originalChore) setEditingChore(originalChore)
+                      }}>
                         <Edit className="mr-2 h-4 w-4" />
                         Edit
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => setDeletingChore(chore)}
+                        onClick={() => {
+                          const originalChore = chores.find(c => c.id === chore.id)
+                          if (originalChore) setDeletingChore(originalChore)
+                        }}
                         className="text-destructive"
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
@@ -353,7 +403,7 @@ export default function ChoresPage() {
                 ? 'Try adjusting your filters to see more chores.'
                 : 'Get started by creating your first chore!'}
             </p>
-            <Button>
+            <Button onClick={() => router.push('/dashboard/chores/new')}>
               <Plus className="h-4 w-4 mr-2" />
               Add First Chore
             </Button>
@@ -363,24 +413,14 @@ export default function ChoresPage() {
 
       {/* Edit Chore Modal */}
       <EditChoreModal
-        chore={editingChore ? {
-          ...editingChore,
-          tenantId: 'mock-tenant',
-          pointsReward: editingChore.points,
-          gamingTimeMinutes: 15,
-          difficultyLevel: editingChore.difficulty as DifficultyLevel,
-          estimatedDurationMinutes: editingChore.estimatedTime,
-          isRecurring: false,
-          createdBy: 'mock-user',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        } : null}
+        chore={editingChore}
         open={!!editingChore}
         onOpenChange={(open) => !open && setEditingChore(null)}
         onSuccess={() => {
           toast.success('Chore updated successfully!')
           setEditingChore(null)
+          // Refetch chores to show updated data
+          queryClient.invalidateQueries({ queryKey: ['chores', currentTenant?.tenant.id] })
         }}
       />
 
@@ -396,10 +436,22 @@ export default function ChoresPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                // TODO: Implement delete functionality
-                toast.success('Chore deleted successfully!')
-                setDeletingChore(null)
+              onClick={async () => {
+                if (deletingChore && currentTenant) {
+                  try {
+                    const response = await choresApi.deleteChore(currentTenant.tenant.id, deletingChore.id)
+                    if (response.success) {
+                      toast.success('Chore deleted successfully!')
+                      // Refresh the chores list
+                      queryClient.invalidateQueries({ queryKey: ['chores', currentTenant.tenant.id] })
+                    } else {
+                      toast.error(response.error || 'Failed to delete chore')
+                    }
+                  } catch (error) {
+                    toast.error('Failed to delete chore')
+                  }
+                  setDeletingChore(null)
+                }
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >

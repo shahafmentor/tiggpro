@@ -143,7 +143,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
     onSuccess: (response) => {
       if (response.success) {
         toast.success('Chore updated successfully!')
-        queryClient.invalidateQueries({ queryKey: ['chores'] })
+        queryClient.invalidateQueries({ queryKey: ['chores', currentTenant?.tenant.id] })
         onOpenChange(false)
         onSuccess?.()
       } else {

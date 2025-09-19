@@ -99,8 +99,10 @@ export const choresApi = {
   },
 
   // Get all chores for a tenant
-  async getChores(tenantId: string): Promise<ApiResponse<Chore[]>> {
-    return makeAuthenticatedRequest(`/tenants/${tenantId}/chores`)
+  async getChoresByTenant(tenantId: string): Promise<ApiResponse<Chore[]>> {
+    return makeAuthenticatedRequest(`/tenants/${tenantId}/chores`, {
+      method: 'GET',
+    })
   },
 
   // Get a specific chore
