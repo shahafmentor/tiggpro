@@ -50,7 +50,7 @@ Edit the environment files with your local configuration.
 npm run db:setup
 
 # Or use Docker Compose directly
-docker-compose up -d postgres redis
+docker compose up -d postgres redis
 ```
 
 ### 4. Build Shared Package
