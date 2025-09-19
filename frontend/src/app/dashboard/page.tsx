@@ -4,18 +4,17 @@ import { useSession } from 'next-auth/react'
 import {
   Calendar,
   CheckSquare,
-  Clock,
   Star,
   TrendingUp,
   Trophy,
-  Users,
-  Zap
+  Users
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { PointsDisplay } from '@/components/gamification/points-display'
+import { FamilyLeaderboard } from '@/components/gamification/family-leaderboard'
+import type { LeaderboardEntry } from '@/lib/api/gamification'
 
 export default function DashboardPage() {
   const { data: session } = useSession()
@@ -58,13 +57,36 @@ export default function DashboardPage() {
       },
     ],
     leaderboard: [
-      { name: 'Emma', points: 145, avatar: '/avatars/emma.jpg', rank: 1 },
-      { name: 'You', points: 127, avatar: session?.user?.image, rank: 2 },
-      { name: 'Dad', points: 89, avatar: '/avatars/dad.jpg', rank: 3 },
-    ],
+      {
+        rank: 1,
+        userId: 'user-emma',
+        displayName: 'Emma',
+        totalPoints: 145,
+        level: 6,
+        currentStreakDays: 12,
+        longestStreakDays: 15
+      },
+      {
+        rank: 2,
+        userId: session?.user?.id || 'current-user',
+        displayName: 'You',
+        totalPoints: 127,
+        level: 5,
+        currentStreakDays: 7,
+        longestStreakDays: 10
+      },
+      {
+        rank: 3,
+        userId: 'user-dad',
+        displayName: 'Dad',
+        totalPoints: 89,
+        level: 4,
+        currentStreakDays: 3,
+        longestStreakDays: 8
+      },
+    ] as LeaderboardEntry[],
   }
 
-  const levelProgress = (mockData.stats.totalPoints / mockData.stats.nextLevelPoints) * 100
 
   return (
     <div className="p-6 space-y-6">
@@ -78,75 +100,15 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* Total Points */}
-        <Card className="relative overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Points</CardTitle>
-            <Zap className="h-4 w-4 text-points-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-points-primary">
-              {mockData.stats.totalPoints}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              +{mockData.stats.totalPoints - 100} from last week
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Current Level */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Current Level</CardTitle>
-            <Star className="h-4 w-4 text-achievement-gold" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-achievement-gold">
-              Level {mockData.stats.currentLevel}
-            </div>
-            <div className="mt-2 space-y-1">
-              <Progress value={levelProgress} className="h-2" />
-              <p className="text-xs text-muted-foreground">
-                {mockData.stats.nextLevelPoints - mockData.stats.totalPoints} points to Level {mockData.stats.currentLevel + 1}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Completed Chores */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
-            <CheckSquare className="h-4 w-4 text-chore-completed" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-chore-completed">
-              {mockData.stats.completedChores}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {mockData.stats.pendingChores} pending chores
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Gaming Time */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Gaming Time</CardTitle>
-            <Clock className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-primary">
-              {mockData.stats.gamingTimeEarned}m
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {mockData.stats.streakDays} day streak! 🔥
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Gamification Stats */}
+      <PointsDisplay
+        totalPoints={mockData.stats.totalPoints}
+        level={mockData.stats.currentLevel}
+        currentStreakDays={mockData.stats.streakDays}
+        longestStreakDays={mockData.stats.streakDays + 3} // Mock longer streak
+        availableGamingMinutes={mockData.stats.gamingTimeEarned}
+        animated={true}
+      />
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Recent Activity */}
@@ -206,45 +168,16 @@ export default function DashboardPage() {
         </Card>
 
         {/* Family Leaderboard */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Family Leaderboard
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {mockData.leaderboard.map((member) => (
-              <div key={member.rank} className="flex items-center space-x-3">
-                <div className="flex-shrink-0">
-                  <Badge variant={member.rank === 1 ? "default" : "outline"} className="w-6 h-6 p-0 flex items-center justify-center">
-                    {member.rank}
-                  </Badge>
-                </div>
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={member.avatar || undefined} alt={member.name} />
-                  <AvatarFallback>
-                    {member.name.split(' ').map(n => n[0]).join('')}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground">
-                    {member.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {member.points} points
-                  </p>
-                </div>
-                {member.rank === 1 && (
-                  <Trophy className="h-4 w-4 text-achievement-gold" />
-                )}
-              </div>
-            ))}
-            <Button variant="outline" className="w-full mt-4">
-              View Full Leaderboard
-            </Button>
-          </CardContent>
-        </Card>
+        <FamilyLeaderboard
+          entries={mockData.leaderboard}
+          currentUserId={session?.user?.id || 'current-user'}
+          maxDisplayCount={5}
+          onViewAll={() => {
+            // TODO: Navigate to full leaderboard page
+            console.log('Navigate to full leaderboard')
+          }}
+          variant="compact"
+        />
       </div>
 
       {/* Quick Actions */}

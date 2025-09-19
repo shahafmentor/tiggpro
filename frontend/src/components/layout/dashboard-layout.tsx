@@ -43,8 +43,8 @@ const navItems: NavItem[] = [
     badge: 3, // TODO: Get from real data
   },
   {
-    href: '/dashboard/rewards',
-    label: 'Rewards',
+    href: '/dashboard/achievements',
+    label: 'Achievements',
     icon: Trophy,
   },
   {
