@@ -196,7 +196,7 @@ export class TenantsService {
     // Use a transaction to ensure all deletes succeed or all fail
     await this.tenantRepository.manager.transaction(async (transactionalEntityManager) => {
       // Delete in order to avoid foreign key constraint violations
-      
+
       // 1. Delete user achievements for this tenant
       await transactionalEntityManager.query(
         'DELETE FROM user_achievements WHERE tenant_id = $1',
@@ -217,7 +217,7 @@ export class TenantsService {
 
       // 4. Delete chore submissions (depends on chore assignments)
       await transactionalEntityManager.query(`
-        DELETE FROM chore_submissions 
+        DELETE FROM chore_submissions
         WHERE assignment_id IN (
           SELECT id FROM chore_assignments WHERE chore_id IN (
             SELECT id FROM chores WHERE tenant_id = $1
@@ -227,7 +227,7 @@ export class TenantsService {
 
       // 5. Delete chore assignments (depends on chores)
       await transactionalEntityManager.query(`
-        DELETE FROM chore_assignments 
+        DELETE FROM chore_assignments
         WHERE chore_id IN (
           SELECT id FROM chores WHERE tenant_id = $1
         )

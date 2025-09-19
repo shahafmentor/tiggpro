@@ -22,8 +22,8 @@ export class Chore {
   @Column()
   title: string;
 
-  @Column('text')
-  description: string;
+  @Column('text', { nullable: true })
+  description: string | null;
 
   @Column({ name: 'points_reward' })
   pointsReward: number;

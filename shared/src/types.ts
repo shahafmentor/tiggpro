@@ -65,7 +65,7 @@ export interface Chore {
   id: string;
   tenantId: string;
   title: string;
-  description: string;
+  description: string | null;
   pointsReward: number;
   gamingTimeMinutes: number;
   difficultyLevel: DifficultyLevel;

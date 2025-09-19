@@ -188,9 +188,9 @@ export class TenantsController {
   @Roles(TenantMemberRole.ADMIN)
   @ApiOperation({ summary: 'Delete a tenant (only by admin)' })
   @ApiParam({ name: 'tenantId', description: 'Tenant ID to delete' })
-  @ApiResponse({ status: 200, description: 'Tenant deleted successfully' })
-  @ApiResponse({ status: 403, description: 'Forbidden - only admins can delete tenants' })
-  @ApiResponse({ status: 404, description: 'Tenant not found' })
+  @ApiDoc({ status: 200, description: 'Tenant deleted successfully' })
+  @ApiDoc({ status: 403, description: 'Forbidden - only admins can delete tenants' })
+  @ApiDoc({ status: 404, description: 'Tenant not found' })
   async deleteTenant(
     @Param('tenantId') tenantId: string,
   ): Promise<ApiResponse> {
