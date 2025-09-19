@@ -182,4 +182,29 @@ export class TenantsController {
       };
     }
   }
+
+  @Delete(':tenantId/delete')
+  @UseGuards(JwtAuthGuard, TenantMembershipGuard, RolesGuard)
+  @Roles(TenantMemberRole.ADMIN)
+  @ApiOperation({ summary: 'Delete a tenant (only by admin)' })
+  @ApiParam({ name: 'tenantId', description: 'Tenant ID to delete' })
+  @ApiResponse({ status: 200, description: 'Tenant deleted successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden - only admins can delete tenants' })
+  @ApiResponse({ status: 404, description: 'Tenant not found' })
+  async deleteTenant(
+    @Param('tenantId') tenantId: string,
+  ): Promise<ApiResponse> {
+    try {
+      await this.tenantsService.deleteTenant(tenantId);
+      return {
+        success: true,
+        message: 'Tenant deleted successfully',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to delete tenant',
+      };
+    }
+  }
 }

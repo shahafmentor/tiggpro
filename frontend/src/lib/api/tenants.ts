@@ -1,5 +1,6 @@
 'use client'
 
+import { useMutation } from '@tanstack/react-query'
 import { TenantType, TenantMemberRole } from '@tiggpro/shared'
 import { getAuthToken } from '@/lib/auth-utils'
 
@@ -127,6 +128,13 @@ export const tenantsApi = {
       method: 'DELETE',
     })
   },
+
+  // Delete a tenant (only by admin)
+  async deleteTenant(tenantId: string): Promise<ApiResponse> {
+    return makeAuthenticatedRequest(`/tenants/${tenantId}/delete`, {
+      method: 'DELETE',
+    })
+  },
 }
 
 export type {
@@ -136,4 +144,18 @@ export type {
   TenantMember,
   UserTenant,
   ApiResponse
+}
+
+// React Query hooks
+export const useRemoveMember = () => {
+  return useMutation({
+    mutationFn: ({ tenantId, userId }: { tenantId: string; userId: string }) =>
+      tenantsApi.removeMember(tenantId, userId),
+  })
+}
+
+export const useDeleteTenant = () => {
+  return useMutation({
+    mutationFn: (tenantId: string) => tenantsApi.deleteTenant(tenantId),
+  })
 }

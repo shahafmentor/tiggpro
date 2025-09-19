@@ -12,7 +12,8 @@ import {
   UserPlus,
   Settings,
   Shield,
-  Baby
+  Baby,
+  Trash2
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -48,6 +49,9 @@ import { toast } from 'sonner'
 export default function FamilyPage() {
   const [selectedTenant, setSelectedTenant] = useState<UserTenant | null>(null)
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false)
+  const [deletingTenant, setDeletingTenant] = useState<UserTenant | null>(null)
   const queryClient = useQueryClient()
 
   // Fetch user's tenants
@@ -73,6 +77,19 @@ export default function FamilyPage() {
     },
     onError: (error: any) => {
       toast.error(error.error || 'Failed to remove member')
+    },
+  })
+
+  // Delete tenant mutation
+  const deleteTenantMutation = useMutation({
+    mutationFn: (tenantId: string) => tenantsApi.deleteTenant(tenantId),
+    onSuccess: () => {
+      toast.success('Family deleted successfully')
+      queryClient.invalidateQueries({ queryKey: ['tenants', 'my'] })
+      setSelectedTenant(null) // Clear selected tenant
+    },
+    onError: (error: any) => {
+      toast.error(error.error || 'Failed to delete family')
     },
   })
 
@@ -139,7 +156,7 @@ export default function FamilyPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Dialog>
+          <Dialog open={isJoinDialogOpen} onOpenChange={setIsJoinDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="gap-2">
                 <UserPlus className="h-4 w-4" />
@@ -153,11 +170,14 @@ export default function FamilyPage() {
                   Enter a family code to join an existing family
                 </DialogDescription>
               </DialogHeader>
-              <JoinTenantForm />
+              <JoinTenantForm onSuccess={() => {
+                setIsJoinDialogOpen(false)
+                queryClient.invalidateQueries({ queryKey: ['tenants', 'my'] })
+              }} />
             </DialogContent>
           </Dialog>
 
-          <Dialog>
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button className="gap-2">
                 <Plus className="h-4 w-4" />
@@ -171,7 +191,10 @@ export default function FamilyPage() {
                   Start a new family and invite members to manage chores together
                 </DialogDescription>
               </DialogHeader>
-              <CreateTenantForm />
+              <CreateTenantForm onSuccess={() => {
+                setIsCreateDialogOpen(false)
+                queryClient.invalidateQueries({ queryKey: ['tenants', 'my'] })
+              }} />
             </DialogContent>
           </Dialog>
         </div>
@@ -266,6 +289,17 @@ export default function FamilyPage() {
                             <InviteMemberForm tenantId={selectedTenant.tenant.id} />
                           </DialogContent>
                         </Dialog>
+                      )}
+                      {selectedTenant.role === TenantMemberRole.ADMIN && (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="gap-2"
+                          onClick={() => setDeletingTenant(selectedTenant)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Delete Family
+                        </Button>
                       )}
                     </div>
                   </div>
@@ -400,6 +434,42 @@ export default function FamilyPage() {
           )}
         </div>
       </div>
+
+      {/* Delete Family Confirmation Dialog */}
+      <AlertDialog open={!!deletingTenant} onOpenChange={(open) => !open && setDeletingTenant(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Family</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &ldquo;{deletingTenant?.tenant.name}&rdquo;?
+              This action cannot be undone and will permanently remove:
+              <br />
+              <br />
+              • All family members
+              <br />
+              • All chores and assignments
+              <br />
+              • All points and achievements
+              <br />
+              • All family data
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deletingTenant) {
+                  deleteTenantMutation.mutate(deletingTenant.tenant.id)
+                  setDeletingTenant(null)
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Family
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

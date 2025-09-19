@@ -183,4 +183,80 @@ export class TenantsService {
 
     return code!;
   }
+
+  async deleteTenant(tenantId: string): Promise<void> {
+    const tenant = await this.tenantRepository.findOne({
+      where: { id: tenantId },
+    });
+
+    if (!tenant) {
+      throw new NotFoundException('Tenant not found');
+    }
+
+    // Use a transaction to ensure all deletes succeed or all fail
+    await this.tenantRepository.manager.transaction(async (transactionalEntityManager) => {
+      // Delete in order to avoid foreign key constraint violations
+      
+      // 1. Delete user achievements for this tenant
+      await transactionalEntityManager.query(
+        'DELETE FROM user_achievements WHERE tenant_id = $1',
+        [tenantId]
+      );
+
+      // 2. Delete user points for this tenant
+      await transactionalEntityManager.query(
+        'DELETE FROM user_points WHERE tenant_id = $1',
+        [tenantId]
+      );
+
+      // 3. Delete notifications for this tenant
+      await transactionalEntityManager.query(
+        'DELETE FROM notifications WHERE tenant_id = $1',
+        [tenantId]
+      );
+
+      // 4. Delete chore submissions (depends on chore assignments)
+      await transactionalEntityManager.query(`
+        DELETE FROM chore_submissions 
+        WHERE assignment_id IN (
+          SELECT id FROM chore_assignments WHERE chore_id IN (
+            SELECT id FROM chores WHERE tenant_id = $1
+          )
+        )
+      `, [tenantId]);
+
+      // 5. Delete chore assignments (depends on chores)
+      await transactionalEntityManager.query(`
+        DELETE FROM chore_assignments 
+        WHERE chore_id IN (
+          SELECT id FROM chores WHERE tenant_id = $1
+        )
+      `, [tenantId]);
+
+      // 6. Delete chores
+      await transactionalEntityManager.query(
+        'DELETE FROM chores WHERE tenant_id = $1',
+        [tenantId]
+      );
+
+      // 7. Delete tenant members
+      await transactionalEntityManager.query(
+        'DELETE FROM tenant_members WHERE tenant_id = $1',
+        [tenantId]
+      );
+
+      // 8. Finally, delete the tenant itself
+      await transactionalEntityManager.query(
+        'DELETE FROM tenants WHERE id = $1',
+        [tenantId]
+      );
+    });
+
+    // Note: In a production app, you might want to:
+    // 1. Soft delete instead of hard delete
+    // 2. Archive related data instead of deleting
+    // 3. Add additional validation (e.g., prevent deletion if there are active chores)
+    // 4. Send notifications to members before deletion
+    // 5. Allow data export before deletion
+  }
 }
