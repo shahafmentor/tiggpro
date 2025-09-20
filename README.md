@@ -212,7 +212,19 @@ pkill node
 
 ## 📚 Documentation
 
-- [Implementation Plan](./IMPLEMENTATION_PLAN.md) - Detailed development roadmap
+### Core Documentation
+- **[📖 Complete Documentation Index](./docs/README.md)** - Start here for all guides
+- **[🏗️ State Management Guide](./docs/fronted/state-management-guide.md)** - React Context, Zustand, TanStack Query patterns
+- **[📋 Implementation Plan](./docs/development/IMPLEMENTATION_PLAN.md)** - Detailed development roadmap
+- **[🎨 Frontend Implementation Guide](./docs/frontend/FRONTEND_IMPLEMENTATION_GUIDE.md)** - UX/UI strategy
+- **[✅ Implementation Guidelines](./docs/development/IMPLEMENTATION_GUIDELINES.md)** - Development standards
+
+### Quick Start for Developers
+1. Read [Documentation Index](./docs/README.md) for overview
+2. Review [State Management Guide](./docs/state-management-guide.md) for architecture patterns
+3. Check [Implementation Plan](./docs/development/IMPLEMENTATION_PLAN.md) for current progress
+
+### Additional Documentation
 - [API Documentation](./docs/api.md) - API endpoints (when available)
 - [Component Documentation](./docs/components.md) - UI components guide (when available)
 

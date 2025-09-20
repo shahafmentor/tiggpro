@@ -1,23 +1,10 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-// Types from shared package - we'll import these properly later
-type Tenant = {
-  id: string
-  name: string
-  code: string
-  type: 'family' | 'organization'
-  createdAt: string
-}
-
 type Theme = 'light' | 'dark'
 type UserTheme = 'parent' | 'kid'
 
 interface AppState {
-  // Current tenant/family
-  currentTenant: Tenant | null
-  setCurrentTenant: (tenant: Tenant | null) => void
-
   // UI state
   theme: Theme
   userTheme: UserTheme
@@ -51,10 +38,6 @@ interface AppState {
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
-      // Current tenant
-      currentTenant: null,
-      setCurrentTenant: (tenant) => set({ currentTenant: tenant }),
-
       // Theme state
       theme: 'light',
       userTheme: 'parent',
@@ -94,7 +77,6 @@ export const useAppStore = create<AppState>()(
       name: 'tiggpro-app-storage',
       partialize: (state) => ({
         // Only persist these values
-        currentTenant: state.currentTenant,
         theme: state.theme,
         userTheme: state.userTheme,
         sidebarOpen: state.sidebarOpen,
@@ -104,7 +86,6 @@ export const useAppStore = create<AppState>()(
 )
 
 // Selectors for common state combinations
-export const useCurrentTenant = () => useAppStore(state => state.currentTenant)
 export const useThemeState = () => useAppStore(state => ({
   theme: state.theme,
   userTheme: state.userTheme

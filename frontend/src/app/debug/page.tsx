@@ -42,7 +42,7 @@ export default function DebugPage() {
       })
 
       if (result.success) {
-        addResult(`✅ Tenant created: ${result.data?.name} (${result.data?.tenantCode})`)
+        addResult(`✅ Tenant created: ${(result.data as {name?: string; tenantCode?: string})?.name} (${(result.data as {name?: string; tenantCode?: string})?.tenantCode})`)
       } else {
         addResult(`❌ Tenant creation failed: ${result.error}`)
       }

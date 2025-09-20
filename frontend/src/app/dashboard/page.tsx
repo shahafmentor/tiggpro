@@ -1,34 +1,72 @@
 'use client'
 
+import { useState } from 'react'
 import { useSession } from 'next-auth/react'
+import { useQuery } from '@tanstack/react-query'
 import {
   Calendar,
   CheckSquare,
   Star,
   TrendingUp,
   Trophy,
-  Users
+  Users,
+  Clock,
+  AlertCircle
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { PointsDisplay } from '@/components/gamification/points-display'
 import { FamilyLeaderboard } from '@/components/gamification/family-leaderboard'
+import { SubmitAssignmentModal } from '@/components/chores/submit-assignment-modal'
+import { useTenant } from '@/lib/contexts/tenant-context'
+import { assignmentsApi, type Assignment } from '@/lib/api/assignments'
 import type { LeaderboardEntry } from '@/lib/api/gamification'
 
 export default function DashboardPage() {
   const { data: session } = useSession()
+  const { currentTenant } = useTenant()
+  const [submittingAssignment, setSubmittingAssignment] = useState<Assignment | null>(null)
 
-  // TODO: Replace with real data from API
+  // Fetch user assignments
+  const { data: assignmentsResponse, isLoading: assignmentsLoading, error: assignmentsError } = useQuery({
+    queryKey: ['user-assignments', currentTenant?.tenant?.id, session?.user?.id],
+    queryFn: async () => {
+      if (!currentTenant?.tenant?.id) {
+        return { success: false, data: [], error: 'No tenant selected' }
+      }
+      return assignmentsApi.getUserAssignments(currentTenant.tenant.id)
+    },
+    enabled: !!currentTenant?.tenant?.id && !!session?.user && !!session?.accessToken,
+    staleTime: 30000, // 30 seconds
+  })
+
+  const assignments: Assignment[] = (assignmentsResponse?.success ? assignmentsResponse.data : []) || []
+
+  // Calculate assignment stats
+  const assignmentStats = {
+    total: assignments.length,
+    pending: assignments.filter(a => a.status === 'pending').length,
+    submitted: assignments.filter(a => a.status === 'submitted').length,
+    approved: assignments.filter(a => a.status === 'approved').length,
+    overdue: assignments.filter(a => {
+      const dueDate = new Date(a.dueDate)
+      const now = new Date()
+      return dueDate < now && a.status === 'pending'
+    }).length,
+  }
+
+  // TODO: Replace with real data from API (gamification stats)
   const mockData = {
     stats: {
       totalPoints: 127,
       currentLevel: 5,
       nextLevelPoints: 150,
-      completedChores: 8,
-      pendingChores: 3,
-      gamingTimeEarned: 45, // minutes
-      streakDays: 7,
+      completedChores: assignmentStats.approved,
+      pendingChores: assignmentStats.pending,
+      gamingTimeEarned: 45, // minutes - TODO: get from gamification API
+      streakDays: 7, // TODO: get from gamification API
     },
     recentActivity: [
       {
@@ -109,6 +147,122 @@ export default function DashboardPage() {
         availableGamingMinutes={mockData.stats.gamingTimeEarned}
         animated={true}
       />
+
+      {/* My Assignments Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CheckSquare className="h-5 w-5" />
+            My Assignments
+            {assignmentStats.total > 0 && (
+              <Badge variant="secondary" className="ml-auto">
+                {assignmentStats.total}
+              </Badge>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {assignmentsLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center space-x-4">
+                  <Skeleton className="h-12 w-12 rounded" />
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-4 w-[200px]" />
+                    <Skeleton className="h-3 w-[100px]" />
+                  </div>
+                  <Skeleton className="h-6 w-16" />
+                </div>
+              ))}
+            </div>
+          ) : assignmentsError ? (
+            <div className="text-center py-6 text-muted-foreground">
+              <AlertCircle className="h-8 w-8 mx-auto mb-2" />
+              <p>Failed to load assignments</p>
+            </div>
+          ) : assignments.length === 0 ? (
+            <div className="text-center py-6 text-muted-foreground">
+              <CheckSquare className="h-8 w-8 mx-auto mb-2" />
+              <p>No assignments yet</p>
+              <p className="text-sm">Check back later for new chores!</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {assignments.slice(0, 3).map((assignment) => {
+                const dueDate = new Date(assignment.dueDate)
+                const isOverdue = dueDate < new Date() && assignment.status === 'pending'
+                const isDueSoon = dueDate.getTime() - new Date().getTime() < 24 * 60 * 60 * 1000 // 24 hours
+
+                return (
+                  <div key={assignment.id} className="flex items-center space-x-4 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                    <div className="flex-shrink-0">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        assignment.status === 'approved' ? 'bg-chore-completed/10' :
+                        assignment.status === 'submitted' ? 'bg-chore-submitted/10' :
+                        isOverdue ? 'bg-chore-overdue/10' :
+                        'bg-chore-pending/10'
+                      }`}>
+                        <CheckSquare className={`h-5 w-5 ${
+                          assignment.status === 'approved' ? 'text-chore-completed' :
+                          assignment.status === 'submitted' ? 'text-chore-submitted' :
+                          isOverdue ? 'text-chore-overdue' :
+                          'text-chore-pending'
+                        }`} />
+                      </div>
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <p className="text-sm font-medium text-foreground">
+                        {assignment.chore.title}
+                      </p>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        <span>Due {dueDate.toLocaleDateString()}</span>
+                        {isDueSoon && !isOverdue && <Badge variant="outline" className="text-xs py-0 px-1">Due Soon</Badge>}
+                        {isOverdue && <Badge variant="destructive" className="text-xs py-0 px-1">Overdue</Badge>}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="text-xs">
+                        +{assignment.chore.pointsReward} pts
+                      </Badge>
+                      {assignment.status === 'pending' ? (
+                        <Button
+                          size="sm"
+                          className="text-xs h-6"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSubmittingAssignment(assignment)
+                          }}
+                        >
+                          Submit
+                        </Button>
+                      ) : (
+                        <Badge
+                          variant={
+                            assignment.status === 'approved' ? 'default' :
+                            assignment.status === 'submitted' ? 'secondary' :
+                            'outline'
+                          }
+                          className="text-xs"
+                        >
+                          {assignment.status === 'approved' ? 'Complete' :
+                           assignment.status === 'submitted' ? 'Submitted' :
+                           assignment.status}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+              {assignments.length > 3 && (
+                <Button variant="outline" className="w-full mt-4">
+                  View All Assignments ({assignments.length})
+                </Button>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Recent Activity */}
@@ -206,6 +360,15 @@ export default function DashboardPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Submit Assignment Modal */}
+      <SubmitAssignmentModal
+        assignment={submittingAssignment}
+        open={!!submittingAssignment}
+        onOpenChange={(open) => {
+          if (!open) setSubmittingAssignment(null)
+        }}
+      />
     </div>
   )
 }

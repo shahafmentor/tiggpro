@@ -45,9 +45,11 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { EditChoreModal } from '@/components/chores/edit-chore-modal'
 import { AssignChoreModal } from '@/components/chores/assign-chore-modal'
+import { SubmitAssignmentModal } from '@/components/chores/submit-assignment-modal'
 import { choresApi, Chore } from '@/lib/api/chores'
 import { assignmentsApi, Assignment } from '@/lib/api/assignments'
 import { tenantsApi, TenantMember } from '@/lib/api/tenants'
+import { TenantMemberRole } from '@tiggpro/shared'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
@@ -60,13 +62,14 @@ interface MockChore {
   description: string
   points: number
   difficulty: 'EASY' | 'MEDIUM' | 'HARD'
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'OVERDUE'
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'OVERDUE' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'
   assignedTo?: {
     name: string
     avatar?: string
   }
   dueDate: string
   estimatedTime: number // in minutes
+  assignment?: Assignment // Keep assignment reference for filtering
 }
 
 export default function ChoresPage() {
@@ -76,6 +79,7 @@ export default function ChoresPage() {
   const [editingChore, setEditingChore] = useState<Chore | null>(null)
   const [deletingChore, setDeletingChore] = useState<Chore | null>(null)
   const [assigningChore, setAssigningChore] = useState<Chore | null>(null)
+  const [submittingAssignment, setSubmittingAssignment] = useState<Assignment | null>(null)
   const router = useRouter()
   const { data: session } = useSession()
   const { currentTenant } = useTenant()
@@ -107,32 +111,44 @@ export default function ChoresPage() {
   const tenantMembers: TenantMember[] = membersResponse?.success ? membersResponse.data || [] : []
 
   // Convert real chores to display format with assignment data
-  const displayChores = chores.map((chore): MockChore => {
-    // Find assignment for this chore
-    const assignment = assignments.find(a => a.choreId === chore.id)
+  const isChild = currentTenant?.role === TenantMemberRole.CHILD
 
-    // Find assigned member details
-    const assignedMember = assignment
-      ? tenantMembers.find(m => m.userId === assignment.assignedTo?.id)
-      : undefined
+  const displayChores = chores
+    .map((chore): MockChore => {
+      // Find assignment for this chore
+      const assignment = assignments.find(a => a.choreId === chore.id)
 
-    return {
-      id: chore.id,
-      title: chore.title,
-      description: chore.description || 'No description provided',
-      points: chore.pointsReward,
-      difficulty: chore.difficultyLevel.toUpperCase() as 'EASY' | 'MEDIUM' | 'HARD',
-      status: assignment?.status?.toUpperCase() as 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'OVERDUE' || 'PENDING',
-      assignedTo: assignedMember ? {
-        name: assignedMember.user.displayName || assignedMember.user.email,
-        avatar: assignedMember.user.avatarUrl,
-      } : undefined,
-      dueDate: assignment?.dueDate
-        ? new Date(assignment.dueDate).toLocaleDateString()
-        : 'No due date',
-      estimatedTime: chore.estimatedDurationMinutes,
-    }
-  })
+      // Find assigned member details
+      const assignedMember = assignment
+        ? tenantMembers.find(m => m.userId === assignment.assignedTo?.id)
+        : undefined
+
+      return {
+        id: chore.id,
+        title: chore.title,
+        description: chore.description || 'No description provided',
+        points: chore.pointsReward,
+        difficulty: chore.difficultyLevel.toUpperCase() as 'EASY' | 'MEDIUM' | 'HARD',
+        status: (assignment?.status?.toUpperCase() as 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'OVERDUE' | 'SUBMITTED' | 'APPROVED' | 'REJECTED') || 'PENDING',
+        assignedTo: assignedMember ? {
+          name: assignedMember.user.displayName || assignedMember.user.email,
+          avatar: assignedMember.user.avatarUrl,
+        } : undefined,
+        dueDate: assignment?.dueDate
+          ? new Date(assignment.dueDate).toLocaleDateString()
+          : 'No due date',
+        estimatedTime: chore.estimatedDurationMinutes,
+        assignment, // Keep assignment reference for filtering
+      }
+    })
+    .filter((chore) => {
+      // If user is a child, only show chores assigned to them
+      if (isChild) {
+        return chore.assignment && chore.assignment.assignedTo?.id === session?.user?.id
+      }
+      // For admins and parents, show all chores
+      return true
+    })
 
   if (isLoading) {
     return (
@@ -164,8 +180,12 @@ export default function ChoresPage() {
         return 'bg-chore-pending'
       case 'IN_PROGRESS':
         return 'bg-chore-in-progress'
+      case 'SUBMITTED':
+        return 'bg-chore-submitted'
+      case 'APPROVED':
       case 'COMPLETED':
         return 'bg-chore-completed'
+      case 'REJECTED':
       case 'OVERDUE':
         return 'bg-chore-overdue'
       default:
@@ -211,15 +231,22 @@ export default function ChoresPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Chores</h1>
+          <h1 className="text-3xl font-bold text-foreground">
+            {isChild ? 'My Assignments' : 'Chores'}
+          </h1>
           <p className="text-muted-foreground">
-            Manage and track family chores
+            {isChild
+              ? 'Complete your assigned chores and earn points!'
+              : 'Manage and track family chores'
+            }
           </p>
         </div>
-        <Button className="gap-2" onClick={() => router.push('/dashboard/chores/new')}>
-          <Plus className="h-4 w-4" />
-          Add Chore
-        </Button>
+        {!isChild && (
+          <Button className="gap-2" onClick={() => router.push('/dashboard/chores/new')}>
+            <Plus className="h-4 w-4" />
+            Add Chore
+          </Button>
+        )}
       </div>
 
       {/* Filters */}
@@ -336,58 +363,52 @@ export default function ChoresPage() {
                   {chore.points} points
                 </Badge>
                 <div className="flex items-center gap-2">
-                  {chore.status === 'PENDING' && (
+                  {chore.status === 'PENDING' && isChild && chore.assignment && (
                     <Button
                       size="sm"
                       className="h-8"
                       onClick={(e) => {
                         e.stopPropagation() // Prevent card click
-                        // TODO: Implement start chore functionality
-                        toast.info('Start chore functionality coming soon!')
+                        setSubmittingAssignment(chore.assignment!)
                       }}
                     >
                       <CheckSquare className="h-3 w-3 mr-1" />
-                      Start
+                      Submit
                     </Button>
                   )}
-                  {chore.status === 'IN_PROGRESS' && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-8"
-                      onClick={(e) => {
-                        e.stopPropagation() // Prevent card click
-                        // TODO: Implement complete chore functionality
-                        toast.info('Complete chore functionality coming soon!')
-                      }}
-                    >
-                      <CheckSquare className="h-3 w-3 mr-1" />
-                      Complete
-                    </Button>
+                  {chore.status === 'SUBMITTED' && (
+                    <Badge variant="secondary" className="bg-chore-submitted/10 text-chore-submitted">
+                      Submitted
+                    </Badge>
                   )}
-                  {chore.status === 'COMPLETED' && (
+                  {(chore.status === 'COMPLETED' || chore.status === 'APPROVED') && (
                     <Badge variant="secondary" className="bg-chore-completed/10 text-chore-completed">
                       Done ✓
                     </Badge>
                   )}
-                  {chore.status === 'OVERDUE' && (
+                  {chore.status === 'REJECTED' && (
+                    <Badge variant="destructive" className="text-xs">
+                      Rejected
+                    </Badge>
+                  )}
+                  {chore.status === 'OVERDUE' && isChild && chore.assignment && (
                     <Button
                       size="sm"
                       variant="destructive"
                       className="h-8"
                       onClick={(e) => {
                         e.stopPropagation() // Prevent card click
-                        // TODO: Implement urgent chore functionality
-                        toast.info('Urgent chore handling coming soon!')
+                        setSubmittingAssignment(chore.assignment!)
                       }}
                     >
                       <Clock className="h-3 w-3 mr-1" />
-                      Urgent
+                      Submit
                     </Button>
                   )}
 
-                  {/* Actions Menu */}
-                  <DropdownMenu>
+                  {/* Actions Menu - Only for admins and parents */}
+                  {!isChild && (
+                    <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
@@ -427,7 +448,8 @@ export default function ChoresPage() {
                         Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
-                  </DropdownMenu>
+                    </DropdownMenu>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -510,6 +532,15 @@ export default function ChoresPage() {
         open={!!assigningChore}
         onOpenChange={(open) => !open && setAssigningChore(null)}
         onSuccess={() => setAssigningChore(null)}
+      />
+
+      {/* Submit Assignment Modal */}
+      <SubmitAssignmentModal
+        assignment={submittingAssignment}
+        open={!!submittingAssignment}
+        onOpenChange={(open) => {
+          if (!open) setSubmittingAssignment(null)
+        }}
       />
     </div>
   )
