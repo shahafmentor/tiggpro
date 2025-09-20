@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { tenantsApi } from '@/lib/api/tenants'
-import { choresApi } from '@/lib/api/chores'
 import { getAuthToken } from '@/lib/auth-utils'
+import { TenantType } from '@tiggpro/shared'
 
 export default function DebugPage() {
   const { data: session } = useSession()
@@ -38,7 +38,7 @@ export default function DebugPage() {
     try {
       const result = await tenantsApi.createTenant({
         name: `Debug Family ${Date.now()}`,
-        type: 'family' as any
+        type: TenantType.FAMILY
       })
 
       if (result.success) {

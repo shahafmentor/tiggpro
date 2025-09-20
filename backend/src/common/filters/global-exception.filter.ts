@@ -58,7 +58,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         return {
           status,
           message: errorObj.message || errorObj.error || 'Unknown error',
-          error: process.env.NODE_ENV === 'development' ? exception.stack : undefined,
+          error:
+            process.env.NODE_ENV === 'development'
+              ? exception.stack
+              : undefined,
         };
       }
     }
@@ -67,10 +70,12 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     if (exception instanceof Error) {
       return {
         status: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: process.env.NODE_ENV === 'development'
-          ? exception.message
-          : 'Internal server error',
-        error: process.env.NODE_ENV === 'development' ? exception.stack : undefined,
+        message:
+          process.env.NODE_ENV === 'development'
+            ? exception.message
+            : 'Internal server error',
+        error:
+          process.env.NODE_ENV === 'development' ? exception.stack : undefined,
       };
     }
 

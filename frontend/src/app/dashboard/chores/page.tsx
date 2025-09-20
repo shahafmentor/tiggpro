@@ -7,7 +7,6 @@ import {
   Calendar,
   CheckSquare,
   Clock,
-  Filter,
   Plus,
   Search,
   Star,
@@ -45,8 +44,10 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { EditChoreModal } from '@/components/chores/edit-chore-modal'
+import { AssignChoreModal } from '@/components/chores/assign-chore-modal'
 import { choresApi, Chore } from '@/lib/api/chores'
-import { DifficultyLevel } from '@tiggpro/shared'
+import { assignmentsApi, Assignment } from '@/lib/api/assignments'
+import { tenantsApi, TenantMember } from '@/lib/api/tenants'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
@@ -74,32 +75,64 @@ export default function ChoresPage() {
   const [difficultyFilter, setDifficultyFilter] = useState('all')
   const [editingChore, setEditingChore] = useState<Chore | null>(null)
   const [deletingChore, setDeletingChore] = useState<Chore | null>(null)
+  const [assigningChore, setAssigningChore] = useState<Chore | null>(null)
   const router = useRouter()
   const { data: session } = useSession()
   const { currentTenant } = useTenant()
   const queryClient = useQueryClient()
 
   // Fetch real chores data
-  const { data: choresResponse, isLoading, error } = useQuery({
+  const { data: choresResponse, isLoading } = useQuery({
     queryKey: ['chores', currentTenant?.tenant.id],
     queryFn: () => currentTenant ? choresApi.getChoresByTenant(currentTenant.tenant.id) : null,
     enabled: !!currentTenant && !!session,
   })
 
-  const chores: Chore[] = choresResponse?.success ? choresResponse.data : []
+  // Fetch assignments data
+  const { data: assignmentsResponse } = useQuery({
+    queryKey: ['assignments', currentTenant?.tenant.id],
+    queryFn: () => currentTenant ? assignmentsApi.getUserAssignments(currentTenant.tenant.id) : null,
+    enabled: !!currentTenant && !!session,
+  })
 
-  // Convert real chores to display format for compatibility with existing UI
-  const displayChores = chores.map((chore): MockChore => ({
-    id: chore.id,
-    title: chore.title,
-    description: chore.description || 'No description provided',
-    points: chore.pointsReward,
-    difficulty: chore.difficultyLevel.toUpperCase() as 'EASY' | 'MEDIUM' | 'HARD',
-    status: 'PENDING' as const, // TODO: Implement real status based on assignments
-    assignedTo: undefined, // TODO: Implement real assignment data
-    dueDate: 'No due date', // TODO: Implement due dates
-    estimatedTime: chore.estimatedDurationMinutes,
-  }))
+  // Fetch tenant members for assignment display
+  const { data: membersResponse } = useQuery({
+    queryKey: ['tenantMembers', currentTenant?.tenant.id],
+    queryFn: () => currentTenant ? tenantsApi.getTenantMembers(currentTenant.tenant.id) : null,
+    enabled: !!currentTenant && !!session,
+  })
+
+  const chores: Chore[] = choresResponse?.success ? choresResponse.data || [] : []
+  const assignments: Assignment[] = assignmentsResponse?.success ? assignmentsResponse.data || [] : []
+  const tenantMembers: TenantMember[] = membersResponse?.success ? membersResponse.data || [] : []
+
+  // Convert real chores to display format with assignment data
+  const displayChores = chores.map((chore): MockChore => {
+    // Find assignment for this chore
+    const assignment = assignments.find(a => a.choreId === chore.id)
+
+    // Find assigned member details
+    const assignedMember = assignment
+      ? tenantMembers.find(m => m.userId === assignment.assignedTo?.id)
+      : undefined
+
+    return {
+      id: chore.id,
+      title: chore.title,
+      description: chore.description || 'No description provided',
+      points: chore.pointsReward,
+      difficulty: chore.difficultyLevel.toUpperCase() as 'EASY' | 'MEDIUM' | 'HARD',
+      status: assignment?.status?.toUpperCase() as 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'OVERDUE' || 'PENDING',
+      assignedTo: assignedMember ? {
+        name: assignedMember.user.displayName || assignedMember.user.email,
+        avatar: assignedMember.user.avatarUrl,
+      } : undefined,
+      dueDate: assignment?.dueDate
+        ? new Date(assignment.dueDate).toLocaleDateString()
+        : 'No due date',
+      estimatedTime: chore.estimatedDurationMinutes,
+    }
+  })
 
   if (isLoading) {
     return (
@@ -366,7 +399,16 @@ export default function ChoresPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => {
+                      <DropdownMenuItem onClick={(e) => {
+                        e.stopPropagation()
+                        const originalChore = chores.find(c => c.id === chore.id)
+                        if (originalChore) setAssigningChore(originalChore)
+                      }}>
+                        <User className="mr-2 h-4 w-4" />
+                        {chore.assignedTo ? 'Reassign' : 'Assign'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={(e) => {
+                        e.stopPropagation()
                         const originalChore = chores.find(c => c.id === chore.id)
                         if (originalChore) setEditingChore(originalChore)
                       }}>
@@ -374,7 +416,8 @@ export default function ChoresPage() {
                         Edit
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation()
                           const originalChore = chores.find(c => c.id === chore.id)
                           if (originalChore) setDeletingChore(originalChore)
                         }}
@@ -460,6 +503,14 @@ export default function ChoresPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Assign Chore Modal */}
+      <AssignChoreModal
+        chore={assigningChore}
+        open={!!assigningChore}
+        onOpenChange={(open) => !open && setAssigningChore(null)}
+        onSuccess={() => setAssigningChore(null)}
+      />
     </div>
   )
 }

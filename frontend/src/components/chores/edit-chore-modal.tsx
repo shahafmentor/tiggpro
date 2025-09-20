@@ -34,7 +34,6 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Badge } from '@/components/ui/badge'
 import { choresApi, Chore, UpdateChoreRequest } from '@/lib/api/chores'
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { toast } from 'sonner'
@@ -43,7 +42,6 @@ import {
   Star,
   Zap,
   Gamepad2,
-  RefreshCw,
   Calendar,
   CalendarDays,
   CalendarRange
@@ -150,8 +148,8 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
         toast.error(response.error || 'Failed to update chore')
       }
     },
-    onError: (error: any) => {
-      toast.error(error.error || 'Failed to update chore')
+    onError: (error: unknown) => {
+      toast.error((error as { error?: string }).error || 'Failed to update chore')
     },
     onSettled: () => {
       setIsSubmitting(false)

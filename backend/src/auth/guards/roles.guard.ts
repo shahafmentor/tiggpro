@@ -11,10 +11,10 @@ export class RolesGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredRoles = this.reflector.getAllAndOverride<TenantMemberRole[]>('roles', [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const requiredRoles = this.reflector.getAllAndOverride<TenantMemberRole[]>(
+      'roles',
+      [context.getHandler(), context.getClass()],
+    );
 
     if (!requiredRoles) {
       return true; // No roles required, allow access
@@ -22,14 +22,20 @@ export class RolesGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     const user = request.user;
-    const tenantId = request.params.tenantId || request.body.tenantId || request.query.tenantId;
+    const tenantId =
+      request.params.tenantId ||
+      request.body.tenantId ||
+      request.query.tenantId;
 
     if (!user || !tenantId) {
       return false; // No user or tenant context
     }
 
     // Get user's role in the specific tenant
-    const userRole = await this.authService.getUserRoleInTenant(user.id, tenantId);
+    const userRole = await this.authService.getUserRoleInTenant(
+      user.id,
+      tenantId,
+    );
 
     if (!userRole) {
       return false; // User is not a member of this tenant

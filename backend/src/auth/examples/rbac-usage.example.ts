@@ -1,4 +1,11 @@
-import { Controller, Get, Post, UseGuards, Param, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  UseGuards,
+  Param,
+  Request,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@/auth/guards/roles.guard';
 import { TenantMembershipGuard } from '@/auth/guards/tenant-membership.guard';
@@ -13,12 +20,11 @@ import type { ApiResponse } from '@tiggpro/shared';
 @Controller('tenants/:tenantId/chores')
 @UseGuards(JwtAuthGuard, TenantMembershipGuard) // All routes require auth + tenant membership
 export class ChoreController {
-
   // 🟢 Any authenticated tenant member can view chores
   @Get()
   async getChores(
     @Param('tenantId') tenantId: string,
-    @Request() req: any
+    @Request() req: any,
   ): Promise<ApiResponse> {
     // User is authenticated and verified as tenant member
     // req.user contains: { id, email, displayName, provider }
@@ -36,7 +42,7 @@ export class ChoreController {
   @Roles(TenantMemberRole.ADMIN, TenantMemberRole.PARENT)
   async createChore(
     @Param('tenantId') tenantId: string,
-    @Request() req: any
+    @Request() req: any,
   ): Promise<ApiResponse> {
     // User is authenticated, tenant member, AND has ADMIN or PARENT role
 
@@ -54,7 +60,7 @@ export class ChoreController {
   async deleteChore(
     @Param('tenantId') tenantId: string,
     @Param('choreId') choreId: string,
-    @Request() req: any
+    @Request() req: any,
   ): Promise<ApiResponse> {
     // User is authenticated, tenant member, AND has ADMIN role
 

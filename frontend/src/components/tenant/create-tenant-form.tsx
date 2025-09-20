@@ -65,8 +65,8 @@ export function CreateTenantForm({ onSuccess }: CreateTenantFormProps) {
         toast.error(response.error || 'Failed to create family')
       }
     },
-    onError: (error: any) => {
-      toast.error(error.error || 'Failed to create family')
+    onError: (error: unknown) => {
+      toast.error((error as { error?: string }).error || 'Failed to create family')
     },
     onSettled: () => {
       setIsSubmitting(false)

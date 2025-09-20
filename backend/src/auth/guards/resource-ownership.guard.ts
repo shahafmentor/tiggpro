@@ -1,4 +1,10 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException, SetMetadata } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  SetMetadata,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { DataSource } from 'typeorm';
 
@@ -16,10 +22,11 @@ export class ResourceOwnershipGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const ownershipConfig = this.reflector.getAllAndOverride<ResourceOwnershipConfig>('resourceOwnership', [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const ownershipConfig =
+      this.reflector.getAllAndOverride<ResourceOwnershipConfig>(
+        'resourceOwnership',
+        [context.getHandler(), context.getClass()],
+      );
 
     if (!ownershipConfig) {
       return true; // No ownership check required
@@ -50,7 +57,9 @@ export class ResourceOwnershipGuard implements CanActivate {
       const ownerUserId = resource[ownershipConfig.userIdField];
 
       if (ownerUserId !== user.id) {
-        throw new ForbiddenException('You do not have permission to access this resource');
+        throw new ForbiddenException(
+          'You do not have permission to access this resource',
+        );
       }
 
       return true;

@@ -82,7 +82,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const userRole = 'PARENT' // Placeholder
 
   const filteredNavItems = navItems.filter(item =>
-    !item.roles || item.roles.includes(userRole as any)
+    !item.roles || item.roles.includes(userRole as 'ADMIN' | 'PARENT' | 'CHILD')
   )
 
   return (

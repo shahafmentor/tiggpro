@@ -1,4 +1,12 @@
-import { IsEnum, IsString, IsOptional, IsNumber, Min, Max, MaxLength } from 'class-validator';
+import {
+  IsEnum,
+  IsString,
+  IsOptional,
+  IsNumber,
+  Min,
+  Max,
+  MaxLength,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ReviewStatus } from '@tiggpro/shared';
 
@@ -42,6 +50,8 @@ export class ReviewSubmissionDto {
   @IsNumber()
   @IsOptional()
   @Min(0, { message: 'Gaming time awarded cannot be negative' })
-  @Max(480, { message: 'Gaming time awarded must not exceed 8 hours (480 minutes)' })
+  @Max(480, {
+    message: 'Gaming time awarded must not exceed 8 hours (480 minutes)',
+  })
   gamingTimeAwarded?: number;
 }

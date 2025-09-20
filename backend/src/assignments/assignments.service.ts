@@ -1,9 +1,23 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ChoreAssignment, ChoreSubmission, TenantMember, Chore } from '@/entities';
+import {
+  ChoreAssignment,
+  ChoreSubmission,
+  TenantMember,
+  Chore,
+} from '@/entities';
 import { SubmitAssignmentDto, ReviewSubmissionDto } from './dto';
-import { AssignmentStatus, ReviewStatus, TenantMemberRole } from '@tiggpro/shared';
+import {
+  AssignmentStatus,
+  ReviewStatus,
+  TenantMemberRole,
+} from '@tiggpro/shared';
 import { PointsService } from '@/gamification/services/points.service';
 
 @Injectable()
@@ -20,7 +34,10 @@ export class AssignmentsService {
     private pointsService: PointsService,
   ) {}
 
-  async getUserAssignments(tenantId: string, userId: string): Promise<ChoreAssignment[]> {
+  async getUserAssignments(
+    tenantId: string,
+    userId: string,
+  ): Promise<ChoreAssignment[]> {
     // Verify user is member of tenant
     await this.verifyUserMembership(tenantId, userId);
 
@@ -31,7 +48,11 @@ export class AssignmentsService {
     });
   }
 
-  async getAssignmentById(assignmentId: string, tenantId: string, userId: string): Promise<ChoreAssignment> {
+  async getAssignmentById(
+    assignmentId: string,
+    tenantId: string,
+    userId: string,
+  ): Promise<ChoreAssignment> {
     const assignment = await this.assignmentRepository.findOne({
       where: { id: assignmentId },
       relations: ['chore'],
@@ -52,15 +73,27 @@ export class AssignmentsService {
 
     // Verify user has access (assigned user, or admin/parent)
     const userRole = await this.getUserRole(tenantId, userId);
-    if (assignment.assignedTo !== userId && ![TenantMemberRole.ADMIN, TenantMemberRole.PARENT].includes(userRole)) {
+    if (
+      assignment.assignedTo !== userId &&
+      ![TenantMemberRole.ADMIN, TenantMemberRole.PARENT].includes(userRole)
+    ) {
       throw new ForbiddenException('You can only view your own assignments');
     }
 
     return assignment;
   }
 
-  async submitAssignment(assignmentId: string, tenantId: string, submitDto: SubmitAssignmentDto, userId: string): Promise<ChoreSubmission> {
-    const assignment = await this.getAssignmentById(assignmentId, tenantId, userId);
+  async submitAssignment(
+    assignmentId: string,
+    tenantId: string,
+    submitDto: SubmitAssignmentDto,
+    userId: string,
+  ): Promise<ChoreSubmission> {
+    const assignment = await this.getAssignmentById(
+      assignmentId,
+      tenantId,
+      userId,
+    );
 
     // Verify user is the assignee
     if (assignment.assignedTo !== userId) {
@@ -78,7 +111,9 @@ export class AssignmentsService {
     });
 
     if (existingSubmission) {
-      throw new BadRequestException('There is already a pending submission for this assignment');
+      throw new BadRequestException(
+        'There is already a pending submission for this assignment',
+      );
     }
 
     // Create submission
@@ -99,7 +134,12 @@ export class AssignmentsService {
     return savedSubmission;
   }
 
-  async reviewSubmission(submissionId: string, tenantId: string, reviewDto: ReviewSubmissionDto, reviewerId: string): Promise<ChoreSubmission> {
+  async reviewSubmission(
+    submissionId: string,
+    tenantId: string,
+    reviewDto: ReviewSubmissionDto,
+    reviewerId: string,
+  ): Promise<ChoreSubmission> {
     const submission = await this.submissionRepository.findOne({
       where: { id: submissionId },
       relations: ['assignment', 'assignment.chore'],
@@ -115,11 +155,16 @@ export class AssignmentsService {
     }
 
     // Verify user has permission to review (ADMIN or PARENT)
-    await this.verifyUserPermission(tenantId, reviewerId, [TenantMemberRole.ADMIN, TenantMemberRole.PARENT]);
+    await this.verifyUserPermission(tenantId, reviewerId, [
+      TenantMemberRole.ADMIN,
+      TenantMemberRole.PARENT,
+    ]);
 
     // Verify submission is pending review
     if (submission.reviewStatus !== ReviewStatus.PENDING) {
-      throw new BadRequestException('This submission has already been reviewed');
+      throw new BadRequestException(
+        'This submission has already been reviewed',
+      );
     }
 
     // Update submission with review
@@ -130,8 +175,11 @@ export class AssignmentsService {
 
     // Set points and gaming time (use chore defaults if not specified)
     if (reviewDto.reviewStatus === ReviewStatus.APPROVED) {
-      submission.pointsAwarded = reviewDto.pointsAwarded ?? submission.assignment.chore.pointsReward;
-      submission.gamingTimeAwarded = reviewDto.gamingTimeAwarded ?? submission.assignment.chore.gamingTimeMinutes;
+      submission.pointsAwarded =
+        reviewDto.pointsAwarded ?? submission.assignment.chore.pointsReward;
+      submission.gamingTimeAwarded =
+        reviewDto.gamingTimeAwarded ??
+        submission.assignment.chore.gamingTimeMinutes;
     } else {
       submission.pointsAwarded = 0;
       submission.gamingTimeAwarded = 0;
@@ -141,31 +189,45 @@ export class AssignmentsService {
 
     // Update assignment status
     const assignment = submission.assignment;
-    assignment.status = reviewDto.reviewStatus === ReviewStatus.APPROVED
-      ? AssignmentStatus.APPROVED
-      : AssignmentStatus.REJECTED;
+    assignment.status =
+      reviewDto.reviewStatus === ReviewStatus.APPROVED
+        ? AssignmentStatus.APPROVED
+        : AssignmentStatus.REJECTED;
     await this.assignmentRepository.save(assignment);
 
     // 🎮 AWARD POINTS AND TRIGGER ACHIEVEMENTS if approved
-    if (reviewDto.reviewStatus === ReviewStatus.APPROVED && (savedSubmission.pointsAwarded || 0) > 0) {
+    if (
+      reviewDto.reviewStatus === ReviewStatus.APPROVED &&
+      (savedSubmission.pointsAwarded || 0) > 0
+    ) {
       try {
         await this.pointsService.awardPoints(
           submission.assignment.assignedTo,
           tenantId,
-          savedSubmission
+          savedSubmission,
         );
       } catch (error) {
         // Log error but don't fail the review if points award fails
-        console.error('Failed to award points for submission:', savedSubmission.id, error);
+        console.error(
+          'Failed to award points for submission:',
+          savedSubmission.id,
+          error,
+        );
       }
     }
 
     return savedSubmission;
   }
 
-  async getPendingSubmissions(tenantId: string, userId: string): Promise<ChoreSubmission[]> {
+  async getPendingSubmissions(
+    tenantId: string,
+    userId: string,
+  ): Promise<ChoreSubmission[]> {
     // Verify user has permission to view submissions (ADMIN or PARENT)
-    await this.verifyUserPermission(tenantId, userId, [TenantMemberRole.ADMIN, TenantMemberRole.PARENT]);
+    await this.verifyUserPermission(tenantId, userId, [
+      TenantMemberRole.ADMIN,
+      TenantMemberRole.PARENT,
+    ]);
 
     return this.submissionRepository.find({
       where: { reviewStatus: ReviewStatus.PENDING },
@@ -174,7 +236,10 @@ export class AssignmentsService {
     });
   }
 
-  private async verifyUserMembership(tenantId: string, userId: string): Promise<TenantMember> {
+  private async verifyUserMembership(
+    tenantId: string,
+    userId: string,
+  ): Promise<TenantMember> {
     const membership = await this.tenantMemberRepository.findOne({
       where: { tenantId, userId, isActive: true },
     });
@@ -186,7 +251,11 @@ export class AssignmentsService {
     return membership;
   }
 
-  private async verifyUserPermission(tenantId: string, userId: string, allowedRoles: TenantMemberRole[]): Promise<void> {
+  private async verifyUserPermission(
+    tenantId: string,
+    userId: string,
+    allowedRoles: TenantMemberRole[],
+  ): Promise<void> {
     const membership = await this.verifyUserMembership(tenantId, userId);
 
     if (!allowedRoles.includes(membership.role)) {
@@ -194,7 +263,10 @@ export class AssignmentsService {
     }
   }
 
-  private async getUserRole(tenantId: string, userId: string): Promise<TenantMemberRole> {
+  private async getUserRole(
+    tenantId: string,
+    userId: string,
+  ): Promise<TenantMemberRole> {
     const membership = await this.verifyUserMembership(tenantId, userId);
     return membership.role;
   }

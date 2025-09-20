@@ -5,14 +5,14 @@ import { AuthProvider } from '@tiggpro/shared';
 export class SyncUserDto {
   @ApiProperty({
     description: 'User email address',
-    example: 'john.doe@example.com'
+    example: 'john.doe@example.com',
   })
   @IsEmail()
   email: string;
 
   @ApiProperty({
     description: 'User display name',
-    example: 'John Doe'
+    example: 'John Doe',
   })
   @IsString()
   name: string;
@@ -20,7 +20,7 @@ export class SyncUserDto {
   @ApiProperty({
     description: 'User avatar/profile image URL',
     example: 'https://example.com/avatar.jpg',
-    required: false
+    required: false,
   })
   @IsString()
   @IsOptional()
@@ -28,7 +28,7 @@ export class SyncUserDto {
 
   @ApiProperty({
     description: 'Unique identifier from the OAuth provider',
-    example: '1234567890'
+    example: '1234567890',
   })
   @IsString()
   providerId: string;
@@ -36,7 +36,7 @@ export class SyncUserDto {
   @ApiProperty({
     description: 'OAuth provider used for authentication',
     enum: AuthProvider,
-    example: AuthProvider.GOOGLE
+    example: AuthProvider.GOOGLE,
   })
   @IsEnum(AuthProvider)
   provider: AuthProvider;

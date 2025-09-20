@@ -1,4 +1,10 @@
-import { IsString, IsUUID, IsDateString, IsEnum, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsUUID,
+  IsDateString,
+  IsEnum,
+  IsOptional,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Priority } from '@tiggpro/shared';
 

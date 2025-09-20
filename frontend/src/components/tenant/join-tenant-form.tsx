@@ -56,8 +56,8 @@ export function JoinTenantForm({ onSuccess }: JoinTenantFormProps) {
         toast.error(response.error || 'Failed to join family')
       }
     },
-    onError: (error: any) => {
-      toast.error(error.error || 'Failed to join family')
+    onError: (error: unknown) => {
+      toast.error((error as { error?: string }).error || 'Failed to join family')
     },
     onSettled: () => {
       setIsSubmitting(false)

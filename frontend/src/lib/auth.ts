@@ -57,7 +57,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account }) {
       // Persist the backend JWT token and user info
       if (account && user) {
-        token.accessToken = (user as any).backendToken || account.access_token;
+        token.accessToken = (user as { backendToken?: string }).backendToken || account.access_token;
         token.userId = user.id;
         token.provider = account.provider;
       }

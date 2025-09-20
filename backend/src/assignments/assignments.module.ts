@@ -4,11 +4,21 @@ import { AssignmentsController } from './assignments.controller';
 import { AssignmentsService } from './assignments.service';
 import { AuthModule } from '@/auth/auth.module';
 import { GamificationModule } from '@/gamification/gamification.module';
-import { ChoreAssignment, ChoreSubmission, TenantMember, Chore } from '@/entities';
+import {
+  ChoreAssignment,
+  ChoreSubmission,
+  TenantMember,
+  Chore,
+} from '@/entities';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ChoreAssignment, ChoreSubmission, TenantMember, Chore]),
+    TypeOrmModule.forFeature([
+      ChoreAssignment,
+      ChoreSubmission,
+      TenantMember,
+      Chore,
+    ]),
     AuthModule, // For guards and auth service
     GamificationModule, // For points and achievements
   ],

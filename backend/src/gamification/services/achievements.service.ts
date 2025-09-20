@@ -15,7 +15,10 @@ export class AchievementsService {
     private userPointsRepository: Repository<UserPoints>,
   ) {}
 
-  async checkAndAwardAchievements(userId: string, tenantId: string): Promise<UserAchievement[]> {
+  async checkAndAwardAchievements(
+    userId: string,
+    tenantId: string,
+  ): Promise<UserAchievement[]> {
     const userPoints = await this.userPointsRepository.findOne({
       where: { userId, tenantId },
     });
@@ -35,7 +38,7 @@ export class AchievementsService {
       select: ['achievementId'],
     });
 
-    const existingIds = existingAchievements.map(ua => ua.achievementId);
+    const existingIds = existingAchievements.map((ua) => ua.achievementId);
     const newAchievements: UserAchievement[] = [];
 
     for (const achievement of achievements) {
@@ -54,7 +57,8 @@ export class AchievementsService {
           tenantId,
         });
 
-        const saved = await this.userAchievementRepository.save(userAchievement);
+        const saved =
+          await this.userAchievementRepository.save(userAchievement);
         newAchievements.push(saved);
       }
     }
@@ -62,7 +66,10 @@ export class AchievementsService {
     return newAchievements;
   }
 
-  async getUserAchievements(userId: string, tenantId: string): Promise<UserAchievement[]> {
+  async getUserAchievements(
+    userId: string,
+    tenantId: string,
+  ): Promise<UserAchievement[]> {
     return this.userAchievementRepository.find({
       where: { userId, tenantId },
       relations: ['achievement'],
@@ -77,7 +84,10 @@ export class AchievementsService {
     });
   }
 
-  private checkRequirement(achievement: Achievement, userPoints: UserPoints): boolean {
+  private checkRequirement(
+    achievement: Achievement,
+    userPoints: UserPoints,
+  ): boolean {
     switch (achievement.requirementType) {
       case RequirementType.POINTS:
         return userPoints.totalPoints >= achievement.requirementValue;

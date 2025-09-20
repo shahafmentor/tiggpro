@@ -10,7 +10,13 @@ import {
   HttpStatus,
   Delete,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse as ApiDoc, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse as ApiDoc,
+  ApiBearerAuth,
+  ApiParam,
+} from '@nestjs/swagger';
 import { TenantsService } from './tenants.service';
 import { CreateTenantDto, InviteMemberDto, JoinTenantDto } from './dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
@@ -37,7 +43,10 @@ export class TenantsController {
     @Request() req: { user: { id: string } },
   ): Promise<ApiResponse> {
     try {
-      const tenant = await this.tenantsService.createTenant(createTenantDto, req.user.id);
+      const tenant = await this.tenantsService.createTenant(
+        createTenantDto,
+        req.user.id,
+      );
 
       return {
         success: true,
@@ -47,7 +56,8 @@ export class TenantsController {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to create tenant',
+        error:
+          error instanceof Error ? error.message : 'Failed to create tenant',
       };
     }
   }
@@ -62,7 +72,7 @@ export class TenantsController {
 
       return {
         success: true,
-        data: members.map(member => ({
+        data: members.map((member) => ({
           id: member.id,
           userId: member.userId,
           role: member.role,
@@ -79,7 +89,10 @@ export class TenantsController {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to get tenant members',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to get tenant members',
       };
     }
   }
@@ -94,7 +107,11 @@ export class TenantsController {
     @Request() req: { user: { id: string } },
   ): Promise<ApiResponse> {
     try {
-      await this.tenantsService.inviteMember(tenantId, inviteMemberDto, req.user.id);
+      await this.tenantsService.inviteMember(
+        tenantId,
+        inviteMemberDto,
+        req.user.id,
+      );
 
       return {
         success: true,
@@ -103,7 +120,8 @@ export class TenantsController {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to invite member',
+        error:
+          error instanceof Error ? error.message : 'Failed to invite member',
       };
     }
   }
@@ -115,7 +133,10 @@ export class TenantsController {
     @Request() req: { user: { id: string } },
   ): Promise<ApiResponse> {
     try {
-      const tenant = await this.tenantsService.joinTenant(joinTenantDto, req.user.id);
+      const tenant = await this.tenantsService.joinTenant(
+        joinTenantDto,
+        req.user.id,
+      );
 
       return {
         success: true,
@@ -139,7 +160,7 @@ export class TenantsController {
 
       return {
         success: true,
-        data: tenants.map(membership => ({
+        data: tenants.map((membership) => ({
           membershipId: membership.id,
           role: membership.role,
           joinedAt: membership.joinedAt,
@@ -155,7 +176,8 @@ export class TenantsController {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to get user tenants',
+        error:
+          error instanceof Error ? error.message : 'Failed to get user tenants',
       };
     }
   }
@@ -178,7 +200,8 @@ export class TenantsController {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to remove member',
+        error:
+          error instanceof Error ? error.message : 'Failed to remove member',
       };
     }
   }
@@ -189,7 +212,10 @@ export class TenantsController {
   @ApiOperation({ summary: 'Delete a tenant (only by admin)' })
   @ApiParam({ name: 'tenantId', description: 'Tenant ID to delete' })
   @ApiDoc({ status: 200, description: 'Tenant deleted successfully' })
-  @ApiDoc({ status: 403, description: 'Forbidden - only admins can delete tenants' })
+  @ApiDoc({
+    status: 403,
+    description: 'Forbidden - only admins can delete tenants',
+  })
   @ApiDoc({ status: 404, description: 'Tenant not found' })
   async deleteTenant(
     @Param('tenantId') tenantId: string,
@@ -203,7 +229,8 @@ export class TenantsController {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to delete tenant',
+        error:
+          error instanceof Error ? error.message : 'Failed to delete tenant',
       };
     }
   }

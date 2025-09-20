@@ -10,7 +10,6 @@ import {
   Copy,
   Check,
   UserPlus,
-  Settings,
   Shield,
   Baby,
   Trash2
@@ -41,7 +40,7 @@ import {
 import { CreateTenantForm } from '@/components/tenant/create-tenant-form'
 import { JoinTenantForm } from '@/components/tenant/join-tenant-form'
 import { InviteMemberForm } from '@/components/tenant/invite-member-form'
-import { tenantsApi, UserTenant, TenantMember } from '@/lib/api/tenants'
+import { tenantsApi, UserTenant } from '@/lib/api/tenants'
 import { TenantMemberRole } from '@tiggpro/shared'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -75,8 +74,8 @@ export default function FamilyPage() {
       toast.success('Member removed successfully')
       queryClient.invalidateQueries({ queryKey: ['tenant-members'] })
     },
-    onError: (error: any) => {
-      toast.error(error.error || 'Failed to remove member')
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to remove member')
     },
   })
 
@@ -88,13 +87,13 @@ export default function FamilyPage() {
       queryClient.invalidateQueries({ queryKey: ['tenants', 'my'] })
       setSelectedTenant(null) // Clear selected tenant
     },
-    onError: (error: any) => {
-      toast.error(error.error || 'Failed to delete family')
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to delete family')
     },
   })
 
-  const tenants = tenantsResponse?.success ? tenantsResponse.data : []
-  const members = membersResponse?.success ? membersResponse.data : []
+  const tenants = tenantsResponse?.success ? tenantsResponse.data ?? []: []
+  const members = membersResponse?.success ? membersResponse.data ?? [] : []
 
   const handleCopyTenantCode = async (code: string) => {
     try {
@@ -354,7 +353,7 @@ export default function FamilyPage() {
                       <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                       <h3 className="font-medium mb-2">No members found</h3>
                       <p className="text-sm text-muted-foreground">
-                        This family doesn't have any members yet
+                        This family doesn&apos;t have any members yet
                       </p>
                     </div>
                   ) : (

@@ -9,7 +9,13 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse as ApiDoc, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse as ApiDoc,
+  ApiBearerAuth,
+  ApiBody,
+} from '@nestjs/swagger';
 import { AuthService } from '@/auth/auth.service';
 import { SyncUserDto, UpdateProfileDto } from '@/auth/dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
@@ -50,7 +56,9 @@ export class AuthController {
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiDoc({ status: 200, description: 'Profile retrieved successfully' })
   @ApiDoc({ status: 401, description: 'Unauthorized' })
-  async getProfile(@Request() req: { user: { id: string } }): Promise<ApiResponseType> {
+  async getProfile(
+    @Request() req: { user: { id: string } },
+  ): Promise<ApiResponseType> {
     try {
       const user = await this.authService.validateUserById(req.user.id);
 
@@ -102,7 +110,10 @@ export class AuthController {
     @Request() req: { user: { id: string } },
   ): Promise<ApiResponseType> {
     try {
-      const updatedUser = await this.authService.updateProfile(req.user.id, updateProfileDto);
+      const updatedUser = await this.authService.updateProfile(
+        req.user.id,
+        updateProfileDto,
+      );
 
       return {
         success: true,
@@ -120,7 +131,8 @@ export class AuthController {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to update profile',
+        error:
+          error instanceof Error ? error.message : 'Failed to update profile',
       };
     }
   }

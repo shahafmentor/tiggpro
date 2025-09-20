@@ -15,7 +15,6 @@ import {
   Zap,
   Clock,
   Flame,
-  Calendar,
   CheckCircle,
   Lock,
   Award,
@@ -51,10 +50,6 @@ function getAchievementProgress(achievement: Achievement, userStats: UserStats):
   return Math.min((current / achievement.requirementValue) * 100, 100)
 }
 
-// Check if achievement is earned
-function isAchievementEarned(achievement: Achievement, earnedAchievements: UserAchievement[]): boolean {
-  return earnedAchievements.some(earned => earned.achievement.id === achievement.id)
-}
 
 // Achievement card component
 function AchievementCard({

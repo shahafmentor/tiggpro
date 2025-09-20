@@ -128,24 +128,30 @@ export class AuthService {
   }
 
   // RBAC Methods
-  async getUserRoleInTenant(userId: string, tenantId: string): Promise<TenantMemberRole | null> {
+  async getUserRoleInTenant(
+    userId: string,
+    tenantId: string,
+  ): Promise<TenantMemberRole | null> {
     const membership = await this.tenantMemberRepository.findOne({
       where: {
         userId,
         tenantId,
-        isActive: true
+        isActive: true,
       },
     });
 
     return membership?.role || null;
   }
 
-  async isUserMemberOfTenant(userId: string, tenantId: string): Promise<boolean> {
+  async isUserMemberOfTenant(
+    userId: string,
+    tenantId: string,
+  ): Promise<boolean> {
     const membership = await this.tenantMemberRepository.findOne({
       where: {
         userId,
         tenantId,
-        isActive: true
+        isActive: true,
       },
     });
 
@@ -156,7 +162,7 @@ export class AuthService {
     return this.tenantMemberRepository.find({
       where: {
         userId,
-        isActive: true
+        isActive: true,
       },
       relations: ['tenant'],
     });
@@ -165,13 +171,16 @@ export class AuthService {
   async hasPermission(
     userId: string,
     tenantId: string,
-    requiredRoles: TenantMemberRole[]
+    requiredRoles: TenantMemberRole[],
   ): Promise<boolean> {
     const userRole = await this.getUserRoleInTenant(userId, tenantId);
     return userRole ? requiredRoles.includes(userRole) : false;
   }
 
-  async updateProfile(userId: string, updateProfileDto: UpdateProfileDto): Promise<User> {
+  async updateProfile(
+    userId: string,
+    updateProfileDto: UpdateProfileDto,
+  ): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id: userId, isActive: true },
     });

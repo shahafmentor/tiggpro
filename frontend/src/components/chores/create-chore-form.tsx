@@ -40,7 +40,8 @@ import {
   RefreshCw,
   Calendar,
   CalendarDays,
-  CalendarRange
+  CalendarRange,
+  // Removed Users, User icons - no longer needed for assignment UI
 } from 'lucide-react'
 
 const createChoreSchema = z.object({
@@ -92,6 +93,8 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
   const { currentTenant } = useTenant()
   const queryClient = useQueryClient()
 
+  // Removed tenant members query - assignments are now handled separately from chore creation
+
   const form = useForm<CreateChoreForm>({
     resolver: zodResolver(createChoreSchema),
     defaultValues: {
@@ -132,6 +135,8 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
     },
   })
 
+  // Removed assignment mutation - chore creation and assignment are now separate concerns
+
   const onSubmit = async (data: CreateChoreForm) => {
     setIsSubmitting(true)
 
@@ -159,6 +164,7 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
       }
     }
 
+    // Use the mutation instead of manual async handling
     createChoreMutation.mutate(request)
   }
 
@@ -601,6 +607,8 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
                   </Badge>
                 )}
               </div>
+
+              {/* Assignment preview removed - assignments are now handled separately from chore creation */}
             </div>
           </CardContent>
         </Card>

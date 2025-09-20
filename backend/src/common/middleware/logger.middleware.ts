@@ -23,7 +23,7 @@ export class LoggerMiddleware implements NestMiddleware {
       const emoji = this.getStatusEmoji(statusCode);
 
       this.logger[logLevel](
-        `⬅️  ${emoji} ${method} ${url} ${statusCode} ${contentLength || 0}b - ${responseTime}ms - ${ip}`
+        `⬅️  ${emoji} ${method} ${url} ${statusCode} ${contentLength || 0}b - ${responseTime}ms - ${ip}`,
       );
     });
 

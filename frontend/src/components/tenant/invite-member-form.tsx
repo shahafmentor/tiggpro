@@ -72,8 +72,8 @@ export function InviteMemberForm({ tenantId, onSuccess }: InviteMemberFormProps)
         toast.error(response.error || 'Failed to send invitation')
       }
     },
-    onError: (error: any) => {
-      toast.error(error.error || 'Failed to send invitation')
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to send invitation')
     },
     onSettled: () => {
       setIsSubmitting(false)
@@ -187,8 +187,8 @@ export function InviteMemberForm({ tenantId, onSuccess }: InviteMemberFormProps)
           <h4 className="font-medium mb-2">📧 What happens next:</h4>
           <ul className="text-sm text-muted-foreground space-y-1">
             <li>• An invitation email will be sent to the recipient</li>
-            <li>• They'll need to sign up or log in to accept</li>
-            <li>• Once accepted, they'll appear in your family members list</li>
+            <li>• They&apos;ll need to sign up or log in to accept</li>
+            <li>• Once accepted, they&apos;ll appear in your family members list</li>
           </ul>
         </div>
 

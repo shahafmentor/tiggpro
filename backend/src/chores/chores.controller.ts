@@ -12,7 +12,13 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiResponse as ApiDoc } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiResponse as ApiDoc,
+} from '@nestjs/swagger';
 import { ChoresService } from './chores.service';
 import { CreateChoreDto, UpdateChoreDto, AssignChoreDto } from './dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
@@ -28,7 +34,10 @@ export class ChoresController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Create a new chore', description: 'Creates a new chore within a tenant' })
+  @ApiOperation({
+    summary: 'Create a new chore',
+    description: 'Creates a new chore within a tenant',
+  })
   @ApiParam({ name: 'tenantId', description: 'Tenant ID' })
   @ApiDoc({ status: 201, description: 'Chore created successfully' })
   @ApiDoc({ status: 400, description: 'Invalid request data' })
@@ -39,7 +48,11 @@ export class ChoresController {
     @Request() req: { user: { id: string } },
   ): Promise<ApiResponse> {
     try {
-      const chore = await this.choresService.createChore(tenantId, createChoreDto, req.user.id);
+      const chore = await this.choresService.createChore(
+        tenantId,
+        createChoreDto,
+        req.user.id,
+      );
 
       return {
         success: true,
@@ -49,13 +62,17 @@ export class ChoresController {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to create chore',
+        error:
+          error instanceof Error ? error.message : 'Failed to create chore',
       };
     }
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all chores', description: 'Retrieves all chores for a tenant' })
+  @ApiOperation({
+    summary: 'Get all chores',
+    description: 'Retrieves all chores for a tenant',
+  })
   @ApiParam({ name: 'tenantId', description: 'Tenant ID' })
   @ApiDoc({ status: 200, description: 'Chores retrieved successfully' })
   @ApiDoc({ status: 403, description: 'Insufficient permissions' })
@@ -64,7 +81,10 @@ export class ChoresController {
     @Request() req: { user: { id: string } },
   ): Promise<ApiResponse> {
     try {
-      const chores = await this.choresService.getChoresByTenant(tenantId, req.user.id);
+      const chores = await this.choresService.getChoresByTenant(
+        tenantId,
+        req.user.id,
+      );
 
       return {
         success: true,
@@ -80,7 +100,10 @@ export class ChoresController {
   }
 
   @Get(':choreId')
-  @ApiOperation({ summary: 'Get a specific chore', description: 'Retrieves a specific chore by ID' })
+  @ApiOperation({
+    summary: 'Get a specific chore',
+    description: 'Retrieves a specific chore by ID',
+  })
   @ApiParam({ name: 'tenantId', description: 'Tenant ID' })
   @ApiParam({ name: 'choreId', description: 'Chore ID' })
   @ApiDoc({ status: 200, description: 'Chore retrieved successfully' })
@@ -92,7 +115,11 @@ export class ChoresController {
     @Request() req: { user: { id: string } },
   ): Promise<ApiResponse> {
     try {
-      const chore = await this.choresService.getChoreById(choreId, tenantId, req.user.id);
+      const chore = await this.choresService.getChoreById(
+        choreId,
+        tenantId,
+        req.user.id,
+      );
 
       return {
         success: true,
@@ -108,7 +135,10 @@ export class ChoresController {
   }
 
   @Put(':choreId')
-  @ApiOperation({ summary: 'Update a chore', description: 'Updates an existing chore' })
+  @ApiOperation({
+    summary: 'Update a chore',
+    description: 'Updates an existing chore',
+  })
   @ApiParam({ name: 'tenantId', description: 'Tenant ID' })
   @ApiParam({ name: 'choreId', description: 'Chore ID' })
   @ApiDoc({ status: 200, description: 'Chore updated successfully' })
@@ -121,7 +151,12 @@ export class ChoresController {
     @Request() req: { user: { id: string } },
   ): Promise<ApiResponse> {
     try {
-      const chore = await this.choresService.updateChore(choreId, tenantId, updateChoreDto, req.user.id);
+      const chore = await this.choresService.updateChore(
+        choreId,
+        tenantId,
+        updateChoreDto,
+        req.user.id,
+      );
 
       return {
         success: true,
@@ -131,14 +166,18 @@ export class ChoresController {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to update chore',
+        error:
+          error instanceof Error ? error.message : 'Failed to update chore',
       };
     }
   }
 
   @Delete(':choreId')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Delete a chore', description: 'Deletes an existing chore' })
+  @ApiOperation({
+    summary: 'Delete a chore',
+    description: 'Deletes an existing chore',
+  })
   @ApiParam({ name: 'tenantId', description: 'Tenant ID' })
   @ApiParam({ name: 'choreId', description: 'Chore ID' })
   @ApiDoc({ status: 200, description: 'Chore deleted successfully' })
@@ -159,14 +198,18 @@ export class ChoresController {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to delete chore',
+        error:
+          error instanceof Error ? error.message : 'Failed to delete chore',
       };
     }
   }
 
   @Post(':choreId/assign')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Assign a chore', description: 'Assigns a chore to a specific user' })
+  @ApiOperation({
+    summary: 'Assign a chore',
+    description: 'Assigns a chore to a specific user',
+  })
   @ApiParam({ name: 'tenantId', description: 'Tenant ID' })
   @ApiParam({ name: 'choreId', description: 'Chore ID' })
   @ApiDoc({ status: 201, description: 'Chore assigned successfully' })
@@ -179,7 +222,12 @@ export class ChoresController {
     @Request() req: { user: { id: string } },
   ): Promise<ApiResponse> {
     try {
-      const assignment = await this.choresService.assignChore(choreId, tenantId, assignChoreDto, req.user.id);
+      const assignment = await this.choresService.assignChore(
+        choreId,
+        tenantId,
+        assignChoreDto,
+        req.user.id,
+      );
 
       return {
         success: true,
@@ -189,7 +237,8 @@ export class ChoresController {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to assign chore',
+        error:
+          error instanceof Error ? error.message : 'Failed to assign chore',
       };
     }
   }

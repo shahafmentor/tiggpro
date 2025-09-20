@@ -9,7 +9,13 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse as ApiDoc, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse as ApiDoc,
+  ApiBearerAuth,
+  ApiParam,
+} from '@nestjs/swagger';
 import { PointsService } from './services/points.service';
 import { AchievementsService } from './services/achievements.service';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
@@ -24,11 +30,13 @@ export class RedeemGamingTimeDto {
     description: 'Number of minutes of gaming time to redeem',
     example: 30,
     minimum: 1,
-    maximum: 480
+    maximum: 480,
   })
   @IsNumber()
   @Min(1, { message: 'Minutes must be at least 1' })
-  @Max(480, { message: 'Cannot redeem more than 8 hours (480 minutes) at once' })
+  @Max(480, {
+    message: 'Cannot redeem more than 8 hours (480 minutes) at once',
+  })
   minutes: number;
 }
 
@@ -51,7 +59,10 @@ export class GamificationController {
     @Request() req: { user: { id: string } },
   ): Promise<ApiResponseType> {
     try {
-      const stats = await this.pointsService.getUserStats(req.user.id, tenantId);
+      const stats = await this.pointsService.getUserStats(
+        req.user.id,
+        tenantId,
+      );
 
       if (!stats) {
         return {
@@ -84,7 +95,8 @@ export class GamificationController {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to get user stats',
+        error:
+          error instanceof Error ? error.message : 'Failed to get user stats',
       };
     }
   }
@@ -95,7 +107,8 @@ export class GamificationController {
     @Request() req: { user: { id: string } },
   ): Promise<ApiResponseType> {
     try {
-      const leaderboard = await this.pointsService.getTenantLeaderboard(tenantId);
+      const leaderboard =
+        await this.pointsService.getTenantLeaderboard(tenantId);
 
       return {
         success: true,
@@ -113,7 +126,8 @@ export class GamificationController {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to get leaderboard',
+        error:
+          error instanceof Error ? error.message : 'Failed to get leaderboard',
       };
     }
   }
@@ -121,11 +135,12 @@ export class GamificationController {
   @Get('achievements')
   async getAvailableAchievements(): Promise<ApiResponseType> {
     try {
-      const achievements = await this.achievementsService.getAvailableAchievements();
+      const achievements =
+        await this.achievementsService.getAvailableAchievements();
 
       return {
         success: true,
-        data: achievements.map(achievement => ({
+        data: achievements.map((achievement) => ({
           id: achievement.id,
           name: achievement.name,
           description: achievement.description,
@@ -140,7 +155,8 @@ export class GamificationController {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to get achievements',
+        error:
+          error instanceof Error ? error.message : 'Failed to get achievements',
       };
     }
   }
@@ -151,11 +167,15 @@ export class GamificationController {
     @Request() req: { user: { id: string } },
   ): Promise<ApiResponseType> {
     try {
-      const userAchievements = await this.achievementsService.getUserAchievements(req.user.id, tenantId);
+      const userAchievements =
+        await this.achievementsService.getUserAchievements(
+          req.user.id,
+          tenantId,
+        );
 
       return {
         success: true,
-        data: userAchievements.map(userAchievement => ({
+        data: userAchievements.map((userAchievement) => ({
           id: userAchievement.id,
           earnedAt: userAchievement.earnedAt,
           achievement: {
@@ -173,7 +193,10 @@ export class GamificationController {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to get user achievements',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to get user achievements',
       };
     }
   }
@@ -204,7 +227,10 @@ export class GamificationController {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to redeem gaming time',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to redeem gaming time',
       };
     }
   }

@@ -14,7 +14,11 @@ export class PointsService {
     private achievementsService: AchievementsService,
   ) {}
 
-  async awardPoints(userId: string, tenantId: string, submission: ChoreSubmission): Promise<UserPoints> {
+  async awardPoints(
+    userId: string,
+    tenantId: string,
+    submission: ChoreSubmission,
+  ): Promise<UserPoints> {
     // Get or create user points record
     let userPoints = await this.userPointsRepository.findOne({
       where: { userId, tenantId },
@@ -52,7 +56,10 @@ export class PointsService {
 
     // 🏆 CHECK AND AWARD ACHIEVEMENTS after points update
     try {
-      await this.achievementsService.checkAndAwardAchievements(userId, tenantId);
+      await this.achievementsService.checkAndAwardAchievements(
+        userId,
+        tenantId,
+      );
     } catch (error) {
       // Log error but don't fail the points award if achievement check fails
       console.error('Failed to check achievements for user:', userId, error);
@@ -61,7 +68,11 @@ export class PointsService {
     return updatedUserPoints;
   }
 
-  async redeemGamingTime(userId: string, tenantId: string, minutes: number): Promise<UserPoints> {
+  async redeemGamingTime(
+    userId: string,
+    tenantId: string,
+    minutes: number,
+  ): Promise<UserPoints> {
     const userPoints = await this.userPointsRepository.findOne({
       where: { userId, tenantId },
     });
@@ -80,7 +91,10 @@ export class PointsService {
     return this.userPointsRepository.save(userPoints);
   }
 
-  async getUserStats(userId: string, tenantId: string): Promise<UserPoints | null> {
+  async getUserStats(
+    userId: string,
+    tenantId: string,
+  ): Promise<UserPoints | null> {
     return this.userPointsRepository.findOne({
       where: { userId, tenantId },
     });
@@ -101,7 +115,10 @@ export class PointsService {
     return Math.floor(totalPoints / 100) + 1;
   }
 
-  calculateBonusMultiplier(difficultyLevel: DifficultyLevel, streakDays: number): number {
+  calculateBonusMultiplier(
+    difficultyLevel: DifficultyLevel,
+    streakDays: number,
+  ): number {
     let multiplier = 1;
 
     // Difficulty bonus
@@ -119,7 +136,7 @@ export class PointsService {
 
     // Streak bonus (5% per day, max 50%)
     const streakBonus = Math.min(streakDays * 0.05, 0.5);
-    multiplier *= (1 + streakBonus);
+    multiplier *= 1 + streakBonus;
 
     return multiplier;
   }

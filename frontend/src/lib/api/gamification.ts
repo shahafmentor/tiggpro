@@ -1,15 +1,7 @@
 'use client'
 
-import { getAuthToken } from '@/lib/auth-utils'
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-
-interface ApiResponse<T = unknown> {
-  success: boolean
-  data?: T
-  message?: string
-  error?: string
-}
+import { api } from './base'
+import type { ApiResponse } from './config'
 
 export interface UserStats {
   totalPoints: number
@@ -58,58 +50,27 @@ export interface RedeemGamingTimeResponse {
   redeemedMinutes: number
 }
 
-async function makeAuthenticatedRequest<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<ApiResponse<T>> {
-  try {
-    const token = await getAuthToken()
-
-    if (!token) {
-      return {
-        success: false,
-        error: 'Authentication required. Please sign in.',
-      }
-    }
-
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        ...options.headers,
-      },
-    })
-
-    const data = await response.json()
-    return data
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Network error',
-    }
-  }
-}
+// Removed makeAuthenticatedRequest function - now using centralized api utility from base.ts
 
 export const gamificationApi = {
   // Get user gamification stats
   async getUserStats(tenantId: string): Promise<ApiResponse<UserStats>> {
-    return makeAuthenticatedRequest(`/tenants/${tenantId}/gamification/stats`)
+    return api.get(`/tenants/${tenantId}/gamification/stats`)
   },
 
   // Get tenant leaderboard
   async getTenantLeaderboard(tenantId: string): Promise<ApiResponse<LeaderboardEntry[]>> {
-    return makeAuthenticatedRequest(`/tenants/${tenantId}/gamification/leaderboard`)
+    return api.get(`/tenants/${tenantId}/gamification/leaderboard`)
   },
 
   // Get available achievements
   async getAvailableAchievements(tenantId: string): Promise<ApiResponse<Achievement[]>> {
-    return makeAuthenticatedRequest(`/tenants/${tenantId}/gamification/achievements`)
+    return api.get(`/tenants/${tenantId}/gamification/achievements`)
   },
 
   // Get user's earned achievements
   async getUserAchievements(tenantId: string): Promise<ApiResponse<UserAchievement[]>> {
-    return makeAuthenticatedRequest(`/tenants/${tenantId}/gamification/achievements/earned`)
+    return api.get(`/tenants/${tenantId}/gamification/achievements/earned`)
   },
 
   // Redeem gaming time
@@ -117,9 +78,6 @@ export const gamificationApi = {
     tenantId: string,
     request: RedeemGamingTimeRequest
   ): Promise<ApiResponse<RedeemGamingTimeResponse>> {
-    return makeAuthenticatedRequest(`/tenants/${tenantId}/gamification/redeem-time`, {
-      method: 'POST',
-      body: JSON.stringify(request),
-    })
+    return api.post(`/tenants/${tenantId}/gamification/redeem-time`, request)
   },
 }

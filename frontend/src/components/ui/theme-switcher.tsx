@@ -3,10 +3,10 @@
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useTheme } from '@/lib/theme-context'
-import { Moon, Sun, Palette, User, Baby } from 'lucide-react'
+import { Moon, Sun, User, Baby } from 'lucide-react'
 
 export function ThemeSwitcher() {
-  const { theme, userTheme, setTheme, setUserTheme, toggleTheme } = useTheme()
+  const { theme, userTheme, setUserTheme, toggleTheme } = useTheme()
 
   return (
     <div className="flex items-center gap-2">

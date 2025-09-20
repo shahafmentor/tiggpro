@@ -191,6 +191,25 @@ See `backend/env.example` for all available configuration options:
 - `NEXT_PUBLIC_API_URL` - Backend API URL
 - `NEXT_PUBLIC_UPLOAD_URL` - File upload endpoint
 
+## 🔧 Troubleshooting
+
+### Kill Persistent Processes
+
+If you encounter issues with processes running on port 3000 or need to stop persistent Next.js processes:
+
+```bash
+# Kill any process using port 3000 (recommended)
+lsof -ti:3000 | xargs -r kill -9
+
+# Alternative: Kill all Next.js related processes
+pkill -f "next"
+pkill -f "next-server"
+pkill -f "node.*next"
+
+# Nuclear option: Kill all node processes (use with caution)
+pkill node
+```
+
 ## 📚 Documentation
 
 - [Implementation Plan](./IMPLEMENTATION_PLAN.md) - Detailed development roadmap

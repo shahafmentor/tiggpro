@@ -96,7 +96,7 @@ export default function DashboardPage() {
           Welcome back, {session?.user?.name?.split(' ')[0] || 'Champion'}! 🎉
         </h1>
         <p className="text-muted-foreground">
-          Here's what's happening in your family today
+          Here&apos;s what&apos;s happening in your family today
         </p>
       </div>
 

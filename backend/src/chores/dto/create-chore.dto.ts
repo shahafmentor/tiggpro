@@ -1,4 +1,15 @@
-import { IsString, IsNumber, IsEnum, IsBoolean, IsOptional, Min, Max, MinLength, MaxLength, IsObject } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsEnum,
+  IsBoolean,
+  IsOptional,
+  Min,
+  Max,
+  MinLength,
+  MaxLength,
+  IsObject,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { DifficultyLevel } from '@tiggpro/shared';
 import type { RecurrencePattern } from '@tiggpro/shared';
@@ -63,7 +74,9 @@ export class CreateChoreDto {
   })
   @IsNumber()
   @Min(5, { message: 'Estimated duration must be at least 5 minutes' })
-  @Max(480, { message: 'Estimated duration must not exceed 8 hours (480 minutes)' })
+  @Max(480, {
+    message: 'Estimated duration must not exceed 8 hours (480 minutes)',
+  })
   estimatedDurationMinutes: number;
 
   @ApiProperty({
@@ -78,7 +91,7 @@ export class CreateChoreDto {
     example: {
       type: 'weekly',
       daysOfWeek: [1, 3, 5],
-      interval: 1
+      interval: 1,
     },
   })
   @IsOptional()

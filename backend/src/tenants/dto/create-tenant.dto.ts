@@ -7,7 +7,7 @@ export class CreateTenantDto {
     description: 'Name of the tenant (family/organization)',
     example: 'The Smith Family',
     minLength: 2,
-    maxLength: 50
+    maxLength: 50,
   })
   @IsString()
   @MinLength(2, { message: 'Tenant name must be at least 2 characters long' })
@@ -17,7 +17,7 @@ export class CreateTenantDto {
   @ApiProperty({
     description: 'Type of tenant',
     enum: TenantType,
-    example: TenantType.FAMILY
+    example: TenantType.FAMILY,
   })
   @IsEnum(TenantType)
   type: TenantType;

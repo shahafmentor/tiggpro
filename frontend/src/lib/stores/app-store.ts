@@ -50,7 +50,7 @@ interface AppState {
 
 export const useAppStore = create<AppState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       // Current tenant
       currentTenant: null,
       setCurrentTenant: (tenant) => set({ currentTenant: tenant }),

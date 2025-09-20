@@ -1,4 +1,9 @@
-import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { customAlphabet } from 'nanoid';
@@ -9,7 +14,10 @@ import { TenantMemberRole } from '@tiggpro/shared';
 @Injectable()
 export class TenantsService {
   // Create nanoid generator with readable alphabet (excludes confusing characters like 0, O, I, l, 1)
-  private readonly generateCode = customAlphabet('23456789ABCDEFGHJKLMNPQRSTUVWXYZ', 8);
+  private readonly generateCode = customAlphabet(
+    '23456789ABCDEFGHJKLMNPQRSTUVWXYZ',
+    8,
+  );
 
   constructor(
     @InjectRepository(Tenant)
@@ -20,7 +28,10 @@ export class TenantsService {
     private userRepository: Repository<User>,
   ) {}
 
-  async createTenant(createTenantDto: CreateTenantDto, createdById: string): Promise<Tenant> {
+  async createTenant(
+    createTenantDto: CreateTenantDto,
+    createdById: string,
+  ): Promise<Tenant> {
     // Generate unique tenant code
     const tenantCode = await this.generateUniqueTenantCode();
 
@@ -69,7 +80,11 @@ export class TenantsService {
     });
   }
 
-  async inviteMember(tenantId: string, inviteMemberDto: InviteMemberDto, invitedById: string): Promise<void> {
+  async inviteMember(
+    tenantId: string,
+    inviteMemberDto: InviteMemberDto,
+    invitedById: string,
+  ): Promise<void> {
     // Verify tenant exists
     const tenant = await this.getTenantById(tenantId);
 
@@ -105,7 +120,10 @@ export class TenantsService {
     // TODO: Send invitation notification/email
   }
 
-  async joinTenant(joinTenantDto: JoinTenantDto, userId: string): Promise<Tenant> {
+  async joinTenant(
+    joinTenantDto: JoinTenantDto,
+    userId: string,
+  ): Promise<Tenant> {
     // Find tenant by code
     const tenant = await this.tenantRepository.findOne({
       where: { tenantCode: joinTenantDto.tenantCode, isActive: true },
@@ -194,63 +212,71 @@ export class TenantsService {
     }
 
     // Use a transaction to ensure all deletes succeed or all fail
-    await this.tenantRepository.manager.transaction(async (transactionalEntityManager) => {
-      // Delete in order to avoid foreign key constraint violations
+    await this.tenantRepository.manager.transaction(
+      async (transactionalEntityManager) => {
+        // Delete in order to avoid foreign key constraint violations
 
-      // 1. Delete user achievements for this tenant
-      await transactionalEntityManager.query(
-        'DELETE FROM user_achievements WHERE tenant_id = $1',
-        [tenantId]
-      );
+        // 1. Delete user achievements for this tenant
+        await transactionalEntityManager.query(
+          'DELETE FROM user_achievements WHERE tenant_id = $1',
+          [tenantId],
+        );
 
-      // 2. Delete user points for this tenant
-      await transactionalEntityManager.query(
-        'DELETE FROM user_points WHERE tenant_id = $1',
-        [tenantId]
-      );
+        // 2. Delete user points for this tenant
+        await transactionalEntityManager.query(
+          'DELETE FROM user_points WHERE tenant_id = $1',
+          [tenantId],
+        );
 
-      // 3. Delete notifications for this tenant
-      await transactionalEntityManager.query(
-        'DELETE FROM notifications WHERE tenant_id = $1',
-        [tenantId]
-      );
+        // 3. Delete notifications for this tenant
+        await transactionalEntityManager.query(
+          'DELETE FROM notifications WHERE tenant_id = $1',
+          [tenantId],
+        );
 
-      // 4. Delete chore submissions (depends on chore assignments)
-      await transactionalEntityManager.query(`
+        // 4. Delete chore submissions (depends on chore assignments)
+        await transactionalEntityManager.query(
+          `
         DELETE FROM chore_submissions
         WHERE assignment_id IN (
           SELECT id FROM chore_assignments WHERE chore_id IN (
             SELECT id FROM chores WHERE tenant_id = $1
           )
         )
-      `, [tenantId]);
+      `,
+          [tenantId],
+        );
 
-      // 5. Delete chore assignments (depends on chores)
-      await transactionalEntityManager.query(`
+        // 5. Delete chore assignments (depends on chores)
+        await transactionalEntityManager.query(
+          `
         DELETE FROM chore_assignments
         WHERE chore_id IN (
           SELECT id FROM chores WHERE tenant_id = $1
         )
-      `, [tenantId]);
+      `,
+          [tenantId],
+        );
 
-      // 6. Delete chores
-      await transactionalEntityManager.query(
-        'DELETE FROM chores WHERE tenant_id = $1',
-        [tenantId]
-      );
+        // 6. Delete chores
+        await transactionalEntityManager.query(
+          'DELETE FROM chores WHERE tenant_id = $1',
+          [tenantId],
+        );
 
-      // 7. Delete tenant members
-      await transactionalEntityManager.query(
-        'DELETE FROM tenant_members WHERE tenant_id = $1',
-        [tenantId]
-      );
+        // 7. Delete tenant members
+        await transactionalEntityManager.query(
+          'DELETE FROM tenant_members WHERE tenant_id = $1',
+          [tenantId],
+        );
 
-      // 8. Finally, delete the tenant itself
-      await transactionalEntityManager.query(
-        'DELETE FROM tenants WHERE id = $1',
-        [tenantId]
-      );
-    });
+        // 8. Finally, delete the tenant itself
+        await transactionalEntityManager.query(
+          'DELETE FROM tenants WHERE id = $1',
+          [tenantId],
+        );
+      },
+    );
 
     // Note: In a production app, you might want to:
     // 1. Soft delete instead of hard delete

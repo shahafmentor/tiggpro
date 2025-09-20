@@ -16,7 +16,7 @@ import appConfig from '@/config/app.config';
 import {
   LoggerMiddleware,
   GlobalExceptionFilter,
-  ResponseInterceptor
+  ResponseInterceptor,
 } from '@/common';
 
 @Module({

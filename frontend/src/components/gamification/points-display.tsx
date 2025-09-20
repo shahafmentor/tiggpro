@@ -151,7 +151,7 @@ export function PointsDisplay({
 
   return (
     <div className={cn("grid gap-4 md:grid-cols-2 lg:grid-cols-4", className)}>
-      {statCards.map((card, index) => (
+      {statCards.map((card) => (
         <StatCard
           key={card.title}
           title={card.title}

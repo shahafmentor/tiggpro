@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import { Check, ChevronDown, Plus, Users } from 'lucide-react'
@@ -22,17 +22,20 @@ export function TenantSelector() {
   const { currentTenant, setCurrentTenant } = useTenant()
   const { data: session, status } = useSession()
 
-  const { data: tenantsResponse, isLoading, error } = useQuery({
+  const { data: tenantsResponse, isLoading } = useQuery({
     queryKey: ['tenants', 'my'],
     queryFn: () => tenantsApi.getMyTenants(),
     enabled: status === 'authenticated' && !!session,
   })
 
-  const tenants = tenantsResponse?.success ? tenantsResponse.data : []
+  const tenants = useMemo(() =>
+    tenantsResponse?.success ? tenantsResponse.data : [],
+    [tenantsResponse]
+  )
 
   // Auto-select first tenant if none selected and tenants are available
   useEffect(() => {
-    if (!currentTenant && tenants.length > 0 && !isLoading) {
+    if (!currentTenant && tenants && tenants.length > 0 && !isLoading) {
       setCurrentTenant(tenants[0])
     }
   }, [currentTenant, tenants, isLoading, setCurrentTenant])

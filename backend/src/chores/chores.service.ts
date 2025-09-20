@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Chore, ChoreAssignment, TenantMember } from '@/entities';
@@ -16,9 +21,16 @@ export class ChoresService {
     private tenantMemberRepository: Repository<TenantMember>,
   ) {}
 
-  async createChore(tenantId: string, createChoreDto: CreateChoreDto, createdById: string): Promise<Chore> {
+  async createChore(
+    tenantId: string,
+    createChoreDto: CreateChoreDto,
+    createdById: string,
+  ): Promise<Chore> {
     // Verify user has permission to create chores (ADMIN or PARENT)
-    await this.verifyUserPermission(tenantId, createdById, [TenantMemberRole.ADMIN, TenantMemberRole.PARENT]);
+    await this.verifyUserPermission(tenantId, createdById, [
+      TenantMemberRole.ADMIN,
+      TenantMemberRole.PARENT,
+    ]);
 
     const chore = this.choreRepository.create({
       ...createChoreDto,
@@ -40,7 +52,11 @@ export class ChoresService {
     });
   }
 
-  async getChoreById(choreId: string, tenantId: string, userId: string): Promise<Chore> {
+  async getChoreById(
+    choreId: string,
+    tenantId: string,
+    userId: string,
+  ): Promise<Chore> {
     // Verify user is member of tenant
     await this.verifyUserMembership(tenantId, userId);
 
@@ -55,7 +71,12 @@ export class ChoresService {
     return chore;
   }
 
-  async updateChore(choreId: string, tenantId: string, updateChoreDto: UpdateChoreDto, userId: string): Promise<Chore> {
+  async updateChore(
+    choreId: string,
+    tenantId: string,
+    updateChoreDto: UpdateChoreDto,
+    userId: string,
+  ): Promise<Chore> {
     const chore = await this.getChoreById(choreId, tenantId, userId);
 
     // Verify user has permission to update chores (ADMIN, PARENT, or creator)
@@ -68,7 +89,11 @@ export class ChoresService {
     return this.choreRepository.save(chore);
   }
 
-  async deleteChore(choreId: string, tenantId: string, userId: string): Promise<void> {
+  async deleteChore(
+    choreId: string,
+    tenantId: string,
+    userId: string,
+  ): Promise<void> {
     const chore = await this.getChoreById(choreId, tenantId, userId);
 
     // Verify user has permission to delete chores (ADMIN, PARENT, or creator)
@@ -81,12 +106,14 @@ export class ChoresService {
     const activeAssignments = await this.assignmentRepository.count({
       where: {
         choreId,
-        status: AssignmentStatus.PENDING
+        status: AssignmentStatus.PENDING,
       },
     });
 
     if (activeAssignments > 0) {
-      throw new BadRequestException('Cannot delete chore with active assignments');
+      throw new BadRequestException(
+        'Cannot delete chore with active assignments',
+      );
     }
 
     // Soft delete
@@ -94,11 +121,19 @@ export class ChoresService {
     await this.choreRepository.save(chore);
   }
 
-  async assignChore(choreId: string, tenantId: string, assignChoreDto: AssignChoreDto, assignedById: string): Promise<ChoreAssignment> {
+  async assignChore(
+    choreId: string,
+    tenantId: string,
+    assignChoreDto: AssignChoreDto,
+    assignedById: string,
+  ): Promise<ChoreAssignment> {
     const chore = await this.getChoreById(choreId, tenantId, assignedById);
 
     // Verify user has permission to assign chores (ADMIN or PARENT)
-    await this.verifyUserPermission(tenantId, assignedById, [TenantMemberRole.ADMIN, TenantMemberRole.PARENT]);
+    await this.verifyUserPermission(tenantId, assignedById, [
+      TenantMemberRole.ADMIN,
+      TenantMemberRole.PARENT,
+    ]);
 
     // Verify assignee is a member of the tenant
     await this.verifyUserMembership(tenantId, assignChoreDto.assignedTo);
@@ -113,7 +148,9 @@ export class ChoresService {
     });
 
     if (existingAssignment) {
-      throw new BadRequestException('This chore is already assigned to this user');
+      throw new BadRequestException(
+        'This chore is already assigned to this user',
+      );
     }
 
     const assignment = this.assignmentRepository.create({
@@ -128,7 +165,10 @@ export class ChoresService {
     return this.assignmentRepository.save(assignment);
   }
 
-  private async verifyUserMembership(tenantId: string, userId: string): Promise<TenantMember> {
+  private async verifyUserMembership(
+    tenantId: string,
+    userId: string,
+  ): Promise<TenantMember> {
     const membership = await this.tenantMemberRepository.findOne({
       where: { tenantId, userId, isActive: true },
     });
@@ -140,7 +180,11 @@ export class ChoresService {
     return membership;
   }
 
-  private async verifyUserPermission(tenantId: string, userId: string, allowedRoles: TenantMemberRole[]): Promise<void> {
+  private async verifyUserPermission(
+    tenantId: string,
+    userId: string,
+    allowedRoles: TenantMemberRole[],
+  ): Promise<void> {
     const membership = await this.verifyUserMembership(tenantId, userId);
 
     if (!allowedRoles.includes(membership.role)) {
@@ -148,7 +192,10 @@ export class ChoresService {
     }
   }
 
-  private async getUserRole(tenantId: string, userId: string): Promise<TenantMemberRole> {
+  private async getUserRole(
+    tenantId: string,
+    userId: string,
+  ): Promise<TenantMemberRole> {
     const membership = await this.verifyUserMembership(tenantId, userId);
     return membership.role;
   }
