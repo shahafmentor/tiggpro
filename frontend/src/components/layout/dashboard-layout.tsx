@@ -6,17 +6,19 @@ import { useRouter, usePathname } from 'next/navigation'
 import {
   Home,
   CheckSquare,
-  Trophy,
   Users,
-  Settings,
-  Plus
+  Plus,
+  Eye
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { UserProfileHeader } from '@/components/layout/user-profile-header'
-import { ThemeSwitcher } from '@/components/ui/theme-switcher'
 import { TenantSelector } from '@/components/tenant/tenant-selector'
+import { useQuery } from '@tanstack/react-query'
+import { assignmentsApi } from '@/lib/api/assignments'
+import { useTenant } from '@/lib/contexts/tenant-context'
+import { TenantMemberRole } from '@tiggpro/shared'
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -27,7 +29,7 @@ interface NavItem {
   label: string
   icon: React.ComponentType<{ className?: string }>
   badge?: number
-  roles?: ('ADMIN' | 'PARENT' | 'CHILD')[]
+  roles?: ('admin' | 'parent' | 'child')[]
 }
 
 const navItems: NavItem[] = [
@@ -40,14 +42,18 @@ const navItems: NavItem[] = [
     href: '/dashboard/chores',
     label: 'Chores',
     icon: CheckSquare,
-    // MVP: Removed mock badge - keep it simple
-    // badge: 3, // TODO: Get from real data
+  },
+  {
+    href: '/dashboard/review',
+    label: 'Review',
+    icon: Eye,
+    roles: ['admin', 'parent'],
   },
   {
     href: '/dashboard/family',
     label: 'Family',
     icon: Users,
-    roles: ['ADMIN', 'PARENT'],
+    roles: ['admin', 'parent'],
   },
   // MVP: Comment out non-essential features
   // {
@@ -66,6 +72,22 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { data: session, status } = useSession()
   const router = useRouter()
   const pathname = usePathname()
+  const { currentTenant } = useTenant()
+
+  // Check if user has permission to review submissions
+  const canReview = currentTenant?.role === TenantMemberRole.ADMIN ||
+                   currentTenant?.role === TenantMemberRole.PARENT
+
+  // Fetch pending submissions count for review badge
+  const { data: pendingSubmissionsResponse } = useQuery({
+    queryKey: ['pending-submissions-count', currentTenant?.tenant.id],
+    queryFn: () => currentTenant ? assignmentsApi.getPendingSubmissions(currentTenant.tenant.id) : null,
+    enabled: !!currentTenant && !!session && canReview,
+    refetchInterval: 30000, // Refetch every 30 seconds
+  })
+
+  const pendingCount = pendingSubmissionsResponse?.success ?
+    (pendingSubmissionsResponse.data || []).length : 0
 
   if (status === 'loading') {
     return (
@@ -80,11 +102,19 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     return null
   }
 
-  // TODO: Get user role from session/context
-  const userRole = 'PARENT' // Placeholder
+  // Get user role from current tenant context
+  const userRole = currentTenant?.role || 'CHILD'
 
-  const filteredNavItems = navItems.filter(item =>
-    !item.roles || item.roles.includes(userRole as 'ADMIN' | 'PARENT' | 'CHILD')
+  // Create dynamic nav items with pending count badge
+  const dynamicNavItems = navItems.map(item => {
+    if (item.href === '/dashboard/review' && pendingCount > 0) {
+      return { ...item, badge: pendingCount }
+    }
+    return item
+  })
+
+  const filteredNavItems = dynamicNavItems.filter(item =>
+    !item.roles || item.roles.includes(userRole as 'admin' | 'parent' | 'child')
   )
 
   return (

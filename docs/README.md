@@ -14,6 +14,7 @@ This directory contains comprehensive documentation for the Tiggpro project to h
 ### Development Guides
 - **[Implementation Plan](./development/IMPLEMENTATION_PLAN.md)** - Overall project roadmap and progress tracking
 - **[Implementation Guidelines](./development/IMPLEMENTATION_GUIDELINES.md)** - Development honesty and quality standards
+- **[Business Logic Guide](./BUSINESS_LOGIC_GUIDE.md)** - Core domain concepts and system architecture
 
 ### Frontend Development
 - **[Frontend Implementation Guide](./frontend/FRONTEND_IMPLEMENTATION_GUIDE.md)** - UX/UI strategy and development roadmap
@@ -23,14 +24,16 @@ This directory contains comprehensive documentation for the Tiggpro project to h
 
 For new developers joining the project:
 
-1. **Start with**: [Implementation Plan](./development/IMPLEMENTATION_PLAN.md) - Get overview of project scope
-2. **Then read**: [State Management Guide](./frontend/state-management-guide.md) - Understand how data flows
-3. **Refer to**: [Frontend Guide](./frontend/FRONTEND_IMPLEMENTATION_GUIDE.md) - Learn UI patterns
+1. **Start with**: [Business Logic Guide](./BUSINESS_LOGIC_GUIDE.md) - Understand core domain concepts
+2. **Then read**: [Implementation Plan](./development/IMPLEMENTATION_PLAN.md) - Get overview of project scope
+3. **Continue with**: [State Management Guide](./frontend/state-management-guide.md) - Understand how data flows
+4. **Refer to**: [Frontend Guide](./frontend/FRONTEND_IMPLEMENTATION_GUIDE.md) - Learn UI patterns
 
 ## 🔄 Keeping Documentation Updated
 
 ### When to Update Documentation
 
+- **Adding new business logic or domain concepts** → Update [Business Logic Guide](./BUSINESS_LOGIC_GUIDE.md)
 - **Adding new state management patterns** → Update [State Management Guide](./frontend/state-management-guide.md)
 - **Completing major features** → Update [Implementation Plan](./development/IMPLEMENTATION_PLAN.md)
 - **New UI components or patterns** → Update [Frontend Guide](./frontend/FRONTEND_IMPLEMENTATION_GUIDE.md)
@@ -60,6 +63,7 @@ When making significant changes:
 tiggpro/
 ├── docs/                              # 📚 All documentation
 │   ├── README.md                      # This file - documentation index
+│   ├── BUSINESS_LOGIC_GUIDE.md        # Core domain concepts and system architecture
 │   ├── adr-001-state-management-architecture.md  # ADR for state management
 │   ├── adr-template.md                # Template for future ADRs
 │   ├── architecture/                  # Architecture documentation

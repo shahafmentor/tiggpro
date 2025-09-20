@@ -62,6 +62,7 @@ interface Submission {
     email: string
     displayName: string
   }
+  assignment?: Assignment
 }
 
 // Removed makeAuthenticatedRequest function - now using centralized api utility from base.ts

@@ -12,7 +12,8 @@ import {
   // Trophy,
   // Users,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Eye
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -23,13 +24,20 @@ import { Skeleton } from '@/components/ui/skeleton'
 // import { FamilyLeaderboard } from '@/components/gamification/family-leaderboard'
 import { SubmitAssignmentModal } from '@/components/chores/submit-assignment-modal'
 import { useTenant } from '@/lib/contexts/tenant-context'
-import { assignmentsApi, type Assignment } from '@/lib/api/assignments'
+import { assignmentsApi, type Assignment, type Submission } from '@/lib/api/assignments'
+import { TenantMemberRole } from '@tiggpro/shared'
+import { useRouter } from 'next/navigation'
 // import type { LeaderboardEntry } from '@/lib/api/gamification'
 
 export default function DashboardPage() {
   const { data: session } = useSession()
   const { currentTenant } = useTenant()
   const [submittingAssignment, setSubmittingAssignment] = useState<Assignment | null>(null)
+  const router = useRouter()
+
+  // Check if user can review submissions
+  const canReview = currentTenant?.role === TenantMemberRole.ADMIN ||
+                   currentTenant?.role === TenantMemberRole.PARENT
 
   // Fetch user assignments
   const { data: assignmentsResponse, isLoading: assignmentsLoading, error: assignmentsError } = useQuery({
@@ -45,6 +53,17 @@ export default function DashboardPage() {
   })
 
   const assignments: Assignment[] = (assignmentsResponse?.success ? assignmentsResponse.data : []) || []
+
+  // Fetch pending submissions for review (only for parents/admins)
+  const { data: pendingSubmissionsResponse } = useQuery({
+    queryKey: ['pending-submissions-dashboard', currentTenant?.tenant.id],
+    queryFn: () => currentTenant ? assignmentsApi.getPendingSubmissions(currentTenant.tenant.id) : null,
+    enabled: !!currentTenant && !!session && canReview,
+    refetchInterval: 30000, // Refetch every 30 seconds
+  })
+
+  const pendingSubmissions: Submission[] = pendingSubmissionsResponse?.success ?
+    (pendingSubmissionsResponse.data || []) : []
 
   // Calculate assignment stats
   const assignmentStats = {
@@ -139,6 +158,44 @@ export default function DashboardPage() {
           Here&apos;s what&apos;s happening in your family today
         </p>
       </div>
+
+      {/* Pending Reviews Section - Only for Parents/Admins */}
+      {canReview && pendingSubmissions.length > 0 && (
+        <Card className="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-200">
+              <AlertCircle className="h-5 w-5" />
+              Pending Reviews
+              <Badge variant="destructive" className="ml-auto">
+                {pendingSubmissions.length}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <p className="text-sm text-orange-700 dark:text-orange-300">
+                You have {pendingSubmissions.length} submission{pendingSubmissions.length !== 1 ? 's' : ''} waiting for your review.
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => router.push('/dashboard/review')}
+                  className="bg-orange-600 hover:bg-orange-700 text-white"
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  Review Submissions
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => router.push('/dashboard/review')}
+                  className="border-orange-300 text-orange-700 hover:bg-orange-100 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-900"
+                >
+                  View All
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* MVP: Comment out complex gamification - keep it simple */}
       {/* <PointsDisplay
@@ -237,6 +294,18 @@ export default function DashboardPage() {
                           }}
                         >
                           Submit
+                        </Button>
+                      ) : assignment.status === 'rejected' ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs h-6"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSubmittingAssignment(assignment)
+                          }}
+                        >
+                          Resubmit
                         </Button>
                       ) : (
                         <Badge

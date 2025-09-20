@@ -229,6 +229,18 @@ export class AssignmentsController {
             id: submission.assignment.id,
             dueDate: submission.assignment.dueDate,
             priority: submission.assignment.priority,
+            assignedTo: {
+              id: submission.assignment.assignee?.id,
+              email: submission.assignment.assignee?.email,
+              displayName: submission.assignment.assignee?.displayName,
+              avatarUrl: submission.assignment.assignee?.avatarUrl,
+            },
+            assignedBy: {
+              id: submission.assignment.assigner?.id,
+              email: submission.assignment.assigner?.email,
+              displayName: submission.assignment.assigner?.displayName,
+              avatarUrl: submission.assignment.assigner?.avatarUrl,
+            },
             chore: {
               id: submission.assignment.chore.id,
               title: submission.assignment.chore.title,

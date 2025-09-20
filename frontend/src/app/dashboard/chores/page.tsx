@@ -411,9 +411,23 @@ export default function ChoresPage() {
                         </Badge>
                       )}
                       {chore.status === 'REJECTED' && (
-                        <Badge variant="destructive" className="text-xs">
-                          Rejected
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="destructive" className="text-xs">
+                            Rejected
+                          </Badge>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-6 text-xs"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setSubmittingAssignment(chore.assignment!)
+                            }}
+                          >
+                            <CheckSquare className="h-3 w-3 mr-1" />
+                            Resubmit
+                          </Button>
+                        </div>
                       )}
                     </>
                   )}

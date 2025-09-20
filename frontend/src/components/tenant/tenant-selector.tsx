@@ -16,6 +16,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { tenantsApi } from '@/lib/api/tenants'
 import { useTenant } from '@/lib/contexts/tenant-context'
+import { TenantMemberRole } from '@tiggpro/shared'
 import { cn } from '@/lib/utils'
 
 export function TenantSelector() {
@@ -46,7 +47,7 @@ export function TenantSelector() {
     )
   }
 
-  if (tenants.length === 0) {
+  if (!tenants || tenants.length === 0) {
     return (
       <Button
         variant="outline"
@@ -103,9 +104,9 @@ export function TenantSelector() {
                   variant="secondary"
                   className={cn(
                     "text-xs",
-                    tenant.role === 'ADMIN' && "bg-yellow-100 text-yellow-800",
-                    tenant.role === 'PARENT' && "bg-blue-100 text-blue-800",
-                    tenant.role === 'CHILD' && "bg-green-100 text-green-800"
+                    tenant.role === TenantMemberRole.ADMIN && "bg-yellow-100 text-yellow-800",
+                    tenant.role === TenantMemberRole.PARENT && "bg-blue-100 text-blue-800",
+                    tenant.role === TenantMemberRole.CHILD && "bg-green-100 text-green-800"
                   )}
                 >
                   {tenant.role}

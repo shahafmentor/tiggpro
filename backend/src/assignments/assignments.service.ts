@@ -100,8 +100,8 @@ export class AssignmentsService {
       throw new ForbiddenException('You can only submit your own assignments');
     }
 
-    // Verify assignment is in pending status
-    if (assignment.status !== AssignmentStatus.PENDING) {
+    // Verify assignment can be submitted (pending or rejected for resubmission)
+    if (assignment.status !== AssignmentStatus.PENDING && assignment.status !== AssignmentStatus.REJECTED) {
       throw new BadRequestException('This assignment cannot be submitted');
     }
 
@@ -127,7 +127,7 @@ export class AssignmentsService {
 
     const savedSubmission = await this.submissionRepository.save(submission);
 
-    // Update assignment status
+    // Update assignment status (always set to SUBMITTED for new submissions)
     assignment.status = AssignmentStatus.SUBMITTED;
     await this.assignmentRepository.save(assignment);
 
@@ -231,7 +231,12 @@ export class AssignmentsService {
 
     return this.submissionRepository.find({
       where: { reviewStatus: ReviewStatus.PENDING },
-      relations: ['assignment', 'assignment.chore'],
+      relations: [
+        'assignment',
+        'assignment.chore',
+        'assignment.assignee',  // Include the assigned user data
+        'assignment.assigner'   // Include the assigner user data
+      ],
       order: { submittedAt: 'ASC' },
     });
   }
