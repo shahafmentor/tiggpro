@@ -189,7 +189,7 @@
   --secondary: oklch(0.785 0.173 85.87); /* Bright Yellow */
   --accent: oklch(0.648 0.156 162.015); /* Green */
   --background-pattern: url('/patterns/stars.svg');
-  --font-primary: 'Comic Neue', cursive;
+  --font-primary: 'Inter', system-ui, sans-serif;
 
   /* Brighter, more playful colors for kids */
   --chore-pending: oklch(0.835 0.193 85.87);

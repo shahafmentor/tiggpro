@@ -88,11 +88,25 @@ export function SubmitAssignmentModal({
     onOpenChange(false)
   }
 
-  // Placeholder for future media upload functionality
+  // Basic photo upload functionality
   const handleAddPhoto = () => {
-    toast.info('Photo upload coming soon!', {
-      description: 'Media upload functionality will be available in a future update.',
-    })
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/*'
+    input.multiple = true
+    input.onchange = (e) => {
+      const files = (e.target as HTMLInputElement).files
+      if (files) {
+        // For MVP, we'll just store the file names as URLs
+        // In a real implementation, you'd upload to a service like Cloudinary
+        const newUrls = Array.from(files).map(file => {
+          // Create a local URL for preview
+          return URL.createObjectURL(file)
+        })
+        setMediaUrls(prev => [...prev, ...newUrls])
+      }
+    }
+    input.click()
   }
 
   const removeMedia = (index: number) => {
@@ -175,8 +189,12 @@ export function SubmitAssignmentModal({
                 <div className="grid grid-cols-2 gap-2">
                   {mediaUrls.map((url, index) => (
                     <div key={index} className="relative">
-                      <div className="aspect-video bg-muted rounded border flex items-center justify-center">
-                        <span className="text-xs text-muted-foreground">Photo {index + 1}</span>
+                      <div className="aspect-video bg-muted rounded border overflow-hidden">
+                        <img
+                          src={url}
+                          alt={`Submission photo ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                       <Button
                         size="sm"

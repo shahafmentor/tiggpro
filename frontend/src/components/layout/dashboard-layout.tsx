@@ -40,12 +40,8 @@ const navItems: NavItem[] = [
     href: '/dashboard/chores',
     label: 'Chores',
     icon: CheckSquare,
-    badge: 3, // TODO: Get from real data
-  },
-  {
-    href: '/dashboard/achievements',
-    label: 'Achievements',
-    icon: Trophy,
+    // MVP: Removed mock badge - keep it simple
+    // badge: 3, // TODO: Get from real data
   },
   {
     href: '/dashboard/family',
@@ -53,11 +49,17 @@ const navItems: NavItem[] = [
     icon: Users,
     roles: ['ADMIN', 'PARENT'],
   },
-  {
-    href: '/dashboard/settings',
-    label: 'Settings',
-    icon: Settings,
-  },
+  // MVP: Comment out non-essential features
+  // {
+  //   href: '/dashboard/achievements',
+  //   label: 'Achievements',
+  //   icon: Trophy,
+  // },
+  // {
+  //   href: '/dashboard/settings',
+  //   label: 'Settings',
+  //   icon: Settings,
+  // },
 ]
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
@@ -152,10 +154,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </Button>
           </div>
 
-          {/* Theme Switcher */}
-          <div className="px-4 pb-4 border-t border-border pt-4">
+          {/* MVP: Comment out theme switcher - not essential for core flow */}
+          {/* <div className="px-4 pb-4 border-t border-border pt-4">
             <ThemeSwitcher />
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -213,7 +215,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
           <div className="flex items-center gap-2">
             <TenantSelector />
-            <ThemeSwitcher />
+            {/* MVP: Comment out theme switcher - not essential for core flow */}
+            {/* <ThemeSwitcher /> */}
           </div>
         </div>
       </div>

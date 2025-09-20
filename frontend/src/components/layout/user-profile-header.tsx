@@ -31,13 +31,13 @@ export function UserProfileHeader() {
     .join('')
     .toUpperCase() || 'U'
 
-  // TODO: Get real user data from backend
-  const userData = {
-    level: 5,
-    points: 127,
-    role: 'Parent', // This should come from session
-    currentTenant: 'Smith Family' // This should come from context
-  }
+  // MVP: Removed mock gamification data - keep it simple
+  // const userData = {
+  //   level: 5,
+  //   points: 127,
+  //   role: 'Parent', // This should come from session
+  //   currentTenant: 'Smith Family' // This should come from context
+  // }
 
   const handleSignOut = async () => {
     await signOut({ redirect: false })
@@ -59,14 +59,17 @@ export function UserProfileHeader() {
               <p className="font-medium text-sm text-foreground truncate">
                 {user.name}
               </p>
-              <Badge variant="outline" className="text-xs">
+              {/* MVP: Removed level badge - keep it simple */}
+              {/* <Badge variant="outline" className="text-xs">
                 Lv.{userData.level}
-              </Badge>
+              </Badge> */}
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span>{userData.points} pts</span>
+              {/* MVP: Removed points and tenant info - keep it simple */}
+              {/* <span>{userData.points} pts</span>
               <span>•</span>
-              <span className="truncate">{userData.currentTenant}</span>
+              <span className="truncate">{userData.currentTenant}</span> */}
+              <span className="truncate">{user.email}</span>
             </div>
           </div>
           <ChevronDown className="h-4 w-4 text-muted-foreground" />
@@ -79,14 +82,15 @@ export function UserProfileHeader() {
             <p className="text-xs leading-none text-muted-foreground">
               {user.email}
             </p>
-            <div className="flex items-center gap-2 pt-1">
+            {/* MVP: Removed mock role and level badges - keep it simple */}
+            {/* <div className="flex items-center gap-2 pt-1">
               <Badge variant="secondary" className="text-xs">
                 {userData.role}
               </Badge>
               <Badge variant="outline" className="text-xs">
                 Level {userData.level}
               </Badge>
-            </div>
+            </div> */}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

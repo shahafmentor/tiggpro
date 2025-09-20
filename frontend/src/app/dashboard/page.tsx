@@ -4,12 +4,13 @@ import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useQuery } from '@tanstack/react-query'
 import {
-  Calendar,
+  // MVP: Comment out unused imports
+  // Calendar,
   CheckSquare,
-  Star,
-  TrendingUp,
-  Trophy,
-  Users,
+  // Star,
+  // TrendingUp,
+  // Trophy,
+  // Users,
   Clock,
   AlertCircle
 } from 'lucide-react'
@@ -17,12 +18,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { PointsDisplay } from '@/components/gamification/points-display'
-import { FamilyLeaderboard } from '@/components/gamification/family-leaderboard'
+// MVP: Comment out unused gamification components
+// import { PointsDisplay } from '@/components/gamification/points-display'
+// import { FamilyLeaderboard } from '@/components/gamification/family-leaderboard'
 import { SubmitAssignmentModal } from '@/components/chores/submit-assignment-modal'
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { assignmentsApi, type Assignment } from '@/lib/api/assignments'
-import type { LeaderboardEntry } from '@/lib/api/gamification'
+// import type { LeaderboardEntry } from '@/lib/api/gamification'
 
 export default function DashboardPage() {
   const { data: session } = useSession()
@@ -57,73 +59,73 @@ export default function DashboardPage() {
     }).length,
   }
 
-  // TODO: Replace with real data from API (gamification stats)
-  const mockData = {
-    stats: {
-      totalPoints: 127,
-      currentLevel: 5,
-      nextLevelPoints: 150,
-      completedChores: assignmentStats.approved,
-      pendingChores: assignmentStats.pending,
-      gamingTimeEarned: 45, // minutes - TODO: get from gamification API
-      streakDays: 7, // TODO: get from gamification API
-    },
-    recentActivity: [
-      {
-        id: 1,
-        type: 'chore_completed',
-        title: 'Cleaned bedroom',
-        points: 15,
-        timestamp: '2 hours ago',
-        user: 'You',
-      },
-      {
-        id: 2,
-        type: 'achievement_earned',
-        title: 'Week Warrior',
-        description: 'Completed 7 chores this week',
-        timestamp: '1 day ago',
-        user: 'Emma',
-      },
-      {
-        id: 3,
-        type: 'level_up',
-        title: 'Reached Level 5',
-        points: 20,
-        timestamp: '2 days ago',
-        user: 'You',
-      },
-    ],
-    leaderboard: [
-      {
-        rank: 1,
-        userId: 'user-emma',
-        displayName: 'Emma',
-        totalPoints: 145,
-        level: 6,
-        currentStreakDays: 12,
-        longestStreakDays: 15
-      },
-      {
-        rank: 2,
-        userId: session?.user?.id || 'current-user',
-        displayName: 'You',
-        totalPoints: 127,
-        level: 5,
-        currentStreakDays: 7,
-        longestStreakDays: 10
-      },
-      {
-        rank: 3,
-        userId: 'user-dad',
-        displayName: 'Dad',
-        totalPoints: 89,
-        level: 4,
-        currentStreakDays: 3,
-        longestStreakDays: 8
-      },
-    ] as LeaderboardEntry[],
-  }
+  // MVP: Comment out complex mock data - keep it simple
+  // const mockData = {
+  //   stats: {
+  //     totalPoints: 127,
+  //     currentLevel: 5,
+  //     nextLevelPoints: 150,
+  //     completedChores: assignmentStats.approved,
+  //     pendingChores: assignmentStats.pending,
+  //     gamingTimeEarned: 45,
+  //     streakDays: 7,
+  //   },
+  //   recentActivity: [
+  //     {
+  //       id: 1,
+  //       type: 'chore_completed',
+  //       title: 'Cleaned bedroom',
+  //       points: 15,
+  //       timestamp: '2 hours ago',
+  //       user: 'You',
+  //     },
+  //     {
+  //       id: 2,
+  //       type: 'achievement_earned',
+  //       title: 'Week Warrior',
+  //       description: 'Completed 7 chores this week',
+  //       timestamp: '1 day ago',
+  //       user: 'Emma',
+  //     },
+  //     {
+  //       id: 3,
+  //       type: 'level_up',
+  //       title: 'Reached Level 5',
+  //       points: 20,
+  //       timestamp: '2 days ago',
+  //       user: 'You',
+  //     },
+  //   ],
+  //   leaderboard: [
+  //     {
+  //       rank: 1,
+  //       userId: 'user-emma',
+  //       displayName: 'Emma',
+  //       totalPoints: 145,
+  //       level: 6,
+  //       currentStreakDays: 12,
+  //       longestStreakDays: 15
+  //     },
+  //     {
+  //       rank: 2,
+  //       userId: session?.user?.id || 'current-user',
+  //       displayName: 'You',
+  //       totalPoints: 127,
+  //       level: 5,
+  //       currentStreakDays: 7,
+  //       longestStreakDays: 10
+  //     },
+  //     {
+  //       rank: 3,
+  //       userId: 'user-dad',
+  //       displayName: 'Dad',
+  //       totalPoints: 89,
+  //       level: 4,
+  //       currentStreakDays: 3,
+  //       longestStreakDays: 8
+  //     },
+  //   ] as LeaderboardEntry[],
+  // }
 
 
   return (
@@ -138,15 +140,15 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Gamification Stats */}
-      <PointsDisplay
+      {/* MVP: Comment out complex gamification - keep it simple */}
+      {/* <PointsDisplay
         totalPoints={mockData.stats.totalPoints}
         level={mockData.stats.currentLevel}
         currentStreakDays={mockData.stats.streakDays}
         longestStreakDays={mockData.stats.streakDays + 3} // Mock longer streak
         availableGamingMinutes={mockData.stats.gamingTimeEarned}
         animated={true}
-      />
+      /> */}
 
       {/* My Assignments Section */}
       <Card>
@@ -264,8 +266,8 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Recent Activity */}
+      {/* MVP: Comment out complex features - keep it simple */}
+      {/* <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -321,20 +323,17 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Family Leaderboard */}
         <FamilyLeaderboard
           entries={mockData.leaderboard}
           currentUserId={session?.user?.id || 'current-user'}
           maxDisplayCount={5}
           onViewAll={() => {
-            // TODO: Navigate to full leaderboard page
             console.log('Navigate to full leaderboard')
           }}
           variant="compact"
         />
       </div>
 
-      {/* Quick Actions */}
       <Card>
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
@@ -359,7 +358,7 @@ export default function DashboardPage() {
             </Button>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Submit Assignment Modal */}
       <SubmitAssignmentModal
