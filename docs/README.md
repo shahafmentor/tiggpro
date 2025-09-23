@@ -8,8 +8,8 @@ This directory contains comprehensive documentation for the Tiggpro project to h
 - **[State Management Guide](./frontend/state-management-guide.md)** - Comprehensive guide to React Context, Zustand, TanStack Query, and useState usage patterns
 
 ### Architecture Decision Records (ADRs)
-- **[ADR-001: State Management Architecture](./adr-001-state-management-architecture.md)** - Multi-layered state management decision
-- **[ADR Template](./adr-template.md)** - Template for future architecture decisions
+- **[ADR-001: State Management Architecture](./development/adr-001-state-management-architecture.md)** - Multi-layered state management decision
+- **[ADR Template](./development/adr-template.md)** - Template for future architecture decisions
 
 ### Development Guides
 - **[Implementation Plan](./development/IMPLEMENTATION_PLAN.md)** - Overall project roadmap and progress tracking
