@@ -26,6 +26,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 // import { PointsDisplay } from '@/components/gamification/points-display'
 // import { FamilyLeaderboard } from '@/components/gamification/family-leaderboard'
 import { SubmitAssignmentModal } from '@/components/chores/submit-assignment-modal'
+import { ChoreDetailModal } from '@/components/chores/chore-detail-modal'
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { assignmentsApi, type Assignment, type Submission } from '@/lib/api/assignments'
 import { TenantMemberRole } from '@tiggpro/shared'
@@ -37,11 +38,15 @@ export default function DashboardPage() {
   const { currentTenant } = useTenant()
   const [submittingAssignment, setSubmittingAssignment] = useState<Assignment | null>(null)
   const [showAllAssignments, setShowAllAssignments] = useState(false)
+  const [viewingAssignment, setViewingAssignment] = useState<Assignment | null>(null)
   const router = useRouter()
 
   // Check if user can review submissions
   const canReview = currentTenant?.role === TenantMemberRole.ADMIN ||
                    currentTenant?.role === TenantMemberRole.PARENT
+
+  // Check if user is a child (for chore detail modal)
+  const isChild = currentTenant?.role === TenantMemberRole.CHILD
 
   // Fetch user assignments
   const { data: assignmentsResponse, isLoading: assignmentsLoading, error: assignmentsError } = useQuery({
@@ -254,7 +259,13 @@ export default function DashboardPage() {
                 const isOverdue = dueDate < new Date() && assignment.status === 'pending'
 
                 return (
-                  <div key={assignment.id} className="flex items-center space-x-4 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                  <div
+                    key={assignment.id}
+                    className={`flex items-center space-x-4 p-3 rounded-lg border hover:bg-muted/50 transition-colors ${
+                      isChild ? 'cursor-pointer' : ''
+                    }`}
+                    onClick={isChild ? () => setViewingAssignment(assignment) : undefined}
+                  >
                     <div className="flex-shrink-0">
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                         assignment.status === 'approved' ? 'bg-chore-completed/10' :
@@ -436,6 +447,20 @@ export default function DashboardPage() {
         open={!!submittingAssignment}
         onOpenChange={(open) => {
           if (!open) setSubmittingAssignment(null)
+        }}
+      />
+
+      {/* Chore Detail Modal for Kids */}
+      <ChoreDetailModal
+        assignment={viewingAssignment}
+        open={!!viewingAssignment}
+        onOpenChange={(open) => {
+          if (!open) setViewingAssignment(null)
+        }}
+        canSubmit={isChild}
+        onSubmit={(assignment) => {
+          setViewingAssignment(null)
+          setSubmittingAssignment(assignment)
         }}
       />
     </div>
