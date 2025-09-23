@@ -2,6 +2,7 @@ import { Badge, badgeVariants } from "./badge"
 import { cn } from "@/lib/utils"
 import type { VariantProps } from "class-variance-authority"
 import { TenantMemberRole } from "@tiggpro/shared"
+import { useRolesTranslations, useChoresTranslations } from "@/hooks/use-translations"
 
 // Status Badge - for assignment/chore statuses
 interface StatusBadgeProps extends React.ComponentProps<"span">,
@@ -11,6 +12,8 @@ interface StatusBadgeProps extends React.ComponentProps<"span">,
 }
 
 export function StatusBadge({ status, className, asChild, ...props }: StatusBadgeProps) {
+  const choresT = useChoresTranslations()
+
   const getStatusVariant = (status: StatusBadgeProps['status']) => {
     switch (status) {
       case 'approved':
@@ -30,17 +33,17 @@ export function StatusBadge({ status, className, asChild, ...props }: StatusBadg
   const getStatusText = (status: StatusBadgeProps['status']) => {
     switch (status) {
       case 'approved':
-        return 'Complete'
+        return choresT('approved')
       case 'completed':
-        return 'Done ✓'
+        return choresT('done')
       case 'submitted':
-        return 'Submitted'
+        return choresT('submitted')
       case 'rejected':
-        return 'Rejected'
+        return choresT('rejected')
       case 'overdue':
-        return 'Overdue'
+        return choresT('overdue')
       case 'pending':
-        return 'Pending'
+        return choresT('pending')
       default:
         return status
     }
@@ -87,6 +90,8 @@ interface PointsBadgeProps extends React.ComponentProps<"span">,
 }
 
 export function PointsBadge({ points, showPlus = true, className, asChild, ...props }: PointsBadgeProps) {
+  const choresT = useChoresTranslations()
+
   return (
     <Badge
       variant="points"
@@ -94,7 +99,7 @@ export function PointsBadge({ points, showPlus = true, className, asChild, ...pr
       asChild={asChild}
       {...props}
     >
-      {showPlus && points > 0 ? `+${points}` : points} pts
+      {showPlus && points > 0 ? `+${points}` : points} {choresT('pts')}
     </Badge>
   )
 }
@@ -140,6 +145,7 @@ interface DueDateBadgeProps extends React.ComponentProps<"span">,
 }
 
 export function DueDateBadge({ dueDate, currentDate = new Date(), className, asChild, ...props }: DueDateBadgeProps) {
+  const choresT = useChoresTranslations()
   const now = currentDate.getTime()
   const due = dueDate.getTime()
   const timeDiff = due - now
@@ -148,13 +154,14 @@ export function DueDateBadge({ dueDate, currentDate = new Date(), className, asC
 
   const getVariantAndText = () => {
     if (timeDiff < 0) {
-      return { variant: 'error', text: 'Overdue' }
+      return { variant: 'error', text: choresT('overdue') }
     }
     if (hoursUntilDue <= 24) {
-      return { variant: 'warning', text: 'Due Soon' }
+      return { variant: 'warning', text: choresT('dueSoon') }
     }
     if (daysDiff <= 3) {
-      return { variant: 'secondary', text: `Due in ${daysDiff} day${daysDiff === 1 ? '' : 's'}` }
+      const plural = daysDiff === 1 ? '' : 's'
+      return { variant: 'secondary', text: choresT('dueInDays').replace('{days}', daysDiff.toString()).replace('{plural}', plural) }
     }
     return null // Don't show badge if not urgent
   }
@@ -182,6 +189,21 @@ interface RoleBadgeProps extends React.ComponentProps<"span">,
 }
 
 export function RoleBadge({ role, className, asChild, ...props }: RoleBadgeProps) {
+  const rolesT = useRolesTranslations()
+
+  const getRoleDisplayName = (role: TenantMemberRole) => {
+    switch (role) {
+      case TenantMemberRole.ADMIN:
+        return rolesT('admin')
+      case TenantMemberRole.PARENT:
+        return rolesT('parent')
+      case TenantMemberRole.CHILD:
+        return rolesT('child')
+      default:
+        return role
+    }
+  }
+
   const getRoleVariantAndClass = (role: TenantMemberRole) => {
     switch (role) {
       case TenantMemberRole.ADMIN:
@@ -216,7 +238,7 @@ export function RoleBadge({ role, className, asChild, ...props }: RoleBadgeProps
       asChild={asChild}
       {...props}
     >
-      {role}
+      {getRoleDisplayName(role)}
     </Badge>
   )
 }

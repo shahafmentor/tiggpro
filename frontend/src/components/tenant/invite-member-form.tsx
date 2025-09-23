@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { TenantMemberRole } from '@tiggpro/shared'
+import { useCommonTranslations, useRolesTranslations } from '@/hooks/use-translations'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -49,6 +50,8 @@ interface InviteMemberFormProps {
 export function InviteMemberForm({ tenantId, onSuccess }: InviteMemberFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const queryClient = useQueryClient()
+  const commonT = useCommonTranslations()
+  const rolesT = useRolesTranslations()
 
   const form = useForm<InviteMemberForm>({
     resolver: zodResolver(inviteMemberSchema),
@@ -88,11 +91,11 @@ export function InviteMemberForm({ tenantId, onSuccess }: InviteMemberFormProps)
   const getRoleDescription = (role: TenantMemberRole) => {
     switch (role) {
       case TenantMemberRole.ADMIN:
-        return 'Full access to manage family, members, and all chores'
+        return rolesT('adminDescription')
       case TenantMemberRole.PARENT:
-        return 'Can manage children and assign chores'
+        return rolesT('parentDescription')
       case TenantMemberRole.CHILD:
-        return 'Can complete assigned chores and earn rewards'
+        return rolesT('childDescription')
       default:
         return ''
     }
@@ -106,7 +109,7 @@ export function InviteMemberForm({ tenantId, onSuccess }: InviteMemberFormProps)
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email Address</FormLabel>
+              <FormLabel>{commonT('emailAddress')}</FormLabel>
               <FormControl>
                 <Input
                   type="email"
@@ -116,7 +119,7 @@ export function InviteMemberForm({ tenantId, onSuccess }: InviteMemberFormProps)
                 />
               </FormControl>
               <FormDescription>
-                The person will receive an invitation via email
+                {commonT('emailInvitationHint')}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -128,7 +131,7 @@ export function InviteMemberForm({ tenantId, onSuccess }: InviteMemberFormProps)
           name="role"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Role</FormLabel>
+              <FormLabel>{commonT('role')}</FormLabel>
               <Select
                 onValueChange={field.onChange}
                 defaultValue={field.value}
@@ -141,13 +144,13 @@ export function InviteMemberForm({ tenantId, onSuccess }: InviteMemberFormProps)
                 </FormControl>
                 <SelectContent>
                   <SelectItem value={TenantMemberRole.ADMIN}>
-                    👑 Administrator
+                    👑 {rolesT('admin')}
                   </SelectItem>
                   <SelectItem value={TenantMemberRole.PARENT}>
-                    🛡️ Parent
+                    🛡️ {rolesT('parent')}
                   </SelectItem>
                   <SelectItem value={TenantMemberRole.CHILD}>
-                    👶 Child
+                    👶 {rolesT('child')}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -164,7 +167,7 @@ export function InviteMemberForm({ tenantId, onSuccess }: InviteMemberFormProps)
           name="message"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Personal Message (Optional)</FormLabel>
+              <FormLabel>{commonT('personalMessage')}</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Welcome to our family! We're excited to have you join us in managing our chores together."

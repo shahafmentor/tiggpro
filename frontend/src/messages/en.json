@@ -18,10 +18,16 @@
     "pending": "Pending",
     "approved": "Approved",
     "rejected": "Rejected",
+    "done": "Done ✓",
     "difficulty": "Difficulty Level",
     "points": "Points Reward",
     "gamingTime": "Gaming Time (minutes)",
     "duration": "Estimated Duration (minutes)",
+    "overdue": "Overdue",
+    "dueSoon": "Due Soon",
+    "dueInDays": "Due in {days} day{plural}",
+    "min": "min",
+    "pts": "pts",
     "recurring": "Recurring Chore",
     "recurrencePattern": "Recurrence Pattern",
     "daysOfWeek": "Days of the Week",
@@ -70,10 +76,26 @@
     "confirm": "Confirm",
     "yes": "Yes",
     "no": "No",
-    "back": "Back"
+    "back": "Back",
+    "emailAddress": "Email Address",
+    "emailInvitationHint": "The person will receive an invitation via email",
+    "role": "Role",
+    "personalMessage": "Personal Message (Optional)"
   },
   "language": {
     "selectLanguage": "Select Language"
+  },
+  "brand": {
+    "productName": "Tiggpro"
+  },
+  "roles": {
+    "admin": "Admin",
+    "parent": "Parent",
+    "child": "Child",
+    "kid": "Kid",
+    "adminDescription": "Full access to manage family, members, and all chores",
+    "parentDescription": "Can manage children and assign chores",
+    "childDescription": "Can complete assigned chores and earn rewards"
   },
   "dashboard": {
     "welcome": "Welcome back, {name}! 🎉",
@@ -104,7 +126,36 @@
       "onlyParentsAdmins": "Only parents and admins can review submissions.",
       "errorLoading": "Error Loading Submissions",
       "failedToLoad": "Failed to load pending submissions. Please try again.",
-      "pendingCount": "{count} pending"
+      "pendingCount": "{count} pending",
+      "unknownChore": "Unknown Chore",
+      "unknownUser": "Unknown User",
+      "due": "Due:",
+      "noDueDate": "No due date",
+      "notes": "Notes:",
+      "photos": "Photos:",
+      "submissionPhoto": "Submission photo",
+      "submitted": "Submitted:",
+      "reviewSubmission": "Review Submission",
+      "minGaming": "min gaming",
+      "submittedPrefix": "Submitted",
+      "notesLabel": "Notes",
+      "photosCount": "Photos",
+      "reviewDecision": "Review Decision",
+      "approve": "Approve",
+      "reject": "Reject",
+      "feedbackLabel": "Feedback",
+      "optional": "(Optional)",
+      "required": "(Required)",
+      "feedbackApprove": "Great job! (optional feedback)",
+      "feedbackReject": "Please explain what needs to be improved...",
+      "characters": "characters",
+      "pointsAwarded": "Points to be awarded:",
+      "pointsSuffix": "points",
+      "gamingTimeSuffix": "minutes of gaming time",
+      "approving": "Approving...",
+      "rejecting": "Rejecting...",
+      "approveSubmission": "Approve Submission",
+      "rejectSubmission": "Reject Submission"
     },
     "chores": {
       "titleChild": "My Assignments",
@@ -134,7 +185,11 @@
       "noMembers": "No members found",
       "noMembersDesc": "This family doesn't have any members yet",
       "familyCode": "Family Code",
-      "inviteCopyHint": "Share this code with family members to invite them"
+      "inviteCopyHint": "Share this code with family members to invite them",
+      "createFamily": "Create Family",
+      "selectFamily": "Select Family",
+      "switchFamily": "Switch Family",
+      "manageFamilies": "Manage Families"
     },
     "achievements": {
       "title": "Achievements",

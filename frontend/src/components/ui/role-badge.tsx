@@ -2,6 +2,7 @@
 
 import { Badge } from '@/components/ui/badge'
 import { TenantMemberRole } from '@tiggpro/shared'
+import { useRolesTranslations } from '@/hooks/use-translations'
 import { cn } from '@/lib/utils'
 
 interface RoleBadgeProps {
@@ -10,6 +11,21 @@ interface RoleBadgeProps {
 }
 
 export function RoleBadge({ role, className }: RoleBadgeProps) {
+  const rolesT = useRolesTranslations()
+
+  const getRoleDisplayName = (role: TenantMemberRole) => {
+    switch (role) {
+      case TenantMemberRole.ADMIN:
+        return rolesT('admin')
+      case TenantMemberRole.PARENT:
+        return rolesT('parent')
+      case TenantMemberRole.CHILD:
+        return rolesT('child')
+      default:
+        return role
+    }
+  }
+
   const color = (() => {
     switch (role) {
       case TenantMemberRole.ADMIN:
@@ -25,7 +41,7 @@ export function RoleBadge({ role, className }: RoleBadgeProps) {
 
   return (
     <Badge variant="secondary" className={cn('text-xs', color, className)}>
-      {role}
+      {getRoleDisplayName(role)}
     </Badge>
   )
 }

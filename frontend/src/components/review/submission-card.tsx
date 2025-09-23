@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { StatusBadge } from '@/components/ui/semantic-badges'
 import { Calendar, Star, User, Eye } from 'lucide-react'
 import type { Submission } from '@/lib/api/assignments'
+import { usePagesTranslations } from '@/hooks/use-translations'
 
 interface SubmissionCardProps {
   submission: Submission
@@ -12,17 +13,19 @@ interface SubmissionCardProps {
 }
 
 export function SubmissionCard({ submission, onReview }: SubmissionCardProps) {
+  const pageT = usePagesTranslations()
+
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="space-y-1">
             <CardTitle className="text-lg line-clamp-2">
-              {submission.assignment?.chore?.title || 'Unknown Chore'}
+              {submission.assignment?.chore?.title || pageT('review.unknownChore')}
             </CardTitle>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <User className="h-4 w-4" />
-              <span>{submission.assignment?.assignedTo?.displayName || 'Unknown User'}</span>
+              <span>{submission.assignment?.assignedTo?.displayName || pageT('review.unknownUser')}</span>
             </div>
           </div>
           <StatusBadge status="pending" />
@@ -33,9 +36,9 @@ export function SubmissionCard({ submission, onReview }: SubmissionCardProps) {
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm">
             <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span>Due: {submission.assignment?.dueDate ?
+            <span>{pageT('review.due')} {submission.assignment?.dueDate ?
               new Date(submission.assignment.dueDate).toLocaleDateString() :
-              'No due date'
+              pageT('review.noDueDate')
             }</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
@@ -46,7 +49,7 @@ export function SubmissionCard({ submission, onReview }: SubmissionCardProps) {
 
         {submission.submissionNotes && (
           <div className="space-y-1">
-            <p className="text-sm font-medium">Notes:</p>
+            <p className="text-sm font-medium">{pageT('review.notes')}</p>
             <p className="text-sm text-muted-foreground line-clamp-2">
               {submission.submissionNotes}
             </p>
@@ -55,13 +58,13 @@ export function SubmissionCard({ submission, onReview }: SubmissionCardProps) {
 
         {submission.mediaUrls && submission.mediaUrls.length > 0 && (
           <div className="space-y-1">
-            <p className="text-sm font-medium">Photos: {submission.mediaUrls.length}</p>
+            <p className="text-sm font-medium">{pageT('review.photos')} {submission.mediaUrls.length}</p>
             <div className="flex gap-1">
               {submission.mediaUrls.slice(0, 3).map((url, index) => (
                 <div key={index} className="w-12 h-12 bg-muted rounded border overflow-hidden">
                   <img
                     src={url}
-                    alt={`Submission photo ${index + 1}`}
+                    alt={`${pageT('review.submissionPhoto')} ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -78,12 +81,12 @@ export function SubmissionCard({ submission, onReview }: SubmissionCardProps) {
         )}
 
         <div className="text-xs text-muted-foreground">
-          Submitted: {new Date(submission.submittedAt).toLocaleString()}
+          {pageT('review.submitted')} {new Date(submission.submittedAt).toLocaleString()}
         </div>
 
         <Button className="w-full" onClick={() => onReview(submission)}>
           <Eye className="h-4 w-4 mr-2" />
-          Review Submission
+          {pageT('review.reviewSubmission')}
         </Button>
       </CardContent>
     </Card>

@@ -48,6 +48,19 @@ export function ChoreDetailModal({
     }
   }
 
+  const getDifficultyText = (difficulty: string) => {
+    switch (difficulty.toLowerCase()) {
+      case 'easy':
+        return choresT('easy')
+      case 'medium':
+        return choresT('medium')
+      case 'hard':
+        return choresT('hard')
+      default:
+        return difficulty
+    }
+  }
+
   const difficultyInfo = getDifficultyLevel(assignment.chore.difficultyLevel)
 
   return (
@@ -67,7 +80,7 @@ export function ChoreDetailModal({
               <StatusBadge status={assignment.status as 'pending' | 'submitted' | 'approved' | 'completed' | 'rejected' | 'overdue'} />
               {isOverdue && (
                 <Badge variant="destructive" className="text-xs">
-                  Overdue
+                  {choresT('overdue')}
                 </Badge>
               )}
             </div>
@@ -109,7 +122,7 @@ export function ChoreDetailModal({
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">{choresT('gamingTime')}</p>
-                  <p className="text-sm font-medium">{assignment.chore.gamingTimeMinutes} min</p>
+                  <p className="text-sm font-medium">{assignment.chore.gamingTimeMinutes} {choresT('min')}</p>
                 </div>
               </div>
 
@@ -131,7 +144,7 @@ export function ChoreDetailModal({
                         }`}
                       />
                     ))}
-                    <span className="text-xs ml-1 capitalize">{assignment.chore.difficultyLevel}</span>
+                    <span className="text-xs ml-1">{getDifficultyText(assignment.chore.difficultyLevel)}</span>
                   </div>
                 </div>
               </div>
@@ -143,7 +156,7 @@ export function ChoreDetailModal({
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">{choresT('duration')}</p>
-                  <p className="text-sm font-medium">~{assignment.chore.estimatedDurationMinutes} min</p>
+                  <p className="text-sm font-medium">~{assignment.chore.estimatedDurationMinutes} {choresT('min')}</p>
                 </div>
               </div>
             </div>

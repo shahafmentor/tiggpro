@@ -44,3 +44,15 @@ export function useModalsTranslations() {
 
   return (key: string) => t(dictionary, `modals.${key}`)
 }
+
+export function useRolesTranslations() {
+  const { dictionary } = useDictionary()
+
+  return (key: string) => t(dictionary, `roles.${key}`)
+}
+
+export function useBrandTranslations() {
+  const { dictionary } = useDictionary()
+
+  return (key: string) => t(dictionary, `brand.${key}`)
+}

@@ -16,10 +16,12 @@ import {
 import { RoleBadge } from '@/components/ui/semantic-badges'
 import { tenantsApi } from '@/lib/api/tenants'
 import { useTenant } from '@/lib/contexts/tenant-context'
+import { usePagesTranslations } from '@/hooks/use-translations'
 
 export function TenantSelector() {
   const { currentTenant, setCurrentTenant } = useTenant()
   const { data: session, status } = useSession()
+  const pageT = usePagesTranslations()
 
   const { data: tenantsResponse, isLoading } = useQuery({
     queryKey: ['tenants', 'my'],
@@ -54,7 +56,7 @@ export function TenantSelector() {
         onClick={() => window.location.href = '/dashboard/family'}
       >
         <Plus className="h-4 w-4" />
-        <span className="hidden sm:inline">Create Family</span>
+        <span className="hidden sm:inline">{pageT('family.createFamily')}</span>
       </Button>
     )
   }
@@ -72,13 +74,13 @@ export function TenantSelector() {
               <RoleBadge role={currentTenant.role} />
             </>
           ) : (
-            <span>Select Family</span>
+            <span>{pageT('family.selectFamily')}</span>
           )}
           <ChevronDown className="h-4 w-4 flex-shrink-0" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-64" align="end">
-        <DropdownMenuLabel>Switch Family</DropdownMenuLabel>
+        <DropdownMenuLabel>{pageT('family.switchFamily')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {tenants.map((tenant) => (
           <DropdownMenuItem
@@ -107,7 +109,7 @@ export function TenantSelector() {
         <DropdownMenuSeparator />
         <DropdownMenuItem className="text-primary">
           <Plus className="h-4 w-4 mr-2" />
-          Manage Families
+          {pageT('family.manageFamilies')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

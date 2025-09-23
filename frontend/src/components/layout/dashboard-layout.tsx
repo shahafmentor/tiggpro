@@ -21,7 +21,7 @@ import { useQuery } from '@tanstack/react-query'
 import { assignmentsApi } from '@/lib/api/assignments'
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { TenantMemberRole } from '@tiggpro/shared'
-import { useNavigationTranslations, useChoresTranslations } from '@/hooks/use-translations'
+import { useNavigationTranslations, useChoresTranslations, useBrandTranslations } from '@/hooks/use-translations'
 import { useLocalizedRouter } from '@/hooks/use-localized-router'
 import { useLocale } from '@/hooks/use-locale'
 
@@ -81,6 +81,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { direction } = useLocale()
   const navT = useNavigationTranslations()
   const choresT = useChoresTranslations()
+  const brandT = useBrandTranslations()
 
   // Check if user has permission to review submissions
   const canReview = currentTenant?.role === TenantMemberRole.ADMIN ||
@@ -155,7 +156,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-lg">T</span>
               </div>
-              <span className="font-bold text-xl text-foreground">Tiggpro</span>
+              <span className="font-bold text-xl text-foreground">{brandT('productName')}</span>
             </div>
           </div>
 

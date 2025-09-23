@@ -3,10 +3,12 @@
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useTheme } from '@/lib/theme-context'
+import { useRolesTranslations } from '@/hooks/use-translations'
 import { Moon, Sun, User, Baby } from 'lucide-react'
 
 export function ThemeSwitcher() {
   const { theme, userTheme, setUserTheme, toggleTheme } = useTheme()
+  const rolesT = useRolesTranslations()
 
   return (
     <div className="flex items-center gap-2">
@@ -34,13 +36,13 @@ export function ThemeSwitcher() {
           <SelectItem value="parent">
             <div className="flex items-center gap-2">
               <User className="h-4 w-4" />
-              <span>Parent</span>
+              <span>{rolesT('parent')}</span>
             </div>
           </SelectItem>
           <SelectItem value="kid">
             <div className="flex items-center gap-2">
               <Baby className="h-4 w-4" />
-              <span>Kid</span>
+              <span>{rolesT('kid')}</span>
             </div>
           </SelectItem>
         </SelectContent>

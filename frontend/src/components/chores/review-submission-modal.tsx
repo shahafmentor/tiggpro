@@ -141,14 +141,14 @@ export function ReviewSubmissionModal({
                   <div className="flex-1 space-y-1">
                     <h4 className="font-medium text-foreground">{chore?.title}</h4>
                     <p className="text-sm text-muted-foreground">
-                      {assignee?.displayName || 'Unknown User'}
+                      {assignee?.displayName || p('review.unknownUser')}
                     </p>
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        {`Due: `}{assignment?.dueDate ?
+                        {p('review.due')} {assignment?.dueDate ?
                           new Date(assignment.dueDate).toLocaleDateString() :
-                          'No due date'
+                          p('review.noDueDate')
                         }
                       </div>
                       <div className="flex items-center gap-1">
@@ -158,7 +158,7 @@ export function ReviewSubmissionModal({
                       {chore?.gamingTimeMinutes && chore.gamingTimeMinutes > 0 && (
                         <div className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          +{chore.gamingTimeMinutes} min gaming
+                          +{chore.gamingTimeMinutes} {p('review.minGaming')}
                         </div>
                       )}
                     </div>
@@ -182,14 +182,14 @@ export function ReviewSubmissionModal({
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
                     <Clock className="h-3 w-3 mr-1" />
-                    {`Submitted ${new Date(submission.submittedAt).toLocaleString()}`}
+                    {p('review.submittedPrefix')} {new Date(submission.submittedAt).toLocaleString()}
                   </Badge>
                 </div>
 
                 {/* Submission Notes */}
                 {submission.submissionNotes && (
                   <div className="space-y-2">
-                    <p className="text-sm font-medium">Notes</p>
+                    <p className="text-sm font-medium">{p('review.notesLabel')}</p>
                     <div className="bg-muted/50 rounded-lg p-3">
                       <p className="text-sm">{submission.submissionNotes}</p>
                     </div>
@@ -201,14 +201,14 @@ export function ReviewSubmissionModal({
                   <div className="space-y-2">
                     <p className="text-sm font-medium flex items-center gap-2">
                       <Image className="h-4 w-4" />
-                      {`Photos (${submission.mediaUrls.length})`}
+                      {p('review.photosCount')} ({submission.mediaUrls.length})
                     </p>
                     <div className="grid grid-cols-2 gap-2">
                       {submission.mediaUrls.map((url, index) => (
                         <div key={index} className="aspect-video bg-muted rounded-lg border overflow-hidden">
                           <img
                             src={url}
-                            alt={`Submission photo ${index + 1}`}
+                            alt={`${p('review.submissionPhoto')} ${index + 1}`}
                             className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
                             onClick={() => window.open(url, '_blank')}
                           />
@@ -224,7 +224,7 @@ export function ReviewSubmissionModal({
           {/* Review Decision */}
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-base font-medium">Review Decision</Label>
+              <Label className="text-base font-medium">{p('review.reviewDecision')}</Label>
               <div className="flex gap-3">
                 <Button
                   variant={reviewDecision === 'approve' ? 'default' : 'outline'}
@@ -235,7 +235,7 @@ export function ReviewSubmissionModal({
                   onClick={() => setReviewDecision('approve')}
                 >
                   <ThumbsUp className="h-4 w-4" />
-                  Approve
+                  {p('review.approve')}
                 </Button>
                 <Button
                   variant={reviewDecision === 'reject' ? 'destructive' : 'outline'}
@@ -243,7 +243,7 @@ export function ReviewSubmissionModal({
                   onClick={() => setReviewDecision('reject')}
                 >
                   <ThumbsDown className="h-4 w-4" />
-                  Reject
+                  {p('review.reject')}
                 </Button>
               </div>
             </div>
@@ -251,14 +251,14 @@ export function ReviewSubmissionModal({
             {/* Review Feedback */}
             <div className="space-y-2">
               <Label htmlFor="review-feedback">
-                {`Feedback ${reviewDecision === 'approve' ? '(Optional)' : '(Required)'}`}
+                {p('review.feedbackLabel')} {reviewDecision === 'approve' ? p('review.optional') : p('review.required')}
               </Label>
               <Textarea
                 id="review-feedback"
                 placeholder={
                   reviewDecision === 'approve'
-                    ? "Great job! (optional feedback)"
-                    : "Please explain what needs to be improved..."
+                    ? p('review.feedbackApprove')
+                    : p('review.feedbackReject')
                 }
                 value={reviewFeedback}
                 onChange={(e) => setReviewFeedback(e.target.value)}
@@ -270,7 +270,7 @@ export function ReviewSubmissionModal({
                 )}
               />
               <p className="text-xs text-muted-foreground">
-                {`${reviewFeedback.length}/500 characters`}
+                {reviewFeedback.length}/500 {p('review.characters')}
               </p>
             </div>
 
@@ -279,12 +279,12 @@ export function ReviewSubmissionModal({
               <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                 <div className="flex items-center gap-2 text-green-800">
                   <CheckCircle className="h-4 w-4" />
-                  <span className="text-sm font-medium">Points to be awarded:</span>
+                  <span className="text-sm font-medium">{p('review.pointsAwarded')}</span>
                 </div>
                 <div className="mt-1 text-sm text-green-700">
-                  <div>{`• ${chore?.pointsReward || 0} points`}</div>
+                  <div>• {chore?.pointsReward || 0} {p('review.pointsSuffix')}</div>
                   {chore?.gamingTimeMinutes && chore.gamingTimeMinutes > 0 && (
-                    <div>{`• ${chore.gamingTimeMinutes} minutes of gaming time`}</div>
+                    <div>• {chore.gamingTimeMinutes} {p('review.gamingTimeSuffix')}</div>
                   )}
                 </div>
               </div>
@@ -315,19 +315,19 @@ export function ReviewSubmissionModal({
             {reviewMutation.isPending ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                {reviewDecision === 'approve' ? 'Approving...' : 'Rejecting...'}
+                {reviewDecision === 'approve' ? p('review.approving') : p('review.rejecting')}
               </>
             ) : (
               <>
                 {reviewDecision === 'approve' ? (
                   <>
                     <CheckCircle className="h-4 w-4 mr-2" />
-                    Approve Submission
+                    {p('review.approveSubmission')}
                   </>
                 ) : (
                   <>
                     <XCircle className="h-4 w-4 mr-2" />
-                    Reject Submission
+                    {p('review.rejectSubmission')}
                   </>
                 )}
               </>
