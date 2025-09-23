@@ -30,7 +30,8 @@ import { ChoreDetailModal } from '@/components/chores/chore-detail-modal'
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { assignmentsApi, type Assignment, type Submission } from '@/lib/api/assignments'
 import { TenantMemberRole } from '@tiggpro/shared'
-import { useRouter } from 'next/navigation'
+import { useLocalizedRouter } from '@/hooks/use-localized-router'
+import { useDashboardTranslations } from '@/hooks/use-translations'
 // import type { LeaderboardEntry } from '@/lib/api/gamification'
 
 export default function DashboardPage() {
@@ -39,7 +40,8 @@ export default function DashboardPage() {
   const [submittingAssignment, setSubmittingAssignment] = useState<Assignment | null>(null)
   const [showAllAssignments, setShowAllAssignments] = useState(false)
   const [viewingAssignment, setViewingAssignment] = useState<Assignment | null>(null)
-  const router = useRouter()
+  const router = useLocalizedRouter()
+  const t = useDashboardTranslations()
 
   // Check if user can review submissions
   const canReview = currentTenant?.role === TenantMemberRole.ADMIN ||
@@ -161,10 +163,10 @@ export default function DashboardPage() {
       {/* Welcome Header */}
       <div className="space-y-2">
         <h1 className="text-3xl font-bold text-foreground">
-          Welcome back, {session?.user?.name?.split(' ')[0] || 'Champion'}! 🎉
+          {t('welcome').replace('{name}', session?.user?.name?.split(' ')[0] || 'Champion')}
         </h1>
         <p className="text-muted-foreground">
-          Here&apos;s what&apos;s happening in your family today
+          {t('whatsHappening')}
         </p>
       </div>
 
@@ -174,7 +176,7 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-200">
               <AlertCircle className="h-5 w-5" />
-              Pending Reviews
+              {t('pendingReviews')}
               <Badge variant="destructive" className="ml-auto">
                 {pendingSubmissions.length}
               </Badge>
@@ -183,7 +185,7 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-3">
               <p className="text-sm text-orange-700 dark:text-orange-300">
-                You have {pendingSubmissions.length} submission{pendingSubmissions.length !== 1 ? 's' : ''} waiting for your review.
+                {t('youHaveSubmissions').replace('{count}', String(pendingSubmissions.length))}
               </p>
               <div className="flex gap-2">
                 <Button
@@ -191,14 +193,14 @@ export default function DashboardPage() {
                   className="bg-orange-600 hover:bg-orange-700 text-white"
                 >
                   <Eye className="h-4 w-4 mr-2" />
-                  Review Submissions
+                  {t('reviewSubmissions')}
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => router.push('/dashboard/review')}
                   className="border-orange-300 text-orange-700 hover:bg-orange-100 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-900"
                 >
-                  View All
+                  {t('viewAll')}
                 </Button>
               </div>
             </div>
@@ -221,7 +223,7 @@ export default function DashboardPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CheckSquare className="h-5 w-5" />
-            My Assignments
+            {t('myAssignments')}
             {assignmentStats.total > 0 && (
               <CountBadge count={assignmentStats.total} className="ml-auto" />
             )}
@@ -244,13 +246,13 @@ export default function DashboardPage() {
           ) : assignmentsError ? (
             <div className="text-center py-6 text-muted-foreground">
               <AlertCircle className="h-8 w-8 mx-auto mb-2" />
-              <p>Failed to load assignments</p>
+              <p>{t('failedToLoadAssignments')}</p>
             </div>
           ) : assignments.length === 0 ? (
             <div className="text-center py-6 text-muted-foreground">
               <CheckSquare className="h-8 w-8 mx-auto mb-2" />
-              <p>No assignments yet</p>
-              <p className="text-sm">Check back later for new chores!</p>
+              <p>{t('noAssignments')}</p>
+              <p className="text-sm">{t('checkBackLater')}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -287,7 +289,7 @@ export default function DashboardPage() {
                       </p>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Clock className="h-3 w-3" />
-                        <span>Due {dueDate.toLocaleDateString()}</span>
+                        <span>{t('due').replace('{date}', dueDate.toLocaleDateString())}</span>
                         <DueDateBadge dueDate={dueDate} />
                       </div>
                     </div>
@@ -302,7 +304,7 @@ export default function DashboardPage() {
                             setSubmittingAssignment(assignment)
                           }}
                         >
-                          Submit
+                          {t('submit')}
                         </Button>
                       ) : assignment.status === 'rejected' ? (
                         <Button
@@ -314,7 +316,7 @@ export default function DashboardPage() {
                             setSubmittingAssignment(assignment)
                           }}
                         >
-                          Resubmit
+                          {t('resubmit')}
                         </Button>
                       ) : (
                         <StatusBadge status={assignment.status as 'pending' | 'submitted' | 'approved' | 'completed' | 'rejected' | 'overdue'} />
@@ -332,12 +334,12 @@ export default function DashboardPage() {
                   {showAllAssignments ? (
                     <>
                       <ChevronUp className="h-4 w-4 mr-2" />
-                      Show Less
+                      {t('showLess')}
                     </>
                   ) : (
                     <>
                       <ChevronDown className="h-4 w-4 mr-2" />
-                      View All Assignments ({assignments.length})
+                      {t('viewAllAssignments').replace('{count}', String(assignments.length))}
                     </>
                   )}
                 </Button>

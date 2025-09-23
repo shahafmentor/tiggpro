@@ -251,6 +251,69 @@
     font-family: var(--font-primary, 'Inter', system-ui, sans-serif);
   }
 
+  /* RTL Support */
+  [dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+  }
+
+  [dir="ltr"] {
+    direction: ltr;
+    text-align: left;
+  }
+
+  /* RTL-specific typography adjustments */
+  [dir="rtl"] .font-mono {
+    font-family: 'Courier New', monospace;
+  }
+
+  /* RTL-aware spacing utilities */
+  [dir="rtl"] .space-x-reverse > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-x-reverse: 1;
+  }
+
+  [dir="rtl"] .divide-x-reverse > :not([hidden]) ~ :not([hidden]) {
+    --tw-divide-x-reverse: 1;
+  }
+
+  /* Custom RTL utilities */
+  .rtl\:text-right[dir="rtl"] {
+    text-align: right;
+  }
+
+  .rtl\:text-left[dir="rtl"] {
+    text-align: left;
+  }
+
+  .rtl\:flex-row-reverse[dir="rtl"] {
+    flex-direction: row-reverse;
+  }
+
+  .rtl\:justify-end[dir="rtl"] {
+    justify-content: flex-end;
+  }
+
+  .rtl\:justify-start[dir="rtl"] {
+    justify-content: flex-start;
+  }
+
+  /* Icon rotation for RTL */
+  [dir="rtl"] .icon-chevron-right {
+    transform: rotate(180deg);
+  }
+
+  [dir="rtl"] .icon-chevron-left {
+    transform: rotate(180deg);
+  }
+
+  [dir="rtl"] .icon-arrow-right {
+    transform: rotate(180deg);
+  }
+
+  [dir="rtl"] .icon-arrow-left {
+    transform: rotate(180deg);
+  }
+
   /* Utility classes for animations */
   .animate-points-bounce {
     animation: points-bounce 0.6s ease-in-out;

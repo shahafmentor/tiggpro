@@ -1,7 +1,7 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useLocalizedRouter } from '@/hooks/use-localized-router'
 import { useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -11,7 +11,7 @@ import { ArrowRight } from 'lucide-react'
 
 export function LandingPageContent() {
   const { data: session, status } = useSession()
-  const router = useRouter()
+  const router = useLocalizedRouter()
 
   useEffect(() => {
     // Auto-redirect to dashboard if user is authenticated

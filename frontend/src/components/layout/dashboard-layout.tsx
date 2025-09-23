@@ -2,7 +2,7 @@
 
 import { ReactNode } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import {
   Home,
   CheckSquare,
@@ -16,10 +16,14 @@ import { cn } from '@/lib/utils'
 import { UserProfileHeader } from '@/components/layout/user-profile-header'
 import { TenantSelector } from '@/components/tenant/tenant-selector'
 import { ThemeSwitcher } from '@/components/ui/theme-switcher'
+import { LanguageSelector } from '@/components/ui/language-selector'
 import { useQuery } from '@tanstack/react-query'
 import { assignmentsApi } from '@/lib/api/assignments'
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { TenantMemberRole } from '@tiggpro/shared'
+import { useNavigationTranslations, useChoresTranslations } from '@/hooks/use-translations'
+import { useLocalizedRouter } from '@/hooks/use-localized-router'
+import { useLocale } from '@/hooks/use-locale'
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -71,9 +75,12 @@ const navItems: NavItem[] = [
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { data: session, status } = useSession()
-  const router = useRouter()
+  const router = useLocalizedRouter()
   const pathname = usePathname()
   const { currentTenant } = useTenant()
+  const { direction } = useLocale()
+  const navT = useNavigationTranslations()
+  const choresT = useChoresTranslations()
 
   // Check if user has permission to review submissions
   const canReview = currentTenant?.role === TenantMemberRole.ADMIN ||
@@ -106,22 +113,41 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   // Get user role from current tenant context
   const userRole = currentTenant?.role || 'CHILD'
 
-  // Create dynamic nav items with pending count badge
-  const dynamicNavItems = navItems.map(item => {
-    if (item.href === '/dashboard/review' && pendingCount > 0) {
-      return { ...item, badge: pendingCount }
-    }
-    return item
-  })
+  // Create dynamic nav items with translations and pending count badge
+  const dynamicNavItems = [
+    {
+      href: '/dashboard',
+      label: navT('dashboard'),
+      icon: Home,
+    },
+    {
+      href: '/dashboard/chores',
+      label: navT('chores'),
+      icon: CheckSquare,
+    },
+    {
+      href: '/dashboard/review',
+      label: navT('review'),
+      icon: Eye,
+      roles: ['admin', 'parent'] as const,
+      badge: pendingCount > 0 ? pendingCount : undefined,
+    },
+    {
+      href: '/dashboard/family',
+      label: navT('family'),
+      icon: Users,
+      roles: ['admin', 'parent'] as const,
+    },
+  ]
 
   const filteredNavItems = dynamicNavItems.filter(item =>
-    !item.roles || item.roles.includes(userRole as 'admin' | 'parent' | 'child')
+    !item.roles || item.roles.includes(userRole.toLowerCase() as 'admin' | 'parent')
   )
 
   return (
     <div className="min-h-screen bg-background">
       {/* Desktop Sidebar */}
-      <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0">
+      <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 lg:left-0">
         <div className="flex flex-col flex-grow bg-card border-r border-border">
           {/* Logo & Brand */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-border">
@@ -181,12 +207,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               onClick={() => router.push('/dashboard/chores/new')}
             >
               <Plus className="h-4 w-4" />
-              New Chore
+              {choresT('create')}
             </Button>
           </div>
 
-          <div className="px-4 pb-4 border-t border-border pt-4">
+          <div className="px-4 pb-4 border-t border-border pt-4 space-y-2">
             <ThemeSwitcher />
+            <LanguageSelector className="w-full" />
           </div>
         </div>
       </div>
@@ -229,7 +256,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             onClick={() => router.push('/dashboard/chores/new')}
           >
             <Plus className="h-5 w-5" />
-            <span className="text-xs">Add</span>
+            <span className="text-xs">{choresT('create')}</span>
           </Button>
         </nav>
       </div>
@@ -243,8 +270,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
             <span className="font-bold text-xl text-foreground">Tiggpro</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className={cn(
+            "flex items-center gap-2"
+          )}>
             <TenantSelector />
+            <LanguageSelector variant="compact" />
             {/* MVP: Comment out theme switcher - not essential for core flow */}
             {/* <ThemeSwitcher /> */}
           </div>

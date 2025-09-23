@@ -14,11 +14,11 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { signOut } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useLocalizedRouter } from '@/hooks/use-localized-router'
 
 export function UserProfileHeader() {
   const { data: session } = useSession()
-  const router = useRouter()
+  const router = useLocalizedRouter()
 
   if (!session?.user) {
     return null

@@ -1,0 +1,52 @@
+{
+  "navigation": {
+    "dashboard": "Home",
+    "chores": "Chores",
+    "review": "Review",
+    "family": "Family",
+    "achievements": "Achievements",
+    "settings": "Settings"
+  },
+  "chores": {
+    "create": "New Chore",
+    "title": "Title",
+    "description": "Description",
+    "assignTo": "Assign to",
+    "dueDate": "Due Date",
+    "submit": "Submit",
+    "complete": "Complete",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected"
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "language": {
+    "selectLanguage": "Select Language"
+  },
+  "dashboard": {
+    "welcome": "Welcome back, {name}! 🎉",
+    "whatsHappening": "Here's what's happening in your family today",
+    "pendingReviews": "Pending Reviews",
+    "youHaveSubmissions": "You have {count} submission(s) waiting for your review.",
+    "reviewSubmissions": "Review Submissions",
+    "viewAll": "View All",
+    "myAssignments": "My Assignments",
+    "failedToLoadAssignments": "Failed to load assignments",
+    "noAssignments": "No assignments yet",
+    "checkBackLater": "Check back later for new chores!",
+    "submit": "Submit",
+    "resubmit": "Resubmit",
+    "due": "Due {date}",
+    "showLess": "Show Less",
+    "viewAllAssignments": "View All Assignments ({count})"
+  }
+}

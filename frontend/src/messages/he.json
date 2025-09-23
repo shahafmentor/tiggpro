@@ -1,0 +1,52 @@
+{
+  "navigation": {
+    "dashboard": "בית",
+    "chores": "מטלות",
+    "review": "בדיקה",
+    "family": "משפחה",
+    "achievements": "הישגים",
+    "settings": "הגדרות"
+  },
+  "chores": {
+    "create": "מטלה חדשה",
+    "title": "כותרת",
+    "description": "תיאור",
+    "assignTo": "הקצה ל",
+    "dueDate": "תאריך יעד",
+    "submit": "שלח",
+    "complete": "השלם",
+    "pending": "ממתין",
+    "approved": "אושר",
+    "rejected": "נדחה"
+  },
+  "common": {
+    "loading": "טוען...",
+    "save": "שמור",
+    "cancel": "ביטול",
+    "edit": "ערוך",
+    "delete": "מחק",
+    "confirm": "אישור",
+    "yes": "כן",
+    "no": "לא"
+  },
+  "language": {
+    "selectLanguage": "בחר שפה"
+  },
+  "dashboard": {
+    "welcome": "ברוך הבא, {name}! 🎉",
+    "whatsHappening": "הנה מה שקורה במשפחה שלך היום",
+    "pendingReviews": "ממתין לבדיקה",
+    "youHaveSubmissions": "יש לך {count} הגשה/ות שממתינות לבדיקה.",
+    "reviewSubmissions": "בדיקת הגשות",
+    "viewAll": "צפה בהכל",
+    "myAssignments": "המטלות שלי",
+    "failedToLoadAssignments": "נכשל בטעינת מטלות",
+    "noAssignments": "אין מטלות כרגע",
+    "checkBackLater": "חזור מאוחר יותר למטלות חדשות!",
+    "submit": "שלח",
+    "resubmit": "שלח מחדש",
+    "due": "תאריך יעד {date}",
+    "showLess": "הצג פחות",
+    "viewAllAssignments": "צפה בכל המטלות ({count})"
+  }
+}
