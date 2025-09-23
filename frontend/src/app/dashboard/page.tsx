@@ -13,7 +13,9 @@ import {
   // Users,
   Clock,
   AlertCircle,
-  Eye
+  Eye,
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -33,6 +35,7 @@ export default function DashboardPage() {
   const { data: session } = useSession()
   const { currentTenant } = useTenant()
   const [submittingAssignment, setSubmittingAssignment] = useState<Assignment | null>(null)
+  const [showAllAssignments, setShowAllAssignments] = useState(false)
   const router = useRouter()
 
   // Check if user can review submissions
@@ -247,7 +250,7 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {assignments.slice(0, 3).map((assignment) => {
+              {(showAllAssignments ? assignments : assignments.slice(0, 3)).map((assignment) => {
                 const dueDate = new Date(assignment.dueDate)
                 const isOverdue = dueDate < new Date() && assignment.status === 'pending'
                 const isDueSoon = dueDate.getTime() - new Date().getTime() < 24 * 60 * 60 * 1000 // 24 hours
@@ -326,8 +329,22 @@ export default function DashboardPage() {
                 )
               })}
               {assignments.length > 3 && (
-                <Button variant="outline" className="w-full mt-4">
-                  View All Assignments ({assignments.length})
+                <Button
+                  variant="outline"
+                  className="w-full mt-4"
+                  onClick={() => setShowAllAssignments(!showAllAssignments)}
+                >
+                  {showAllAssignments ? (
+                    <>
+                      <ChevronUp className="h-4 w-4 mr-2" />
+                      Show Less
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-4 w-4 mr-2" />
+                      View All Assignments ({assignments.length})
+                    </>
+                  )}
                 </Button>
               )}
             </div>
