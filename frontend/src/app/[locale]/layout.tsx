@@ -39,8 +39,8 @@ export default async function LocaleLayout({
   // Get dictionary for this locale
   const dictionary = await getDictionary(locale as 'en' | 'he');
 
-  // Keep LTR layout for all locales to maintain identical positioning
-  const direction = 'ltr';
+  // Set direction based on locale - RTL for Hebrew, LTR for others
+  const direction = locale === 'he' ? 'rtl' : 'ltr';
 
   return (
     <html lang={locale} dir={direction}>

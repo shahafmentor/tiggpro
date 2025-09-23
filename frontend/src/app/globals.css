@@ -297,6 +297,56 @@
     justify-content: flex-start;
   }
 
+  /* RTL Margin utilities */
+  .rtl\:ml-0[dir="rtl"] { margin-left: 0; }
+  .rtl\:ml-1[dir="rtl"] { margin-left: 0.25rem; }
+  .rtl\:ml-2[dir="rtl"] { margin-left: 0.5rem; }
+  .rtl\:ml-3[dir="rtl"] { margin-left: 0.75rem; }
+  .rtl\:ml-4[dir="rtl"] { margin-left: 1rem; }
+  .rtl\:ml-6[dir="rtl"] { margin-left: 1.5rem; }
+  .rtl\:ml-8[dir="rtl"] { margin-left: 2rem; }
+  .rtl\:ml-auto[dir="rtl"] { margin-left: auto; }
+
+  .rtl\:mr-0[dir="rtl"] { margin-right: 0; }
+  .rtl\:mr-1[dir="rtl"] { margin-right: 0.25rem; }
+  .rtl\:mr-2[dir="rtl"] { margin-right: 0.5rem; }
+  .rtl\:mr-3[dir="rtl"] { margin-right: 0.75rem; }
+  .rtl\:mr-4[dir="rtl"] { margin-right: 1rem; }
+  .rtl\:mr-6[dir="rtl"] { margin-right: 1.5rem; }
+  .rtl\:mr-8[dir="rtl"] { margin-right: 2rem; }
+  .rtl\:mr-auto[dir="rtl"] { margin-right: auto; }
+
+  /* RTL Padding utilities */
+  .rtl\:pl-0[dir="rtl"] { padding-left: 0; }
+  .rtl\:pl-1[dir="rtl"] { padding-left: 0.25rem; }
+  .rtl\:pl-2[dir="rtl"] { padding-left: 0.5rem; }
+  .rtl\:pl-3[dir="rtl"] { padding-left: 0.75rem; }
+  .rtl\:pl-4[dir="rtl"] { padding-left: 1rem; }
+  .rtl\:pl-6[dir="rtl"] { padding-left: 1.5rem; }
+  .rtl\:pl-8[dir="rtl"] { padding-left: 2rem; }
+  .rtl\:pl-64[dir="rtl"] { padding-left: 16rem; }
+
+  .rtl\:pr-0[dir="rtl"] { padding-right: 0; }
+  .rtl\:pr-1[dir="rtl"] { padding-right: 0.25rem; }
+  .rtl\:pr-2[dir="rtl"] { padding-right: 0.5rem; }
+  .rtl\:pr-3[dir="rtl"] { padding-right: 0.75rem; }
+  .rtl\:pr-4[dir="rtl"] { padding-right: 1rem; }
+  .rtl\:pr-6[dir="rtl"] { padding-right: 1.5rem; }
+  .rtl\:pr-8[dir="rtl"] { padding-right: 2rem; }
+  .rtl\:pr-64[dir="rtl"] { padding-right: 16rem; }
+
+  /* RTL Border utilities */
+  .rtl\:border-l-0[dir="rtl"] { border-left-width: 0; }
+  .rtl\:border-r-0[dir="rtl"] { border-right-width: 0; }
+  .rtl\:border-l[dir="rtl"] { border-left-width: 1px; }
+  .rtl\:border-r[dir="rtl"] { border-right-width: 1px; }
+
+  /* RTL Position utilities */
+  .rtl\:left-0[dir="rtl"] { left: 0; }
+  .rtl\:right-0[dir="rtl"] { right: 0; }
+  .rtl\:left-64[dir="rtl"] { left: 16rem; }
+  .rtl\:right-64[dir="rtl"] { right: 16rem; }
+
   /* Icon rotation for RTL */
   [dir="rtl"] .icon-chevron-right {
     transform: rotate(180deg);

@@ -148,8 +148,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Desktop Sidebar */}
-      <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 lg:left-0">
-        <div className="flex flex-col flex-grow bg-card border-r border-border">
+      <div className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 rtl:lg:left-auto rtl:lg:right-0">
+        <div className="flex flex-col flex-grow bg-card border-r border-border rtl:border-r-0 rtl:border-l">
           {/* Logo & Brand */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-border">
             <div className="flex items-center gap-3">
@@ -182,15 +182,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     <Button
                       variant={isActive ? "default" : "ghost"}
                       className={cn(
-                        "w-full justify-start gap-3 h-12",
+                        "w-full justify-start gap-3 h-12 rtl:justify-start",
                         isActive && "bg-primary text-primary-foreground"
                       )}
                       onClick={() => router.push(item.href)}
                     >
                       <Icon className="h-5 w-5" />
-                      <span className="flex-1 text-left">{item.label}</span>
+                      <span className="flex-1 text-left rtl:text-right">{item.label}</span>
                       {item.badge && (
-                        <Badge variant="secondary" className="ml-auto">
+                        <Badge variant="secondary" className="ml-auto rtl:ml-0 rtl:mr-auto">
                           {item.badge}
                         </Badge>
                       )}
@@ -242,7 +242,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 {item.badge && (
                   <Badge
                     variant="destructive"
-                    className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs"
+                    className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs rtl:-right-auto rtl:-left-1"
                   >
                     {item.badge}
                   </Badge>
@@ -283,7 +283,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </div>
 
       {/* Main Content */}
-      <div className="lg:pl-64">
+      <div className="lg:pl-64 rtl:lg:pl-0 rtl:lg:pr-64">
         <main className="min-h-screen pb-20 lg:pb-0">
           <div className="max-w-7xl mx-auto px-6 py-6">
             {children}

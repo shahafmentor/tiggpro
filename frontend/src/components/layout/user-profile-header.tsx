@@ -47,14 +47,14 @@ export function UserProfileHeader() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="w-full justify-start gap-3 h-auto p-2">
+        <Button variant="ghost" className="w-full justify-start gap-3 h-auto p-2 rtl:justify-start">
           <Avatar className="h-10 w-10">
             <AvatarImage src={user.image || undefined} alt={user.name || 'User'} />
             <AvatarFallback className="bg-primary text-primary-foreground">
               {initials}
             </AvatarFallback>
           </Avatar>
-          <div className="flex-1 text-left min-w-0">
+          <div className="flex-1 text-left rtl:text-right min-w-0">
             <div className="flex items-center gap-2">
               <p className="font-medium text-sm text-foreground truncate">
                 {user.name}
@@ -95,16 +95,16 @@ export function UserProfileHeader() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>
-          <User className="mr-2 h-4 w-4" />
+          <User className="mr-2 h-4 w-4 rtl:mr-0 rtl:ml-2" />
           <span>Profile</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>
-          <Settings className="mr-2 h-4 w-4" />
+          <Settings className="mr-2 h-4 w-4 rtl:mr-0 rtl:ml-2" />
           <span>Settings</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
-          <LogOut className="mr-2 h-4 w-4" />
+          <LogOut className="mr-2 h-4 w-4 rtl:mr-0 rtl:ml-2" />
           <span>Sign out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
