@@ -17,7 +17,49 @@
     "complete": "השלם",
     "pending": "ממתין",
     "approved": "אושר",
-    "rejected": "נדחה"
+    "rejected": "נדחה",
+    "difficulty": "רמת קושי",
+    "points": "פרס נקודות",
+    "gamingTime": "זמן משחק (דקות)",
+    "duration": "משך זמן משוער (דקות)",
+    "recurring": "מטלה חוזרת",
+    "recurrencePattern": "דפוס חזרה",
+    "daysOfWeek": "ימי השבוע",
+    "dayOfMonth": "יום בחודש",
+    "preview": "תצוגה מקדימה",
+    "reset": "איפוס",
+    "creating": "יוצר...",
+    "createChore": "צור מטלה",
+    "selectFamily": "אנא בחר משפחה ליצירת מטלות",
+    "basicInfo": "מידע בסיסי",
+    "rewardsDuration": "פרסים ומשך זמן",
+    "recurrenceSettings": "הגדרות חזרה",
+    "easy": "קל",
+    "medium": "בינוני",
+    "hard": "קשה",
+    "daily": "יומי",
+    "weekly": "שבועי",
+    "monthly": "חודשי",
+    "monday": "יום שני",
+    "tuesday": "יום שלישי",
+    "wednesday": "יום רביעי",
+    "thursday": "יום חמישי",
+    "friday": "יום שישי",
+    "saturday": "יום שבת",
+    "sunday": "יום ראשון",
+    "placeholders": {
+      "title": "נקה את החדר",
+      "description": "סדר את המיטה, ארגן את השולחן ושאב את הרצפה"
+    },
+    "help": {
+      "title": "תן למטלה כותרת ברורה ותיאורית",
+      "description": "ספק הוראות מפורטות לביצוע המטלה",
+      "points": "נקודות שמקבלים על השלמת המטלה",
+      "duration": "כמה זמן אמורה לקחת המטלה?",
+      "recurring": "מטלה זו חוזרת לפי לוח זמנים",
+      "daysOfWeek": "בחר אילו ימים בשבוע המטלה תחזור",
+      "dayOfMonth": "באיזה יום בחודש המטלה תחזור? (1-31)"
+    }
   },
   "common": {
     "loading": "טוען...",
@@ -27,7 +69,8 @@
     "delete": "מחק",
     "confirm": "אישור",
     "yes": "כן",
-    "no": "לא"
+    "no": "לא",
+    "back": "חזרה"
   },
   "language": {
     "selectLanguage": "בחר שפה"
@@ -48,5 +91,88 @@
     "due": "תאריך יעד {date}",
     "showLess": "הצג פחות",
     "viewAllAssignments": "צפה בכל המטלות ({count})"
+  }
+  ,
+  "pages": {
+    "review": {
+      "title": "בדיקת הגשות",
+      "subtitle": "בדוק ואשר מטלות שהושלמו על ידי ילדים",
+      "allCaughtUp": "הכל מעודכן!",
+      "noPending": "אין כרגע הגשות הממתינות לבדיקה.",
+      "retry": "נסה שוב",
+      "accessRestricted": "גישה מוגבלת",
+      "onlyParentsAdmins": "רק הורים ומנהלים יכולים לבדוק הגשות.",
+      "errorLoading": "שגיאה בטעינת הגשות",
+      "failedToLoad": "נכשל בטעינת הגשות ממתינות. נסה שוב.",
+      "pendingCount": "{count} ממתין"
+    },
+    "chores": {
+      "titleChild": "המטלות שלי",
+      "subtitleChild": "השלם את המטלות שהוקצו לך וצבור נקודות!",
+      "title": "מטלות",
+      "subtitle": "נהל ועקוב אחרי מטלות המשפחה",
+      "addChore": "הוסף מטלה",
+      "noChores": "לא נמצאו מטלות",
+      "createFirst": "התחל ביצירת המטלה הראשונה שלך!",
+      "addFirst": "הוסף מטלה ראשונה",
+      "noFamilySelectedTitle": "לא נבחרה משפחה",
+      "noFamilySelectedDesc": "בחר משפחה כדי לראות ולנהל מטלות."
+    },
+    "family": {
+      "title": "ניהול משפחה",
+      "subtitle": "נהל את בני המשפחה והזמן משתתפים חדשים",
+      "myFamilies": "המשפחות שלי",
+      "noFamilies": "אין משפחות עדיין",
+      "createOrJoin": "צור משפחה חדשה או הצטרף למשפחה קיימת כדי להתחיל",
+      "join": "הצטרף למשפחה",
+      "create": "צור משפחה",
+      "inviteMember": "הזמן חבר",
+      "deleteFamily": "מחק משפחה",
+      "familyMembers": "חברי משפחה",
+      "selectFamilyTitle": "בחר משפחה",
+      "selectFamilyDesc": "בחר משפחה מהרשימה כדי לראות חברים ולנהל הגדרות",
+      "noMembers": "לא נמצאו חברים",
+      "noMembersDesc": "למשפחה זו אין עדיין חברים",
+      "familyCode": "קוד משפחה",
+      "inviteCopyHint": "שתף קוד זה עם בני משפחה כדי להזמין אותם"
+    },
+    "achievements": {
+      "title": "הישגים",
+      "subtitle": "עקוב אחרי תגים והתקדמות שהושגו ממטלות"
+    },
+    "choresNew": {
+      "title": "יצירת מטלה חדשה",
+      "subtitle": "הוסף מטלה חדשה לבני המשפחה"
+    }
+  }
+  ,
+  "modals": {
+    "editChore": {
+      "title": "עריכת מטלה",
+      "description": "בצע שינויים ל {title}",
+      "update": "עדכן מטלה",
+      "updating": "מעדכן...",
+      "success": "המטלה עודכנה בהצלחה!",
+      "failed": "נכשל בעדכון המטלה"
+    },
+    "submitAssignment": {
+      "title": "שליחת מטלה",
+      "description": "שלח את המטלה שהושלמה לאישור וקבל נקודות!",
+      "notesLabel": "הערות (אופציונלי)",
+      "notesPlaceholder": "הוסף הערות לגבי איך השלמת את המטלה...",
+      "photosVideos": "תמונות/סרטונים (אופציונלי)",
+      "addPhoto": "הוסף תמונה",
+      "hintPhotos": "הוספת תמונות של העבודה שביצעת תסייע באישור מהיר!",
+      "chars": "{count}/1000 תווים",
+      "submit": "שלח מטלה",
+      "submitting": "שולח...",
+      "successTitle": "המשימה נשלחה בהצלחה!",
+      "successDesc": "ההגשה שלך ממתינה לבדיקה.",
+      "failTitle": "נכשל בשליחת המשימה",
+      "failDesc": "אנא נסה שוב מאוחר יותר.",
+      "networkDesc": "אנא בדוק את החיבור ונסה שוב.",
+      "pointsPlus": "+{points} נקודות",
+      "gamingPlus": "+{minutes} דק' משחק"
+    }
   }
 }

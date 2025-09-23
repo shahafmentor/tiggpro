@@ -19,6 +19,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { assignmentsApi, type Assignment, type SubmitAssignmentRequest } from '@/lib/api/assignments'
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { toast } from 'sonner'
+import { useCommonTranslations, useModalsTranslations } from '@/hooks/use-translations'
 
 interface SubmitAssignmentModalProps {
   assignment: Assignment | null
@@ -35,6 +36,8 @@ export function SubmitAssignmentModal({
   const [mediaUrls, setMediaUrls] = useState<string[]>([])
   const { currentTenant } = useTenant()
   const queryClient = useQueryClient()
+  const commonT = useCommonTranslations()
+  const m = useModalsTranslations()
 
   const submitMutation = useMutation({
     mutationFn: async (request: SubmitAssignmentRequest) => {
@@ -45,8 +48,8 @@ export function SubmitAssignmentModal({
     },
     onSuccess: (response) => {
       if (response.success) {
-        toast.success('Assignment submitted successfully!', {
-          description: 'Your submission is now pending review.',
+        toast.success(m('submitAssignment.successTitle'), {
+          description: m('submitAssignment.successDesc'),
         })
         // Invalidate relevant queries to refresh the UI
         queryClient.invalidateQueries({ queryKey: ['user-assignments'] })
@@ -58,15 +61,15 @@ export function SubmitAssignmentModal({
         setMediaUrls([])
         onOpenChange(false)
       } else {
-        toast.error('Failed to submit assignment', {
-          description: response.error || 'Please try again later.',
+        toast.error(m('submitAssignment.failTitle'), {
+          description: response.error || m('submitAssignment.failDesc'),
         })
       }
     },
     onError: (error) => {
       console.error('Submit assignment error:', error)
-      toast.error('Failed to submit assignment', {
-        description: 'Please check your connection and try again.',
+      toast.error(m('submitAssignment.failTitle'), {
+        description: m('submitAssignment.networkDesc'),
       })
     },
   })
@@ -121,10 +124,10 @@ export function SubmitAssignmentModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Submit Assignment
+            {m('submitAssignment.title')}
           </DialogTitle>
           <DialogDescription>
-            Submit your completed chore for review and earn points!
+            {m('submitAssignment.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -141,11 +144,11 @@ export function SubmitAssignmentModal({
                 )}
                 <div className="flex items-center gap-2">
                   <Badge variant="secondary">
-                    +{assignment.chore.pointsReward} points
+                    {m('submitAssignment.pointsPlus').replace('{points}', String(assignment.chore.pointsReward))}
                   </Badge>
                   {assignment.chore.gamingTimeMinutes > 0 && (
                     <Badge variant="outline">
-                      +{assignment.chore.gamingTimeMinutes} min gaming
+                      {m('submitAssignment.gamingPlus').replace('{minutes}', String(assignment.chore.gamingTimeMinutes))}
                     </Badge>
                   )}
                 </div>
@@ -155,25 +158,23 @@ export function SubmitAssignmentModal({
 
           {/* Submission Notes */}
           <div className="space-y-2">
-            <Label htmlFor="submission-notes">
-              Notes (Optional)
-            </Label>
+            <Label htmlFor="submission-notes">{m('submitAssignment.notesLabel')}</Label>
             <Textarea
               id="submission-notes"
-              placeholder="Add any notes about how you completed this chore..."
+              placeholder={m('submitAssignment.notesPlaceholder')}
               value={submissionNotes}
               onChange={(e) => setSubmissionNotes(e.target.value)}
               maxLength={1000}
               rows={3}
             />
             <p className="text-xs text-muted-foreground">
-              {submissionNotes.length}/1000 characters
+              {m('submitAssignment.chars').replace('{count}', String(submissionNotes.length))}
             </p>
           </div>
 
           {/* Media Upload Section */}
           <div className="space-y-2">
-            <Label>Photos/Videos (Optional)</Label>
+            <Label>{m('submitAssignment.photosVideos')}</Label>
             <div className="space-y-2">
               <Button
                 type="button"
@@ -182,7 +183,7 @@ export function SubmitAssignmentModal({
                 onClick={handleAddPhoto}
               >
                 <Camera className="h-4 w-4 mr-2" />
-                Add Photo
+                {m('submitAssignment.addPhoto')}
               </Button>
 
               {mediaUrls.length > 0 && (
@@ -209,9 +210,7 @@ export function SubmitAssignmentModal({
                 </div>
               )}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Adding photos of your completed work helps with quick approval!
-            </p>
+            <p className="text-xs text-muted-foreground">{m('submitAssignment.hintPhotos')}</p>
           </div>
         </div>
 
@@ -221,7 +220,7 @@ export function SubmitAssignmentModal({
             onClick={handleCancel}
             disabled={submitMutation.isPending}
           >
-            Cancel
+            {commonT('cancel')}
           </Button>
           <Button
             onClick={handleSubmit}
@@ -230,12 +229,12 @@ export function SubmitAssignmentModal({
             {submitMutation.isPending ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Submitting...
+                {m('submitAssignment.submitting')}
               </>
             ) : (
               <>
                 <Upload className="h-4 w-4 mr-2" />
-                Submit Assignment
+                {m('submitAssignment.submit')}
               </>
             )}
           </Button>

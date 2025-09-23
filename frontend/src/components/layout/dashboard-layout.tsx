@@ -284,7 +284,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Main Content */}
       <div className="lg:pl-64">
         <main className="min-h-screen pb-20 lg:pb-0">
-          {children}
+          <div className="max-w-7xl mx-auto px-6 py-6">
+            {children}
+          </div>
         </main>
       </div>
     </div>

@@ -17,7 +17,49 @@
     "complete": "Complete",
     "pending": "Pending",
     "approved": "Approved",
-    "rejected": "Rejected"
+    "rejected": "Rejected",
+    "difficulty": "Difficulty Level",
+    "points": "Points Reward",
+    "gamingTime": "Gaming Time (minutes)",
+    "duration": "Estimated Duration (minutes)",
+    "recurring": "Recurring Chore",
+    "recurrencePattern": "Recurrence Pattern",
+    "daysOfWeek": "Days of the Week",
+    "dayOfMonth": "Day of Month",
+    "preview": "Preview",
+    "reset": "Reset",
+    "creating": "Creating...",
+    "createChore": "Create Chore",
+    "selectFamily": "Please select a family to create chores",
+    "basicInfo": "Basic Information",
+    "rewardsDuration": "Rewards & Duration",
+    "recurrenceSettings": "Recurrence Settings",
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday",
+    "sunday": "Sunday",
+    "placeholders": {
+      "title": "Clean your room",
+      "description": "Make your bed, organize your desk, and vacuum the floor"
+    },
+    "help": {
+      "title": "Give your chore a clear, descriptive title",
+      "description": "Provide detailed instructions for completing this chore",
+      "points": "Points earned for completing this chore",
+      "duration": "How long should this chore take to complete?",
+      "recurring": "This chore repeats on a schedule",
+      "daysOfWeek": "Select which days of the week this chore should repeat",
+      "dayOfMonth": "Which day of the month should this chore repeat? (1-31)"
+    }
   },
   "common": {
     "loading": "Loading...",
@@ -27,7 +69,8 @@
     "delete": "Delete",
     "confirm": "Confirm",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "back": "Back"
   },
   "language": {
     "selectLanguage": "Select Language"
@@ -48,5 +91,88 @@
     "due": "Due {date}",
     "showLess": "Show Less",
     "viewAllAssignments": "View All Assignments ({count})"
+  }
+  ,
+  "pages": {
+    "review": {
+      "title": "Review Submissions",
+      "subtitle": "Review and approve children's completed chores",
+      "allCaughtUp": "All Caught Up!",
+      "noPending": "No submissions are currently pending review.",
+      "retry": "Retry",
+      "accessRestricted": "Access Restricted",
+      "onlyParentsAdmins": "Only parents and admins can review submissions.",
+      "errorLoading": "Error Loading Submissions",
+      "failedToLoad": "Failed to load pending submissions. Please try again.",
+      "pendingCount": "{count} pending"
+    },
+    "chores": {
+      "titleChild": "My Assignments",
+      "subtitleChild": "Complete your assigned chores and earn points!",
+      "title": "Chores",
+      "subtitle": "Manage and track family chores",
+      "addChore": "Add Chore",
+      "noChores": "No chores found",
+      "createFirst": "Get started by creating your first chore!",
+      "addFirst": "Add First Chore",
+      "noFamilySelectedTitle": "No Family Selected",
+      "noFamilySelectedDesc": "Please select a family to view and manage chores."
+    },
+    "family": {
+      "title": "Family Management",
+      "subtitle": "Manage your family members and invite new participants",
+      "myFamilies": "My Families",
+      "noFamilies": "No families yet",
+      "createOrJoin": "Create a new family or join an existing one to get started",
+      "join": "Join Family",
+      "create": "Create Family",
+      "inviteMember": "Invite Member",
+      "deleteFamily": "Delete Family",
+      "familyMembers": "Family Members",
+      "selectFamilyTitle": "Select a Family",
+      "selectFamilyDesc": "Choose a family from the list to view members and manage settings",
+      "noMembers": "No members found",
+      "noMembersDesc": "This family doesn't have any members yet",
+      "familyCode": "Family Code",
+      "inviteCopyHint": "Share this code with family members to invite them"
+    },
+    "achievements": {
+      "title": "Achievements",
+      "subtitle": "Track badges and progress earned from chores"
+    },
+    "choresNew": {
+      "title": "Create New Chore",
+      "subtitle": "Add a new chore for your family members to complete"
+    }
+  }
+  ,
+  "modals": {
+    "editChore": {
+      "title": "Edit Chore",
+      "description": "Make changes to {title}",
+      "update": "Update Chore",
+      "updating": "Updating...",
+      "success": "Chore updated successfully!",
+      "failed": "Failed to update chore"
+    },
+    "submitAssignment": {
+      "title": "Submit Assignment",
+      "description": "Submit your completed chore for review and earn points!",
+      "notesLabel": "Notes (Optional)",
+      "notesPlaceholder": "Add any notes about how you completed this chore...",
+      "photosVideos": "Photos/Videos (Optional)",
+      "addPhoto": "Add Photo",
+      "hintPhotos": "Adding photos of your completed work helps with quick approval!",
+      "chars": "{count}/1000 characters",
+      "submit": "Submit Assignment",
+      "submitting": "Submitting...",
+      "successTitle": "Assignment submitted successfully!",
+      "successDesc": "Your submission is now pending review.",
+      "failTitle": "Failed to submit assignment",
+      "failDesc": "Please try again later.",
+      "networkDesc": "Please check your connection and try again.",
+      "pointsPlus": "+{points} points",
+      "gamingPlus": "+{minutes} min gaming"
+    }
   }
 }

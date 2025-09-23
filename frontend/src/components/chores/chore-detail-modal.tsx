@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Clock, Star, Gamepad, CheckSquare } from 'lucide-react'
 import { StatusBadge, PointsBadge, DueDateBadge } from '@/components/ui/semantic-badges'
+import { useChoresTranslations, useCommonTranslations } from '@/hooks/use-translations'
 
 interface ChoreDetailModalProps {
   assignment: Assignment | null
@@ -27,6 +28,8 @@ export function ChoreDetailModal({
   onSubmit,
   canSubmit = false
 }: ChoreDetailModalProps) {
+  const choresT = useChoresTranslations()
+  const commonT = useCommonTranslations()
   if (!assignment) return null
 
   const dueDate = new Date(assignment.dueDate)
@@ -76,7 +79,7 @@ export function ChoreDetailModal({
           {/* Description */}
           {assignment.chore.description && (
             <div>
-              <h4 className="font-medium text-sm mb-2">Description</h4>
+              <h4 className="font-medium text-sm mb-2">{choresT('description')}</h4>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {assignment.chore.description}
               </p>
@@ -85,7 +88,7 @@ export function ChoreDetailModal({
 
           {/* Chore Details */}
           <div className="space-y-4">
-            <h4 className="font-medium text-sm">Chore Details</h4>
+            <h4 className="font-medium text-sm">{choresT('basicInfo')}</h4>
 
             <div className="grid grid-cols-2 gap-4">
               {/* Points Reward */}
@@ -94,7 +97,7 @@ export function ChoreDetailModal({
                   <Star className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Points</p>
+                  <p className="text-xs text-muted-foreground">{choresT('points')}</p>
                   <PointsBadge points={assignment.chore.pointsReward} showPlus={false} />
                 </div>
               </div>
@@ -105,7 +108,7 @@ export function ChoreDetailModal({
                   <Gamepad className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Gaming Time</p>
+                  <p className="text-xs text-muted-foreground">{choresT('gamingTime')}</p>
                   <p className="text-sm font-medium">{assignment.chore.gamingTimeMinutes} min</p>
                 </div>
               </div>
@@ -116,7 +119,7 @@ export function ChoreDetailModal({
                   <Star className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Difficulty</p>
+                  <p className="text-xs text-muted-foreground">{choresT('difficulty')}</p>
                   <div className="flex items-center gap-1">
                     {[...Array(3)].map((_, i) => (
                       <Star
@@ -139,7 +142,7 @@ export function ChoreDetailModal({
                   <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Duration</p>
+                  <p className="text-xs text-muted-foreground">{choresT('duration')}</p>
                   <p className="text-sm font-medium">~{assignment.chore.estimatedDurationMinutes} min</p>
                 </div>
               </div>
@@ -148,7 +151,7 @@ export function ChoreDetailModal({
 
           {/* Due Date Details */}
           <div>
-            <h4 className="font-medium text-sm mb-2">Due Date</h4>
+            <h4 className="font-medium text-sm mb-2">{choresT('dueDate')}</h4>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Clock className="h-4 w-4" />
               <span>{dueDate.toLocaleDateString()} at {dueDate.toLocaleTimeString([], {
@@ -168,7 +171,7 @@ export function ChoreDetailModal({
                   className="w-full sm:w-auto"
                 >
                   <CheckSquare className="h-4 w-4 mr-2" />
-                  Submit Chore
+                  {choresT('submit')}
                 </Button>
               </div>
             </>
@@ -184,7 +187,7 @@ export function ChoreDetailModal({
                   className="w-full sm:w-auto"
                 >
                   <CheckSquare className="h-4 w-4 mr-2" />
-                  Resubmit Chore
+                  {choresT('submit')}
                 </Button>
               </div>
             </>

@@ -32,6 +32,7 @@ import { Badge } from '@/components/ui/badge'
 import { choresApi, CreateChoreRequest } from '@/lib/api/chores'
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { toast } from 'sonner'
+import { useChoresTranslations, useCommonTranslations } from '@/hooks/use-translations'
 import {
   Clock,
   Star,
@@ -79,19 +80,21 @@ interface CreateChoreFormProps {
 }
 
 const weekDays = [
-  { value: 1, label: 'Monday' },
-  { value: 2, label: 'Tuesday' },
-  { value: 3, label: 'Wednesday' },
-  { value: 4, label: 'Thursday' },
-  { value: 5, label: 'Friday' },
-  { value: 6, label: 'Saturday' },
-  { value: 0, label: 'Sunday' },
+  { value: 1, labelKey: 'monday' },
+  { value: 2, labelKey: 'tuesday' },
+  { value: 3, labelKey: 'wednesday' },
+  { value: 4, labelKey: 'thursday' },
+  { value: 5, labelKey: 'friday' },
+  { value: 6, labelKey: 'saturday' },
+  { value: 0, labelKey: 'sunday' },
 ]
 
 export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { currentTenant } = useTenant()
   const queryClient = useQueryClient()
+  const choresT = useChoresTranslations()
+  const commonT = useCommonTranslations()
 
   // Removed tenant members query - assignments are now handled separately from chore creation
 
@@ -207,7 +210,7 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
     return (
       <Card>
         <CardContent className="text-center py-8">
-          <p className="text-muted-foreground">Please select a family to create chores</p>
+          <p className="text-muted-foreground">{choresT('selectFamily')}</p>
         </CardContent>
       </Card>
     )
@@ -220,7 +223,7 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              📝 Basic Information
+              📝 {choresT('basicInfo')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -229,16 +232,16 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Chore Title</FormLabel>
+                  <FormLabel>{choresT('title')}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Clean your room"
+                      placeholder={choresT('placeholders.title')}
                       {...field}
                       disabled={isSubmitting}
                     />
                   </FormControl>
                   <FormDescription>
-                    Give your chore a clear, descriptive title
+                    {choresT('help.title')}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -250,10 +253,10 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description (Optional)</FormLabel>
+                  <FormLabel>{choresT('description')} (Optional)</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Make your bed, organize your desk, and vacuum the floor"
+                      placeholder={choresT('placeholders.description')}
                       className="resize-none"
                       rows={3}
                       {...field}
@@ -261,7 +264,7 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
                     />
                   </FormControl>
                   <FormDescription>
-                    Provide detailed instructions for completing this chore
+                    {choresT('help.description')}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -273,7 +276,7 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
               name="difficultyLevel"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Difficulty Level</FormLabel>
+                  <FormLabel>{choresT('difficulty')}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -288,19 +291,19 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
                       <SelectItem value={DifficultyLevel.EASY}>
                         <div className="flex items-center gap-2">
                           {getDifficultyIcon(DifficultyLevel.EASY)}
-                          Easy
+                          {choresT('easy')}
                         </div>
                       </SelectItem>
                       <SelectItem value={DifficultyLevel.MEDIUM}>
                         <div className="flex items-center gap-2">
                           {getDifficultyIcon(DifficultyLevel.MEDIUM)}
-                          Medium
+                          {choresT('medium')}
                         </div>
                       </SelectItem>
                       <SelectItem value={DifficultyLevel.HARD}>
                         <div className="flex items-center gap-2">
                           {getDifficultyIcon(DifficultyLevel.HARD)}
-                          Hard
+                          {choresT('hard')}
                         </div>
                       </SelectItem>
                     </SelectContent>
@@ -319,7 +322,7 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              🎯 Rewards & Duration
+              🎯 {choresT('rewardsDuration')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -331,7 +334,7 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
                   <FormItem>
                     <FormLabel className="flex items-center gap-2">
                       <Zap className="h-4 w-4 text-points-primary" />
-                      Points Reward
+                      {choresT('points')}
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -344,7 +347,7 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
                       />
                     </FormControl>
                     <FormDescription>
-                      Points earned for completing this chore
+                      {choresT('help.points')}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -358,7 +361,7 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
                   <FormItem>
                     <FormLabel className="flex items-center gap-2">
                       <Gamepad2 className="h-4 w-4 text-primary" />
-                      Gaming Time (minutes)
+                      {choresT('gamingTime')}
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -386,7 +389,7 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
                 <FormItem>
                   <FormLabel className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-muted-foreground" />
-                    Estimated Duration (minutes)
+                    {choresT('duration')}
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -399,7 +402,7 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
                     />
                   </FormControl>
                   <FormDescription>
-                    How long should this chore take to complete?
+                    {choresT('help.duration')}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -413,7 +416,7 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <RefreshCw className="h-4 w-4" />
-              Recurrence Settings
+              {choresT('recurrenceSettings')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -424,10 +427,10 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
                 <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
                     <FormLabel className="text-base">
-                      Recurring Chore
+                      {choresT('recurring')}
                     </FormLabel>
                     <FormDescription>
-                      This chore repeats on a schedule
+                      {choresT('help.recurring')}
                     </FormDescription>
                   </div>
                   <FormControl>
@@ -448,7 +451,7 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
                   name="recurrenceType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Recurrence Pattern</FormLabel>
+                      <FormLabel>{choresT('recurrencePattern')}</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
@@ -463,19 +466,19 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
                           <SelectItem value="daily">
                             <div className="flex items-center gap-2">
                               {getRecurrenceIcon('daily')}
-                              Daily
+                              {choresT('daily')}
                             </div>
                           </SelectItem>
                           <SelectItem value="weekly">
                             <div className="flex items-center gap-2">
                               {getRecurrenceIcon('weekly')}
-                              Weekly
+                              {choresT('weekly')}
                             </div>
                           </SelectItem>
                           <SelectItem value="monthly">
                             <div className="flex items-center gap-2">
                               {getRecurrenceIcon('monthly')}
-                              Monthly
+                              {choresT('monthly')}
                             </div>
                           </SelectItem>
                         </SelectContent>
@@ -491,7 +494,7 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
                     name="weeklyDays"
                     render={() => (
                       <FormItem>
-                        <FormLabel>Days of the Week</FormLabel>
+                        <FormLabel>{choresT('daysOfWeek')}</FormLabel>
                         <div className="grid grid-cols-2 gap-2">
                           {weekDays.map((day) => (
                             <FormField
@@ -520,7 +523,7 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
                                       />
                                     </FormControl>
                                     <FormLabel className="text-sm font-normal">
-                                      {day.label}
+                                      {choresT(day.labelKey)}
                                     </FormLabel>
                                   </FormItem>
                                 )
@@ -529,7 +532,7 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
                           ))}
                         </div>
                         <FormDescription>
-                          Select which days of the week this chore should repeat
+                          {choresT('help.daysOfWeek')}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -543,7 +546,7 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
                     name="monthlyDay"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Day of Month</FormLabel>
+                        <FormLabel>{choresT('dayOfMonth')}</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -555,7 +558,7 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
                           />
                         </FormControl>
                         <FormDescription>
-                          Which day of the month should this chore repeat? (1-31)
+                          {choresT('help.dayOfMonth')}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -570,7 +573,7 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
         {/* Preview */}
         <Card>
           <CardHeader>
-            <CardTitle>Preview</CardTitle>
+            <CardTitle>{choresT('preview')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="p-4 bg-muted rounded-lg">
@@ -621,10 +624,10 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
             onClick={() => form.reset()}
             disabled={isSubmitting}
           >
-            Reset
+            {choresT('reset')}
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating...' : 'Create Chore'}
+            {isSubmitting ? choresT('creating') : choresT('createChore')}
           </Button>
         </div>
       </form>

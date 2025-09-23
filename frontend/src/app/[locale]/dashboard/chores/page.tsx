@@ -54,9 +54,13 @@ import { tenantsApi, TenantMember } from '@/lib/api/tenants'
 import { TenantMemberRole } from '@tiggpro/shared'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
+import { useLocalizedRouter } from '@/hooks/use-localized-router'
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PageHeader } from '@/components/layout/page-header'
+import { EmptyState } from '@/components/ui/empty-state'
+import { ChoreCard, type ChoreCardData } from '@/components/chores/chore-card'
+import { usePagesTranslations } from '@/hooks/use-translations'
 
 interface ChoreWithAssignment {
   id: string
@@ -82,10 +86,11 @@ export default function ChoresPage() {
   const [deletingChore, setDeletingChore] = useState<Chore | null>(null)
   const [assigningChore, setAssigningChore] = useState<Chore | null>(null)
   const [submittingAssignment, setSubmittingAssignment] = useState<Assignment | null>(null)
-  const router = useRouter()
+  const router = useLocalizedRouter()
   const { data: session } = useSession()
   const { currentTenant } = useTenant()
   const queryClient = useQueryClient()
+  const p = usePagesTranslations()
 
   // Fetch real chores data
   const { data: choresResponse, isLoading } = useQuery({
@@ -167,10 +172,8 @@ export default function ChoresPage() {
   if (!session || !currentTenant) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-        <h2 className="text-2xl font-bold mb-4">No Family Selected</h2>
-        <p className="text-lg mb-8 text-center max-w-md">
-          Please select a family to view and manage chores.
-        </p>
+        <h2 className="text-2xl font-bold mb-4">{p('chores.noFamilySelectedTitle')}</h2>
+        <p className="text-lg mb-8 text-center max-w-md">{p('chores.noFamilySelectedDesc')}</p>
       </div>
     )
   }
@@ -222,27 +225,18 @@ export default function ChoresPage() {
   const filteredChores = displayChores
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">
-            {isChild ? 'My Assignments' : 'Chores'}
-          </h1>
-          <p className="text-muted-foreground">
-            {isChild
-              ? 'Complete your assigned chores and earn points!'
-              : 'Manage and track family chores'
-            }
-          </p>
-        </div>
-        {!isChild && (
+      <PageHeader
+        title={isChild ? p('chores.titleChild') : p('chores.title')}
+        subtitle={isChild ? p('chores.subtitleChild') : p('chores.subtitle')}
+        actions={(!isChild) ? (
           <Button className="gap-2" onClick={() => router.push('/dashboard/chores/new')}>
             <Plus className="h-4 w-4" />
-            Add Chore
+            {p('chores.addChore')}
           </Button>
-        )}
-      </div>
+        ) : undefined}
+      />
 
       {/* MVP: Comment out advanced filtering - keep it simple */}
       {/* <Card>
@@ -289,253 +283,38 @@ export default function ChoresPage() {
       {/* Chore Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filteredChores.map((chore) => (
-          <Card
+          <ChoreCard
             key={chore.id}
-            className="hover:shadow-lg transition-shadow cursor-pointer"
-            onClick={() => {
-              // Open chore details/edit modal when clicking the card
-              const originalChore = chores.find(c => c.id === chore.id)
+            chore={chore as unknown as ChoreCardData}
+            isChild={isChild}
+            onClick={(id) => {
+              const originalChore = chores.find(c => c.id === id)
               if (originalChore) setEditingChore(originalChore)
             }}
-          >
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <CardTitle className="text-lg font-semibold mb-1">
-                    {chore.title}
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {chore.description}
-                  </p>
-                </div>
-                {chore.assignment && (
-                  <Badge
-                    className={cn(
-                      "ml-2 text-white font-medium",
-                      getStatusColor(chore.assignment.status?.toUpperCase() || 'PENDING')
-                    )}
-                  >
-                    {chore.assignment.status?.replace('_', ' ') || 'Not Assigned'}
-                  </Badge>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Chore Details */}
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">{chore.estimatedTime}m</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  {getDifficultyIcon(chore.difficulty)}
-                </div>
-              </div>
-
-              {/* Assigned To */}
-              {chore.assignedTo && (
-                <div className="flex items-center gap-2 text-sm">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-5 w-5">
-                      <AvatarImage src={chore.assignedTo.avatar} alt={chore.assignedTo.name} />
-                      <AvatarFallback className="text-xs">
-                        {chore.assignedTo.name.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-muted-foreground">{chore.assignedTo.name}</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Due Date */}
-              <div className="flex items-center gap-2 text-sm">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className={cn(
-                  "text-muted-foreground",
-                  isChild && chore.assignment && chore.assignment.status?.toUpperCase() === 'OVERDUE' && "text-destructive font-medium"
-                )}>
-                  {chore.dueDate}
-                </span>
-                {isChild && chore.assignment && chore.assignment.status?.toUpperCase() === 'OVERDUE' && (
-                  <Badge variant="destructive" className="text-xs">
-                    Overdue
-                  </Badge>
-                )}
-              </div>
-
-              {/* Points and Actions */}
-              <div className="flex items-center justify-between pt-2 border-t border-border">
-                <Badge variant="secondary" className="bg-points-primary/10 text-points-primary font-medium">
-                  {chore.points} points
-                </Badge>
-                <div className="flex items-center gap-2">
-                  {/* Child Actions */}
-                  {isChild && chore.assignment && (
-                    <>
-                      {chore.assignment.status?.toUpperCase() === 'PENDING' && (
-                        <Button
-                          size="sm"
-                          className="h-8"
-                          onClick={(e) => {
-                            e.stopPropagation() // Prevent card click
-                            setSubmittingAssignment(chore.assignment!)
-                          }}
-                        >
-                          <CheckSquare className="h-3 w-3 mr-1" />
-                          Submit
-                        </Button>
-                      )}
-                      {chore.assignment.status?.toUpperCase() === 'OVERDUE' && (
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          className="h-8"
-                          onClick={(e) => {
-                            e.stopPropagation() // Prevent card click
-                            setSubmittingAssignment(chore.assignment!)
-                          }}
-                        >
-                          <Clock className="h-3 w-3 mr-1" />
-                          Submit
-                        </Button>
-                      )}
-                      {chore.assignment.status?.toUpperCase() === 'SUBMITTED' && (
-                        <Badge variant="secondary" className="bg-chore-submitted/10 text-chore-submitted">
-                          Submitted
-                        </Badge>
-                      )}
-                      {(chore.assignment.status?.toUpperCase() === 'COMPLETED' || chore.assignment.status?.toUpperCase() === 'APPROVED') && (
-                        <Badge variant="secondary" className="bg-chore-completed/10 text-chore-completed">
-                          Done ✓
-                        </Badge>
-                      )}
-                      {chore.assignment.status?.toUpperCase() === 'REJECTED' && (
-                        <div className="flex items-center gap-2">
-                          <Badge variant="destructive" className="text-xs">
-                            Rejected
-                          </Badge>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-6 text-xs"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setSubmittingAssignment(chore.assignment!)
-                            }}
-                          >
-                            <CheckSquare className="h-3 w-3 mr-1" />
-                            Resubmit
-                          </Button>
-                        </div>
-                      )}
-                    </>
-                  )}
-
-                  {/* Parent/Admin Actions */}
-                  {!isChild && (
-                    <>
-                      {/* Prominent Assign Button for Unassigned Chores */}
-                      {!chore.assignedTo && (
-                        <Button
-                          size="sm"
-                          className="h-8 bg-primary hover:bg-primary/90"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            const originalChore = chores.find(c => c.id === chore.id)
-                            if (originalChore) setAssigningChore(originalChore)
-                          }}
-                        >
-                          <User className="h-3 w-3 mr-1" />
-                          Assign
-                        </Button>
-                      )}
-
-                      {/* Status Badges for Assigned Chores */}
-                      {chore.assignedTo && chore.assignment && (
-                        <>
-                          {chore.assignment.status?.toUpperCase() === 'SUBMITTED' && (
-                            <Badge variant="secondary" className="bg-chore-submitted/10 text-chore-submitted">
-                              Submitted
-                            </Badge>
-                          )}
-                          {(chore.assignment.status?.toUpperCase() === 'COMPLETED' || chore.assignment.status?.toUpperCase() === 'APPROVED') && (
-                            <Badge variant="secondary" className="bg-chore-completed/10 text-chore-completed">
-                              Done ✓
-                            </Badge>
-                          )}
-                          {chore.assignment.status?.toUpperCase() === 'REJECTED' && (
-                            <Badge variant="destructive" className="text-xs">
-                              Rejected
-                            </Badge>
-                          )}
-                        </>
-                      )}
-
-                      {/* Actions Menu */}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={(e) => {
-                            e.stopPropagation()
-                            const originalChore = chores.find(c => c.id === chore.id)
-                            if (originalChore) setAssigningChore(originalChore)
-                          }}>
-                            <User className="mr-2 h-4 w-4" />
-                            {chore.assignedTo ? 'Reassign' : 'Assign'}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={(e) => {
-                            e.stopPropagation()
-                            const originalChore = chores.find(c => c.id === chore.id)
-                            if (originalChore) setEditingChore(originalChore)
-                          }}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              const originalChore = chores.find(c => c.id === chore.id)
-                              if (originalChore) setDeletingChore(originalChore)
-                            }}
-                            className="text-destructive"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            onAssign={(id) => {
+              const originalChore = chores.find(c => c.id === id)
+              if (originalChore) setAssigningChore(originalChore)
+            }}
+            onSubmitAssignment={(assignment) => setSubmittingAssignment(assignment)}
+          />
         ))}
       </div>
 
       {/* Empty State */}
       {filteredChores.length === 0 && (
         <Card>
-          <CardContent className="text-center py-12">
-            <CheckSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No chores found</h3>
-            <p className="text-muted-foreground mb-4">
-              Get started by creating your first chore!
-            </p>
-            <Button onClick={() => router.push('/dashboard/chores/new')}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add First Chore
-            </Button>
+          <CardContent>
+            <EmptyState
+              icon={<CheckSquare className="h-12 w-12 text-muted-foreground" />}
+              title={p('chores.noChores')}
+              description={p('chores.createFirst')}
+              action={(
+                <Button onClick={() => router.push('/dashboard/chores/new')}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  {p('chores.addFirst')}
+                </Button>
+              )}
+            />
           </CardContent>
         </Card>
       )}

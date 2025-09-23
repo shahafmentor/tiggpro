@@ -32,6 +32,7 @@ import { assignmentsApi, type Submission, type ReviewSubmissionRequest } from '@
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { useCommonTranslations, usePagesTranslations } from '@/hooks/use-translations'
 
 interface ReviewSubmissionModalProps {
   submission: Submission | null
@@ -49,6 +50,8 @@ export function ReviewSubmissionModal({
   const [reviewFeedback, setReviewFeedback] = useState('')
   const [reviewDecision, setReviewDecision] = useState<'approve' | 'reject' | null>(null)
   const { currentTenant } = useTenant()
+  const commonT = useCommonTranslations()
+  const p = usePagesTranslations()
 
   const reviewMutation = useMutation({
     mutationFn: async (request: ReviewSubmissionRequest) => {
@@ -60,10 +63,10 @@ export function ReviewSubmissionModal({
     onSuccess: (response) => {
       if (response.success) {
         const action = reviewDecision === 'approve' ? 'approved' : 'rejected'
-        toast.success(`Submission ${action} successfully!`, {
+        toast.success(p('review.title'), {
           description: reviewDecision === 'approve'
-            ? 'Points and gaming time have been awarded.'
-            : 'Feedback has been provided to the child.',
+            ? p('review.allCaughtUp')
+            : p('review.retry'),
         })
 
         // Reset form and close modal
@@ -72,15 +75,15 @@ export function ReviewSubmissionModal({
         onOpenChange(false)
         onReviewComplete?.()
       } else {
-        toast.error('Failed to review submission', {
-          description: response.error || 'Please try again later.',
+        toast.error(p('review.errorLoading'), {
+          description: response.error || p('review.failedToLoad'),
         })
       }
     },
     onError: (error) => {
       console.error('Review submission error:', error)
-      toast.error('Failed to review submission', {
-        description: 'Please check your connection and try again.',
+      toast.error(p('review.errorLoading'), {
+        description: p('review.retry'),
       })
     },
   })
@@ -116,10 +119,10 @@ export function ReviewSubmissionModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Review Submission
+            {p('review.title')}
           </DialogTitle>
           <DialogDescription>
-            Review this chore completion and decide whether to approve or reject it.
+            {p('review.subtitle')}
           </DialogDescription>
         </DialogHeader>
 
@@ -138,19 +141,19 @@ export function ReviewSubmissionModal({
                   <div className="flex-1 space-y-1">
                     <h4 className="font-medium text-foreground">{chore?.title}</h4>
                     <p className="text-sm text-muted-foreground">
-                      Assigned to {assignee?.displayName || 'Unknown User'}
+                      {assignee?.displayName || 'Unknown User'}
                     </p>
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        Due: {assignment?.dueDate ?
+                        {`Due: `}{assignment?.dueDate ?
                           new Date(assignment.dueDate).toLocaleDateString() :
                           'No due date'
                         }
                       </div>
                       <div className="flex items-center gap-1">
                         <Star className="h-3 w-3" />
-                        +{chore?.pointsReward || 0} points
+                        +{chore?.pointsReward || 0} {p('chores.subtitle')}
                       </div>
                       {chore?.gamingTimeMinutes && chore.gamingTimeMinutes > 0 && (
                         <div className="flex items-center gap-1">
@@ -164,7 +167,7 @@ export function ReviewSubmissionModal({
 
                 {chore?.description && (
                   <div className="space-y-1">
-                    <p className="text-sm font-medium">Chore Description:</p>
+                    <p className="text-sm font-medium">{p('chores.title')}</p>
                     <p className="text-sm text-muted-foreground">{chore.description}</p>
                   </div>
                 )}
@@ -179,14 +182,14 @@ export function ReviewSubmissionModal({
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
                     <Clock className="h-3 w-3 mr-1" />
-                    Submitted {new Date(submission.submittedAt).toLocaleString()}
+                    {`Submitted ${new Date(submission.submittedAt).toLocaleString()}`}
                   </Badge>
                 </div>
 
                 {/* Submission Notes */}
                 {submission.submissionNotes && (
                   <div className="space-y-2">
-                    <p className="text-sm font-medium">Child&apos;s Notes:</p>
+                    <p className="text-sm font-medium">Notes</p>
                     <div className="bg-muted/50 rounded-lg p-3">
                       <p className="text-sm">{submission.submissionNotes}</p>
                     </div>
@@ -198,7 +201,7 @@ export function ReviewSubmissionModal({
                   <div className="space-y-2">
                     <p className="text-sm font-medium flex items-center gap-2">
                       <Image className="h-4 w-4" />
-                      Photos ({submission.mediaUrls.length})
+                      {`Photos (${submission.mediaUrls.length})`}
                     </p>
                     <div className="grid grid-cols-2 gap-2">
                       {submission.mediaUrls.map((url, index) => (
@@ -248,7 +251,7 @@ export function ReviewSubmissionModal({
             {/* Review Feedback */}
             <div className="space-y-2">
               <Label htmlFor="review-feedback">
-                Feedback {reviewDecision === 'approve' ? '(Optional)' : '(Required)'}
+                {`Feedback ${reviewDecision === 'approve' ? '(Optional)' : '(Required)'}`}
               </Label>
               <Textarea
                 id="review-feedback"
@@ -267,7 +270,7 @@ export function ReviewSubmissionModal({
                 )}
               />
               <p className="text-xs text-muted-foreground">
-                {reviewFeedback.length}/500 characters
+                {`${reviewFeedback.length}/500 characters`}
               </p>
             </div>
 
@@ -279,9 +282,9 @@ export function ReviewSubmissionModal({
                   <span className="text-sm font-medium">Points to be awarded:</span>
                 </div>
                 <div className="mt-1 text-sm text-green-700">
-                  <div>• {chore?.pointsReward || 0} points</div>
+                  <div>{`• ${chore?.pointsReward || 0} points`}</div>
                   {chore?.gamingTimeMinutes && chore.gamingTimeMinutes > 0 && (
-                    <div>• {chore.gamingTimeMinutes} minutes of gaming time</div>
+                    <div>{`• ${chore.gamingTimeMinutes} minutes of gaming time`}</div>
                   )}
                 </div>
               </div>
@@ -295,7 +298,7 @@ export function ReviewSubmissionModal({
             onClick={handleCancel}
             disabled={reviewMutation.isPending}
           >
-            Cancel
+            {commonT('cancel')}
           </Button>
           <Button
             onClick={handleReview}

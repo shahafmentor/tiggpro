@@ -17,6 +17,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { EmptyState } from '@/components/ui/empty-state'
+import { RoleBadge } from '@/components/ui/role-badge'
+import { PageHeader } from '@/components/layout/page-header'
+import { TenantListItem } from '@/components/tenant/tenant-list-item'
+import { MemberRow } from '@/components/tenant/member-row'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Dialog,
@@ -44,6 +49,7 @@ import { tenantsApi, UserTenant } from '@/lib/api/tenants'
 import { TenantMemberRole } from '@tiggpro/shared'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { usePagesTranslations } from '@/hooks/use-translations'
 
 export default function FamilyPage() {
   const [selectedTenant, setSelectedTenant] = useState<UserTenant | null>(null)
@@ -52,6 +58,7 @@ export default function FamilyPage() {
   const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false)
   const [deletingTenant, setDeletingTenant] = useState<UserTenant | null>(null)
   const queryClient = useQueryClient()
+  const p = usePagesTranslations()
 
   // Fetch user's tenants
   const { data: tenantsResponse, isLoading: tenantsLoading } = useQuery({
@@ -127,85 +134,68 @@ export default function FamilyPage() {
     }
   }
 
-  const getRoleBadgeColor = (role: TenantMemberRole) => {
-    switch (role) {
-      case TenantMemberRole.ADMIN:
-        return 'bg-yellow-100 text-yellow-800'
-      case TenantMemberRole.PARENT:
-        return 'bg-blue-100 text-blue-800'
-      case TenantMemberRole.CHILD:
-        return 'bg-green-100 text-green-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
-  }
+  // Role colors unified by RoleBadge component
 
   const isAdmin = selectedTenant?.role === TenantMemberRole.ADMIN
   const canManageMembers = selectedTenant?.role === TenantMemberRole.ADMIN ||
                            selectedTenant?.role === TenantMemberRole.PARENT
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Family Management</h1>
-          <p className="text-muted-foreground">
-            Manage your family members and invite new participants
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Dialog open={isJoinDialogOpen} onOpenChange={setIsJoinDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                <UserPlus className="h-4 w-4" />
-                Join Family
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Join a Family</DialogTitle>
-                <DialogDescription>
-                  Enter a family code to join an existing family
-                </DialogDescription>
-              </DialogHeader>
-              <JoinTenantForm onSuccess={() => {
-                setIsJoinDialogOpen(false)
-                queryClient.invalidateQueries({ queryKey: ['tenants', 'my'] })
-              }} />
-            </DialogContent>
-          </Dialog>
+      <PageHeader
+        title={p('family.title')}
+        subtitle={p('family.subtitle')}
+        actions={(
+          <>
+            <Dialog open={isJoinDialogOpen} onOpenChange={setIsJoinDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  {p('family.join')}
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{p('family.join')}</DialogTitle>
+                  <DialogDescription>{p('family.createOrJoin')}</DialogDescription>
+                </DialogHeader>
+                <JoinTenantForm onSuccess={() => {
+                  setIsJoinDialogOpen(false)
+                  queryClient.invalidateQueries({ queryKey: ['tenants', 'my'] })
+                }} />
+              </DialogContent>
+            </Dialog>
 
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2">
-                <Plus className="h-4 w-4" />
-                Create Family
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Family</DialogTitle>
-                <DialogDescription>
-                  Start a new family and invite members to manage chores together
-                </DialogDescription>
-              </DialogHeader>
-              <CreateTenantForm onSuccess={() => {
-                setIsCreateDialogOpen(false)
-                queryClient.invalidateQueries({ queryKey: ['tenants', 'my'] })
-              }} />
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  {p('family.create')}
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{p('family.create')}</DialogTitle>
+                  <DialogDescription>{p('family.subtitle')}</DialogDescription>
+                </DialogHeader>
+                <CreateTenantForm onSuccess={() => {
+                  setIsCreateDialogOpen(false)
+                  queryClient.invalidateQueries({ queryKey: ['tenants', 'my'] })
+                }} />
+              </DialogContent>
+            </Dialog>
+          </>
+        )}
+      />
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Family List */}
         <Card className="lg:col-span-1">
-          <CardHeader>
+              <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              My Families
+                  {p('family.myFamilies')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -216,41 +206,20 @@ export default function FamilyPage() {
                 ))}
               </div>
             ) : tenants.length === 0 ? (
-              <div className="text-center py-8">
-                <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="font-medium mb-2">No families yet</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Create a new family or join an existing one to get started
-                </p>
-              </div>
+              <EmptyState
+                icon={<Users className="h-12 w-12 text-muted-foreground" />}
+                title={p('family.noFamilies')}
+                description={p('family.createOrJoin')}
+              />
             ) : (
               <div className="space-y-3">
                 {tenants.map((tenant) => (
-                  <div
+                  <TenantListItem
                     key={tenant.membershipId}
-                    className={cn(
-                      "p-3 rounded-lg border cursor-pointer transition-colors",
-                      selectedTenant?.membershipId === tenant.membershipId
-                        ? "bg-primary/10 border-primary"
-                        : "bg-card border-border hover:bg-muted/50"
-                    )}
+                    tenant={tenant}
+                    selected={selectedTenant?.membershipId === tenant.membershipId}
                     onClick={() => setSelectedTenant(tenant)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium truncate">{tenant.tenant.name}</h3>
-                        <div className="flex items-center gap-2 mt-1">
-                          {getRoleIcon(tenant.role)}
-                          <Badge
-                            variant="secondary"
-                            className={cn("text-xs", getRoleBadgeColor(tenant.role))}
-                          >
-                            {tenant.role}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  />
                 ))}
               </div>
             )}
@@ -275,7 +244,7 @@ export default function FamilyPage() {
                           <DialogTrigger asChild>
                             <Button size="sm" className="gap-2">
                               <UserPlus className="h-4 w-4" />
-                              Invite Member
+                              {p('family.inviteMember')}
                             </Button>
                           </DialogTrigger>
                           <DialogContent>
@@ -297,7 +266,7 @@ export default function FamilyPage() {
                           onClick={() => setDeletingTenant(selectedTenant)}
                         >
                           <Trash2 className="h-4 w-4" />
-                          Delete Family
+                          {p('family.deleteFamily')}
                         </Button>
                       )}
                     </div>
@@ -306,13 +275,11 @@ export default function FamilyPage() {
                 <CardContent className="space-y-4">
                   <div className="flex items-center gap-4 p-3 bg-muted rounded-lg">
                     <div className="flex-1">
-                      <label className="text-sm font-medium">Family Code</label>
+                      <label className="text-sm font-medium">{p('family.familyCode')}</label>
                       <p className="text-lg font-mono font-bold tracking-wider">
                         {selectedTenant.tenant.tenantCode}
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        Share this code with family members to invite them
-                      </p>
+                      <p className="text-xs text-muted-foreground">{p('family.inviteCopyHint')}</p>
                     </div>
                     <Button
                       variant="outline"
@@ -332,8 +299,8 @@ export default function FamilyPage() {
 
               {/* Members List */}
               <Card>
-                <CardHeader>
-                  <CardTitle>Family Members</CardTitle>
+                  <CardHeader>
+                  <CardTitle>{p('family.familyMembers')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {membersLoading ? (
@@ -349,71 +316,46 @@ export default function FamilyPage() {
                       ))}
                     </div>
                   ) : members.length === 0 ? (
-                    <div className="text-center py-8">
-                      <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="font-medium mb-2">No members found</h3>
-                      <p className="text-sm text-muted-foreground">
-                        This family doesn&apos;t have any members yet
-                      </p>
-                    </div>
+                    <EmptyState
+                      icon={<Users className="h-12 w-12 text-muted-foreground" />}
+                      title={p('family.noMembers')}
+                      description={p('family.noMembersDesc')}
+                    />
                   ) : (
                     <div className="space-y-4">
                       {members.map((member) => (
-                        <div key={member.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <Avatar>
-                              <AvatarImage src={member.user.avatarUrl} alt={member.user.displayName} />
-                              <AvatarFallback>
-                                {member.user.displayName.split(' ').map(n => n[0]).join('')}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <h3 className="font-medium">{member.user.displayName}</h3>
-                                {getRoleIcon(member.role)}
-                              </div>
-                              <p className="text-sm text-muted-foreground">{member.user.email}</p>
-                              <p className="text-xs text-muted-foreground">
-                                Joined {new Date(member.joinedAt).toLocaleDateString()}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge
-                              variant="secondary"
-                              className={cn("text-xs", getRoleBadgeColor(member.role))}
-                            >
-                              {member.role}
-                            </Badge>
-                            {isAdmin && member.role !== TenantMemberRole.ADMIN && (
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
-                                    <UserMinus className="h-4 w-4" />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Remove Family Member</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Are you sure you want to remove {member.user.displayName} from this family?
-                                      This action cannot be undone.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() => handleRemoveMember(member.userId)}
-                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                    >
-                                      Remove Member
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            )}
-                          </div>
-                        </div>
+                        <MemberRow
+                          key={member.id}
+                          member={member}
+                          isAdmin={isAdmin}
+                          actions={isAdmin && member.role !== TenantMemberRole.ADMIN ? (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                                  <UserMinus className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Remove Family Member</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to remove {member.user.displayName} from this family?
+                                    This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleRemoveMember(member.userId)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Remove Member
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          ) : null}
+                        />
                       ))}
                     </div>
                   )}
@@ -424,10 +366,8 @@ export default function FamilyPage() {
             <Card>
               <CardContent className="text-center py-12">
                 <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Select a Family</h3>
-                <p className="text-muted-foreground">
-                  Choose a family from the list to view members and manage settings
-                </p>
+                <h3 className="text-lg font-semibold mb-2">{p('family.selectFamilyTitle')}</h3>
+                <p className="text-muted-foreground">{p('family.selectFamilyDesc')}</p>
               </CardContent>
             </Card>
           )}

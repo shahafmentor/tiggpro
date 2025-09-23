@@ -37,6 +37,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { choresApi, Chore, UpdateChoreRequest } from '@/lib/api/chores'
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { toast } from 'sonner'
+import { useChoresTranslations, useCommonTranslations } from '@/hooks/use-translations'
 import {
   Clock,
   Star,
@@ -98,6 +99,8 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { currentTenant } = useTenant()
   const queryClient = useQueryClient()
+  const choresT = useChoresTranslations()
+  const commonT = useCommonTranslations()
 
   const form = useForm<UpdateChoreForm>({
     resolver: zodResolver(updateChoreSchema),
@@ -140,16 +143,16 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
     },
     onSuccess: (response) => {
       if (response.success) {
-        toast.success('Chore updated successfully!')
+        toast.success(commonT('confirm'))
         queryClient.invalidateQueries({ queryKey: ['chores', currentTenant?.tenant.id] })
         onOpenChange(false)
         onSuccess?.()
       } else {
-        toast.error(response.error || 'Failed to update chore')
+        toast.error(response.error || 'modals.editChore.failed')
       }
     },
     onError: (error: unknown) => {
-      toast.error((error as { error?: string }).error || 'Failed to update chore')
+      toast.error((error as { error?: string }).error || 'modals.editChore.failed')
     },
     onSettled: () => {
       setIsSubmitting(false)
@@ -214,9 +217,9 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Chore</DialogTitle>
+          <DialogTitle>{'modals.editChore.title'}</DialogTitle>
           <DialogDescription>
-            Make changes to {chore.title}
+            {'modals.editChore.description'.replace('{title}', chore.title)}
           </DialogDescription>
         </DialogHeader>
 
@@ -224,17 +227,17 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Basic Information */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Basic Information</h3>
+              <h3 className="text-lg font-semibold">{choresT('basicInfo')}</h3>
 
               <FormField
                 control={form.control}
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Chore Title</FormLabel>
+                    <FormLabel>{choresT('title')}</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Clean your room"
+                        placeholder={choresT('placeholders.title')}
                         {...field}
                         disabled={isSubmitting}
                       />
@@ -249,10 +252,10 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>{choresT('description')}</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Detailed instructions..."
+                        placeholder={choresT('placeholders.description')}
                         className="resize-none"
                         rows={3}
                         {...field}
@@ -269,7 +272,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
                 name="difficultyLevel"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Difficulty Level</FormLabel>
+                    <FormLabel>{choresT('difficulty')}</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value}
@@ -284,19 +287,19 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
                         <SelectItem value={DifficultyLevel.EASY}>
                           <div className="flex items-center gap-2">
                             {getDifficultyIcon(DifficultyLevel.EASY)}
-                            Easy
+                            {choresT('easy')}
                           </div>
                         </SelectItem>
                         <SelectItem value={DifficultyLevel.MEDIUM}>
                           <div className="flex items-center gap-2">
                             {getDifficultyIcon(DifficultyLevel.MEDIUM)}
-                            Medium
+                            {choresT('medium')}
                           </div>
                         </SelectItem>
                         <SelectItem value={DifficultyLevel.HARD}>
                           <div className="flex items-center gap-2">
                             {getDifficultyIcon(DifficultyLevel.HARD)}
-                            Hard
+                            {choresT('hard')}
                           </div>
                         </SelectItem>
                       </SelectContent>
@@ -309,7 +312,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
 
             {/* Rewards & Duration */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Rewards & Duration</h3>
+              <h3 className="text-lg font-semibold">{choresT('rewardsDuration')}</h3>
 
               <div className="grid gap-4 md:grid-cols-3">
                 <FormField
@@ -319,7 +322,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
                     <FormItem>
                       <FormLabel className="flex items-center gap-2">
                         <Zap className="h-4 w-4 text-points-primary" />
-                        Points
+                        {choresT('points')}
                       </FormLabel>
                       <FormControl>
                         <Input
@@ -343,7 +346,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
                     <FormItem>
                       <FormLabel className="flex items-center gap-2">
                         <Gamepad2 className="h-4 w-4 text-primary" />
-                        Gaming Time
+                        {choresT('gamingTime')}
                       </FormLabel>
                       <FormControl>
                         <Input
@@ -367,7 +370,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
                     <FormItem>
                       <FormLabel className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-muted-foreground" />
-                        Duration
+                        {choresT('duration')}
                       </FormLabel>
                       <FormControl>
                         <Input
@@ -388,7 +391,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
 
             {/* Recurrence Settings */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Recurrence Settings</h3>
+              <h3 className="text-lg font-semibold">{choresT('recurrenceSettings')}</h3>
 
               <FormField
                 control={form.control}
@@ -397,7 +400,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
                       <FormLabel className="text-base">
-                        Recurring Chore
+                        {choresT('recurring')}
                       </FormLabel>
                       <FormDescription>
                         This chore repeats on a schedule
@@ -421,7 +424,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
                     name="recurrenceType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Recurrence Pattern</FormLabel>
+                        <FormLabel>{choresT('recurrencePattern')}</FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
@@ -436,19 +439,19 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
                             <SelectItem value="daily">
                               <div className="flex items-center gap-2">
                                 <Calendar className="h-4 w-4" />
-                                Daily
+                                {choresT('daily')}
                               </div>
                             </SelectItem>
                             <SelectItem value="weekly">
                               <div className="flex items-center gap-2">
                                 <CalendarDays className="h-4 w-4" />
-                                Weekly
+                                {choresT('weekly')}
                               </div>
                             </SelectItem>
                             <SelectItem value="monthly">
                               <div className="flex items-center gap-2">
                                 <CalendarRange className="h-4 w-4" />
-                                Monthly
+                                {choresT('monthly')}
                               </div>
                             </SelectItem>
                           </SelectContent>
@@ -464,7 +467,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
                       name="weeklyDays"
                       render={() => (
                         <FormItem>
-                          <FormLabel>Days of the Week</FormLabel>
+                          <FormLabel>{choresT('daysOfWeek')}</FormLabel>
                           <div className="grid grid-cols-2 gap-2">
                             {weekDays.map((day) => (
                               <FormField
@@ -513,7 +516,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
                       name="monthlyDay"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Day of Month</FormLabel>
+                          <FormLabel>{choresT('dayOfMonth')}</FormLabel>
                           <FormControl>
                             <Input
                               type="number"
@@ -541,10 +544,10 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
                 onClick={() => onOpenChange(false)}
                 disabled={isSubmitting}
               >
-                Cancel
+                {commonT('cancel')}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Updating...' : 'Update Chore'}
+                {isSubmitting ? 'modals.editChore.updating' : 'modals.editChore.update'}
               </Button>
             </div>
           </form>

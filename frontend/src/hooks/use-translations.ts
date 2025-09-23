@@ -32,3 +32,15 @@ export function useDashboardTranslations() {
 
   return (key: string) => t(dictionary, `dashboard.${key}`)
 }
+
+export function usePagesTranslations() {
+  const { dictionary } = useDictionary()
+
+  return (key: string) => t(dictionary, `pages.${key}`)
+}
+
+export function useModalsTranslations() {
+  const { dictionary } = useDictionary()
+
+  return (key: string) => t(dictionary, `modals.${key}`)
+}

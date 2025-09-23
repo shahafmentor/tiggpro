@@ -1,3 +1,5 @@
+import { PageHeader } from '@/components/layout/page-header'
+import { usePagesTranslations } from '@/hooks/use-translations'
 'use client'
 
 import { AchievementGallery } from '@/components/gamification/achievement-gallery'
@@ -115,8 +117,10 @@ const mockUserStats: UserStats = {
 }
 
 export default function AchievementsPage() {
+  const p = usePagesTranslations()
   return (
-    <div className="p-6">
+    <div className="space-y-6">
+      <PageHeader title={p('achievements.title')} subtitle={p('achievements.subtitle')} />
       <AchievementGallery
         availableAchievements={mockAchievements}
         earnedAchievements={mockEarnedAchievements}
