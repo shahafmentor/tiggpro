@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge, CountBadge, PointsBadge, DueDateBadge } from '@/components/ui/semantic-badges'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 // MVP: Comment out unused gamification components
@@ -217,9 +218,7 @@ export default function DashboardPage() {
             <CheckSquare className="h-5 w-5" />
             My Assignments
             {assignmentStats.total > 0 && (
-              <Badge variant="secondary" className="ml-auto">
-                {assignmentStats.total}
-              </Badge>
+              <CountBadge count={assignmentStats.total} className="ml-auto" />
             )}
           </CardTitle>
         </CardHeader>
@@ -253,7 +252,6 @@ export default function DashboardPage() {
               {(showAllAssignments ? assignments : assignments.slice(0, 3)).map((assignment) => {
                 const dueDate = new Date(assignment.dueDate)
                 const isOverdue = dueDate < new Date() && assignment.status === 'pending'
-                const isDueSoon = dueDate.getTime() - new Date().getTime() < 24 * 60 * 60 * 1000 // 24 hours
 
                 return (
                   <div key={assignment.id} className="flex items-center space-x-4 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
@@ -279,14 +277,11 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Clock className="h-3 w-3" />
                         <span>Due {dueDate.toLocaleDateString()}</span>
-                        {isDueSoon && !isOverdue && <Badge variant="outline" className="text-xs py-0 px-1">Due Soon</Badge>}
-                        {isOverdue && <Badge variant="destructive" className="text-xs py-0 px-1">Overdue</Badge>}
+                        <DueDateBadge dueDate={dueDate} />
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant="secondary" className="text-xs">
-                        +{assignment.chore.pointsReward} pts
-                      </Badge>
+                      <PointsBadge points={assignment.chore.pointsReward} />
                       {assignment.status === 'pending' ? (
                         <Button
                           size="sm"
@@ -311,18 +306,7 @@ export default function DashboardPage() {
                           Resubmit
                         </Button>
                       ) : (
-                        <Badge
-                          variant={
-                            assignment.status === 'approved' ? 'default' :
-                            assignment.status === 'submitted' ? 'secondary' :
-                            'outline'
-                          }
-                          className="text-xs"
-                        >
-                          {assignment.status === 'approved' ? 'Complete' :
-                           assignment.status === 'submitted' ? 'Submitted' :
-                           assignment.status}
-                        </Badge>
+                        <StatusBadge status={assignment.status as 'pending' | 'submitted' | 'approved' | 'completed' | 'rejected' | 'overdue'} />
                       )}
                     </div>
                   </div>

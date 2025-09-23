@@ -13,11 +13,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Badge } from '@/components/ui/badge'
+import { RoleBadge } from '@/components/ui/semantic-badges'
 import { tenantsApi } from '@/lib/api/tenants'
 import { useTenant } from '@/lib/contexts/tenant-context'
-import { TenantMemberRole } from '@tiggpro/shared'
-import { cn } from '@/lib/utils'
 
 export function TenantSelector() {
   const { currentTenant, setCurrentTenant } = useTenant()
@@ -71,9 +69,7 @@ export function TenantSelector() {
               <span className="truncate max-w-[120px] sm:max-w-[150px]">
                 {currentTenant.tenant.name}
               </span>
-              <Badge variant="secondary" className="text-xs">
-                {currentTenant.role}
-              </Badge>
+              <RoleBadge role={currentTenant.role} />
             </>
           ) : (
             <span>Select Family</span>
@@ -100,17 +96,7 @@ export function TenantSelector() {
                 )}
               </div>
               <div className="flex items-center gap-2 mt-1">
-                <Badge
-                  variant="secondary"
-                  className={cn(
-                    "text-xs",
-                    tenant.role === TenantMemberRole.ADMIN && "bg-yellow-100 text-yellow-800",
-                    tenant.role === TenantMemberRole.PARENT && "bg-blue-100 text-blue-800",
-                    tenant.role === TenantMemberRole.CHILD && "bg-green-100 text-green-800"
-                  )}
-                >
-                  {tenant.role}
-                </Badge>
+                <RoleBadge role={tenant.role} />
                 <span className="text-xs text-muted-foreground">
                   {tenant.tenant.tenantCode}
                 </span>

@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { UserProfileHeader } from '@/components/layout/user-profile-header'
 import { TenantSelector } from '@/components/tenant/tenant-selector'
+import { ThemeSwitcher } from '@/components/ui/theme-switcher'
 import { useQuery } from '@tanstack/react-query'
 import { assignmentsApi } from '@/lib/api/assignments'
 import { useTenant } from '@/lib/contexts/tenant-context'
@@ -184,10 +185,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </Button>
           </div>
 
-          {/* MVP: Comment out theme switcher - not essential for core flow */}
-          {/* <div className="px-4 pb-4 border-t border-border pt-4">
+          <div className="px-4 pb-4 border-t border-border pt-4">
             <ThemeSwitcher />
-          </div> */}
+          </div>
         </div>
       </div>
 
