@@ -58,20 +58,19 @@ import { useRouter } from 'next/navigation'
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { Skeleton } from '@/components/ui/skeleton'
 
-interface MockChore {
+interface ChoreWithAssignment {
   id: string
   title: string
   description: string
   points: number
   difficulty: 'EASY' | 'MEDIUM' | 'HARD'
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'OVERDUE' | 'SUBMITTED' | 'APPROVED' | 'REJECTED'
   assignedTo?: {
     name: string
     avatar?: string
   }
   dueDate: string
   estimatedTime: number // in minutes
-  assignment?: Assignment // Keep assignment reference for filtering
+  assignment?: Assignment // Assignment contains the status
 }
 
 export default function ChoresPage() {
@@ -117,7 +116,7 @@ export default function ChoresPage() {
   const isChild = currentTenant?.role === TenantMemberRole.CHILD
 
   const displayChores = chores
-    .map((chore): MockChore => {
+    .map((chore): ChoreWithAssignment => {
       // Find assignment for this chore
       const assignment = assignments.find(a => a.choreId === chore.id)
 
@@ -132,7 +131,6 @@ export default function ChoresPage() {
         description: chore.description || 'No description provided',
         points: chore.pointsReward,
         difficulty: chore.difficultyLevel.toUpperCase() as 'EASY' | 'MEDIUM' | 'HARD',
-        status: (assignment?.status?.toUpperCase() as 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'OVERDUE' | 'SUBMITTED' | 'APPROVED' | 'REJECTED') || 'PENDING',
         assignedTo: assignedMember ? {
           name: assignedMember.user.displayName || assignedMember.user.email,
           avatar: assignedMember.user.avatarUrl,
@@ -141,7 +139,7 @@ export default function ChoresPage() {
           ? new Date(assignment.dueDate).toLocaleDateString()
           : 'No due date',
         estimatedTime: chore.estimatedDurationMinutes,
-        assignment, // Keep assignment reference for filtering
+        assignment, // Assignment contains the status
       }
     })
     .filter((chore) => {
@@ -177,7 +175,7 @@ export default function ChoresPage() {
     )
   }
 
-  const getStatusColor = (status: MockChore['status']) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'PENDING':
         return 'bg-chore-pending'
@@ -196,7 +194,7 @@ export default function ChoresPage() {
     }
   }
 
-  const getDifficultyIcon = (difficulty: MockChore['difficulty']) => {
+  const getDifficultyIcon = (difficulty: ChoreWithAssignment['difficulty']) => {
     switch (difficulty) {
       case 'EASY':
         return <Star className="h-4 w-4 text-green-500" />
@@ -310,14 +308,16 @@ export default function ChoresPage() {
                     {chore.description}
                   </p>
                 </div>
-                <Badge
-                  className={cn(
-                    "ml-2 text-white font-medium",
-                    getStatusColor(chore.status)
-                  )}
-                >
-                  {chore.status.replace('_', ' ')}
-                </Badge>
+                {chore.assignment && (
+                  <Badge
+                    className={cn(
+                      "ml-2 text-white font-medium",
+                      getStatusColor(chore.assignment.status?.toUpperCase() || 'PENDING')
+                    )}
+                  >
+                    {chore.assignment.status?.replace('_', ' ') || 'Not Assigned'}
+                  </Badge>
+                )}
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -353,11 +353,11 @@ export default function ChoresPage() {
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className={cn(
                   "text-muted-foreground",
-                  isChild && chore.assignment && chore.status === 'OVERDUE' && "text-destructive font-medium"
+                  isChild && chore.assignment && chore.assignment.status?.toUpperCase() === 'OVERDUE' && "text-destructive font-medium"
                 )}>
                   {chore.dueDate}
                 </span>
-                {isChild && chore.assignment && chore.status === 'OVERDUE' && (
+                {isChild && chore.assignment && chore.assignment.status?.toUpperCase() === 'OVERDUE' && (
                   <Badge variant="destructive" className="text-xs">
                     Overdue
                   </Badge>
@@ -373,7 +373,7 @@ export default function ChoresPage() {
                   {/* Child Actions */}
                   {isChild && chore.assignment && (
                     <>
-                      {chore.status === 'PENDING' && (
+                      {chore.assignment.status?.toUpperCase() === 'PENDING' && (
                         <Button
                           size="sm"
                           className="h-8"
@@ -386,7 +386,7 @@ export default function ChoresPage() {
                           Submit
                         </Button>
                       )}
-                      {chore.status === 'OVERDUE' && (
+                      {chore.assignment.status?.toUpperCase() === 'OVERDUE' && (
                         <Button
                           size="sm"
                           variant="destructive"
@@ -400,17 +400,17 @@ export default function ChoresPage() {
                           Submit
                         </Button>
                       )}
-                      {chore.status === 'SUBMITTED' && (
+                      {chore.assignment.status?.toUpperCase() === 'SUBMITTED' && (
                         <Badge variant="secondary" className="bg-chore-submitted/10 text-chore-submitted">
                           Submitted
                         </Badge>
                       )}
-                      {(chore.status === 'COMPLETED' || chore.status === 'APPROVED') && (
+                      {(chore.assignment.status?.toUpperCase() === 'COMPLETED' || chore.assignment.status?.toUpperCase() === 'APPROVED') && (
                         <Badge variant="secondary" className="bg-chore-completed/10 text-chore-completed">
                           Done ✓
                         </Badge>
                       )}
-                      {chore.status === 'REJECTED' && (
+                      {chore.assignment.status?.toUpperCase() === 'REJECTED' && (
                         <div className="flex items-center gap-2">
                           <Badge variant="destructive" className="text-xs">
                             Rejected
@@ -452,19 +452,19 @@ export default function ChoresPage() {
                       )}
 
                       {/* Status Badges for Assigned Chores */}
-                      {chore.assignedTo && (
+                      {chore.assignedTo && chore.assignment && (
                         <>
-                          {chore.status === 'SUBMITTED' && (
+                          {chore.assignment.status?.toUpperCase() === 'SUBMITTED' && (
                             <Badge variant="secondary" className="bg-chore-submitted/10 text-chore-submitted">
                               Submitted
                             </Badge>
                           )}
-                          {(chore.status === 'COMPLETED' || chore.status === 'APPROVED') && (
+                          {(chore.assignment.status?.toUpperCase() === 'COMPLETED' || chore.assignment.status?.toUpperCase() === 'APPROVED') && (
                             <Badge variant="secondary" className="bg-chore-completed/10 text-chore-completed">
                               Done ✓
                             </Badge>
                           )}
-                          {chore.status === 'REJECTED' && (
+                          {chore.assignment.status?.toUpperCase() === 'REJECTED' && (
                             <Badge variant="destructive" className="text-xs">
                               Rejected
                             </Badge>
