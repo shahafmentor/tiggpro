@@ -5,7 +5,8 @@
     "review": "בדיקה",
     "family": "משפחה",
     "achievements": "הישגים",
-    "settings": "הגדרות"
+    "settings": "הגדרות",
+    "rewards": "פרסים"
   },
   "chores": {
     "create": "מטלה חדשה",
@@ -113,10 +114,35 @@
     "resubmit": "שלח מחדש",
     "due": "תאריך יעד {date}",
     "showLess": "הצג פחות",
-    "viewAllAssignments": "צפה בכל המטלות ({count})"
+    "viewAllAssignments": "צפה בכל המטלות ({count})",
+    "rewards": "פרסים",
+    "requestReward": "בקשת פרס"
   }
   ,
   "pages": {
+    "rewards": {
+      "title": "בקשות פרסים",
+      "settings": "הגדרות פרסים",
+      "saving": "שומר...",
+      "noRequests": "אין בקשות פרסים עדיין",
+      "reviewSubtitle": "בדוק ואשר בקשות פרסים של ילדים",
+      "requestedLabel": "זמן בקשה",
+      "amountLabel": "כמות",
+      "notesLabel": "הערות",
+      "approveRequest": "אשר בקשה",
+      "rejectRequest": "דחה בקשה",
+      "types": {
+        "gaming_time": "זמן משחק",
+        "social_outing": "בילוי חברתי",
+        "spending_money": "דמי כיס",
+        "special_experience": "חווייה מיוחדת"
+      },
+      "status": {
+        "pending": "ממתין",
+        "approved": "אושר",
+        "rejected": "נדחה"
+      }
+    },
     "review": {
       "title": "בדיקת הגשות",
       "subtitle": "בדוק ואשר מטלות שהושלמו על ידי ילדים",

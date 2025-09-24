@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery as useRewardsQuery } from '@tanstack/react-query'
 import {
   // MVP: Comment out unused imports
   // Calendar,
@@ -26,6 +26,9 @@ import { Skeleton } from '@/components/ui/skeleton'
 // import { PointsDisplay } from '@/components/gamification/points-display'
 // import { FamilyLeaderboard } from '@/components/gamification/family-leaderboard'
 import { SubmitAssignmentModal } from '@/components/chores/submit-assignment-modal'
+import { RewardRedemptionModal } from '@/components/gamification/reward-redemption-modal'
+import { rewardsApi } from '@/lib/api/rewards'
+import { useQuery } from '@tanstack/react-query'
 import { ChoreDetailModal } from '@/components/chores/chore-detail-modal'
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { assignmentsApi, type Assignment, type Submission } from '@/lib/api/assignments'
@@ -40,6 +43,15 @@ export default function DashboardPage() {
   const [submittingAssignment, setSubmittingAssignment] = useState<Assignment | null>(null)
   const [showAllAssignments, setShowAllAssignments] = useState(false)
   const [viewingAssignment, setViewingAssignment] = useState<Assignment | null>(null)
+  const [requestRewardOpen, setRequestRewardOpen] = useState(false)
+  // My Rewards (recent)
+  const { data: myRewardsResponse } = useRewardsQuery({
+    queryKey: ['rewards-redemptions', currentTenant?.tenant?.id],
+    queryFn: () => currentTenant ? rewardsApi.listRedemptions(currentTenant.tenant.id) : Promise.resolve({ success: false } as any),
+    enabled: !!currentTenant && !!session,
+    refetchInterval: 30000,
+  })
+  const myRewards = (myRewardsResponse?.success ? myRewardsResponse.data : [])?.slice(0, 3) || []
   const router = useLocalizedRouter()
   const t = useDashboardTranslations()
 
@@ -217,6 +229,39 @@ export default function DashboardPage() {
         availableGamingMinutes={mockData.stats.gamingTimeEarned}
         animated={true}
       /> */}
+
+      {/* Quick Actions for Kids */}
+      {isChild && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              Rewards
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2 mb-4">
+              <Button onClick={() => setRequestRewardOpen(true)}>
+                Request Reward
+              </Button>
+              <Button variant="outline" onClick={() => router.push('/dashboard/rewards')}>
+                View My Rewards
+              </Button>
+            </div>
+            {myRewards.length > 0 && (
+              <div className="space-y-2">
+                {myRewards.map((r: any) => (
+                  <div key={r.id} className="text-sm flex items-center justify-between p-2 rounded border">
+                    <span className="capitalize">{String(r.type).replace('_',' ')}</span>
+                    <span className="text-muted-foreground">
+                      <StatusBadge status={r.status as any} />
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* My Assignments Section */}
       <Card>
@@ -465,6 +510,9 @@ export default function DashboardPage() {
           setSubmittingAssignment(assignment)
         }}
       />
+
+      {/* Reward Redemption Modal */}
+      <RewardRedemptionModal open={requestRewardOpen} onOpenChange={setRequestRewardOpen} />
     </div>
   )
 }

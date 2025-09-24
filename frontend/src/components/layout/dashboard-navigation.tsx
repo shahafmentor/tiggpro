@@ -71,6 +71,12 @@ export function DashboardNavigation({ userRole, pendingCount = 0, isMobile = fal
       badge: pendingCount > 0 ? pendingCount : undefined,
     },
     {
+      href: '/dashboard/rewards',
+      label: navT('rewards'),
+      icon: Eye,
+      // visible to all roles
+    },
+    {
       href: '/dashboard/family',
       label: navT('family'),
       icon: Users,

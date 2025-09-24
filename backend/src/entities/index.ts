@@ -8,3 +8,5 @@ export { UserPoints } from './user-points.entity';
 export { Achievement } from './achievement.entity';
 export { UserAchievement } from './user-achievement.entity';
 export { Notification } from './notification.entity';
+export { RewardRedemption } from './reward-redemption.entity';
+export { RewardSettings } from './reward-settings.entity';

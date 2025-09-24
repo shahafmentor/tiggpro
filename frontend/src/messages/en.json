@@ -5,7 +5,8 @@
     "review": "Review",
     "family": "Family",
     "achievements": "Achievements",
-    "settings": "Settings"
+    "settings": "Settings",
+    "rewards": "Rewards"
   },
   "chores": {
     "create": "New Chore",
@@ -113,10 +114,35 @@
     "resubmit": "Resubmit",
     "due": "Due {date}",
     "showLess": "Show Less",
-    "viewAllAssignments": "View All Assignments ({count})"
+    "viewAllAssignments": "View All Assignments ({count})",
+    "rewards": "Rewards",
+    "requestReward": "Request Reward"
   }
   ,
   "pages": {
+    "rewards": {
+      "title": "Reward Redemptions",
+      "settings": "Reward Settings",
+      "saving": "Saving...",
+      "noRequests": "No reward requests yet",
+      "reviewSubtitle": "Review and approve children's reward requests",
+      "requestedLabel": "Requested",
+      "amountLabel": "Amount",
+      "notesLabel": "Notes",
+      "approveRequest": "Approve Request",
+      "rejectRequest": "Reject Request",
+      "types": {
+        "gaming_time": "Gaming Time",
+        "social_outing": "Social Outing",
+        "spending_money": "Spending Money",
+        "special_experience": "Special Experience"
+      },
+      "status": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      }
+    },
     "review": {
       "title": "Review Submissions",
       "subtitle": "Review and approve children's completed chores",

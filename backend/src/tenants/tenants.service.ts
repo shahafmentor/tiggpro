@@ -285,4 +285,30 @@ export class TenantsService {
     // 4. Send notifications to members before deletion
     // 5. Allow data export before deletion
   }
+
+  // Membership/Permission helpers for cross-module reuse
+  async getMembership(tenantId: string, userId: string): Promise<TenantMember> {
+    const membership = await this.tenantMemberRepository.findOne({
+      where: { tenantId, userId, isActive: true },
+    });
+    if (!membership) {
+      throw new NotFoundException('Membership not found');
+    }
+    return membership;
+  }
+
+  async verifyUserMembership(tenantId: string, userId: string): Promise<TenantMember> {
+    return this.getMembership(tenantId, userId);
+  }
+
+  async verifyUserPermission(
+    tenantId: string,
+    userId: string,
+    allowedRoles: TenantMemberRole[],
+  ): Promise<void> {
+    const membership = await this.getMembership(tenantId, userId);
+    if (!allowedRoles.includes(membership.role)) {
+      throw new NotFoundException('Insufficient permissions for this action');
+    }
+  }
 }

@@ -10,6 +10,7 @@ import { ChoresModule } from '@/chores/chores.module';
 import { AssignmentsModule } from '@/assignments/assignments.module';
 import { GamificationModule } from '@/gamification/gamification.module';
 import { HealthModule } from '@/health/health.module';
+import { RewardsModule } from '@/rewards/rewards.module';
 import { validate } from '@/config/validation';
 import databaseConfig from '@/config/database.config';
 import appConfig from '@/config/app.config';
@@ -40,6 +41,7 @@ import {
     ChoresModule,
     AssignmentsModule,
     GamificationModule,
+    RewardsModule,
     HealthModule,
   ],
   controllers: [AppController],

@@ -201,6 +201,42 @@ export enum NotificationType {
   ACHIEVEMENT_EARNED = 'achievement_earned',
 }
 
+// Rewards (Extended beyond gaming time)
+export enum RewardType {
+  GAMING_TIME = 'gaming_time',
+  SOCIAL_OUTING = 'social_outing',
+  SPENDING_MONEY = 'spending_money',
+  SPECIAL_EXPERIENCE = 'special_experience',
+}
+
+export enum RedemptionStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+}
+
+export interface RewardRedemption {
+  id: string;
+  tenantId: string;
+  userId: string;
+  type: RewardType;
+  amount?: number | null; // minutes or monetary units when applicable
+  notes?: string | null;
+  status: RedemptionStatus;
+  requestedAt: Date;
+  decidedAt?: Date | null;
+  decidedBy?: string | null; // user id of approver
+}
+
+export interface RewardSettings {
+  id: string;
+  tenantId: string;
+  enabledTypes: RewardType[]; // which reward types are available for this tenant
+  defaultConversion?: Record<string, unknown>; // reserved for future conversion rules
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // API Response Types
 export interface ApiResponse<T = any> {
   success: boolean;
