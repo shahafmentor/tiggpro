@@ -4,24 +4,20 @@ import { ReactNode } from 'react'
 import { useSession } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
 import {
-  Home,
-  CheckSquare,
-  Users,
-  Plus,
-  Eye
+  Plus
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { UserProfileHeader } from '@/components/layout/user-profile-header'
 import { TenantSelector } from '@/components/tenant/tenant-selector'
 import { ThemeSwitcher } from '@/components/ui/theme-switcher'
 import { LanguageSelector } from '@/components/ui/language-selector'
+import { DashboardNavigation } from '@/components/layout/dashboard-navigation'
 import { useQuery } from '@tanstack/react-query'
 import { assignmentsApi } from '@/lib/api/assignments'
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { TenantMemberRole } from '@tiggpro/shared'
-import { useNavigationTranslations, useChoresTranslations, useBrandTranslations } from '@/hooks/use-translations'
+import { useChoresTranslations, useBrandTranslations } from '@/hooks/use-translations'
 import { useLocalizedRouter } from '@/hooks/use-localized-router'
 import { useLocale } from '@/hooks/use-locale'
 
@@ -29,49 +25,6 @@ interface DashboardLayoutProps {
   children: ReactNode
 }
 
-interface NavItem {
-  href: string
-  label: string
-  icon: React.ComponentType<{ className?: string }>
-  badge?: number
-  roles?: ('admin' | 'parent' | 'child')[]
-}
-
-const navItems: NavItem[] = [
-  {
-    href: '/dashboard',
-    label: 'Home',
-    icon: Home,
-  },
-  {
-    href: '/dashboard/chores',
-    label: 'Chores',
-    icon: CheckSquare,
-  },
-  {
-    href: '/dashboard/review',
-    label: 'Review',
-    icon: Eye,
-    roles: ['admin', 'parent'],
-  },
-  {
-    href: '/dashboard/family',
-    label: 'Family',
-    icon: Users,
-    roles: ['admin', 'parent'],
-  },
-  // MVP: Comment out non-essential features
-  // {
-  //   href: '/dashboard/achievements',
-  //   label: 'Achievements',
-  //   icon: Trophy,
-  // },
-  // {
-  //   href: '/dashboard/settings',
-  //   label: 'Settings',
-  //   icon: Settings,
-  // },
-]
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { data: session, status } = useSession()
@@ -79,7 +32,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname()
   const { currentTenant } = useTenant()
   const { direction } = useLocale()
-  const navT = useNavigationTranslations()
   const choresT = useChoresTranslations()
   const brandT = useBrandTranslations()
 
@@ -114,37 +66,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   // Get user role from current tenant context
   const userRole = currentTenant?.role || 'CHILD'
 
-  // Create dynamic nav items with translations and pending count badge
-  const dynamicNavItems = [
-    {
-      href: '/dashboard',
-      label: navT('dashboard'),
-      icon: Home,
-    },
-    {
-      href: '/dashboard/chores',
-      label: navT('chores'),
-      icon: CheckSquare,
-    },
-    {
-      href: '/dashboard/review',
-      label: navT('review'),
-      icon: Eye,
-      roles: ['admin', 'parent'] as const,
-      badge: pendingCount > 0 ? pendingCount : undefined,
-    },
-    {
-      href: '/dashboard/family',
-      label: navT('family'),
-      icon: Users,
-      roles: ['admin', 'parent'] as const,
-    },
-  ]
-
-  const filteredNavItems = dynamicNavItems.filter(item =>
-    !item.roles || item.roles.includes(userRole.toLowerCase() as 'admin' | 'parent')
-  )
-
   return (
     <div className="min-h-screen bg-background">
       {/* Desktop Sidebar */}
@@ -171,35 +92,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6">
-            <ul className="space-y-2">
-              {filteredNavItems.map((item) => {
-                const isActive = pathname === item.href
-                const Icon = item.icon
-
-                return (
-                  <li key={item.href}>
-                    <Button
-                      variant={isActive ? "default" : "ghost"}
-                      className={cn(
-                        "w-full justify-start gap-3 h-12 rtl:justify-start",
-                        isActive && "bg-primary text-primary-foreground"
-                      )}
-                      onClick={() => router.push(item.href)}
-                    >
-                      <Icon className="h-5 w-5" />
-                      <span className="flex-1 text-left rtl:text-right">{item.label}</span>
-                      {item.badge && (
-                        <Badge variant="secondary" className="ml-auto rtl:ml-0 rtl:mr-auto">
-                          {item.badge}
-                        </Badge>
-                      )}
-                    </Button>
-                  </li>
-                )
-              })}
-            </ul>
-          </nav>
+          <DashboardNavigation
+            userRole={userRole}
+            pendingCount={pendingCount}
+          />
 
           {/* Quick Actions */}
           <div className="px-4 pb-6">
@@ -221,35 +117,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Mobile Bottom Navigation */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border">
-        <nav className="flex justify-around py-2">
-          {filteredNavItems.slice(0, 4).map((item) => {
-            const isActive = pathname === item.href
-            const Icon = item.icon
-
-            return (
-              <Button
-                key={item.href}
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "flex-col h-16 w-16 gap-1 relative",
-                  isActive && "text-primary"
-                )}
-                onClick={() => router.push(item.href)}
-              >
-                <Icon className="h-5 w-5" />
-                <span className="text-xs">{item.label}</span>
-                {item.badge && (
-                  <Badge
-                    variant="destructive"
-                    className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs rtl:-right-auto rtl:-left-1"
-                  >
-                    {item.badge}
-                  </Badge>
-                )}
-              </Button>
-            )
-          })}
+        <div className="flex">
+          <DashboardNavigation
+            userRole={userRole}
+            pendingCount={pendingCount}
+            isMobile={true}
+          />
           <Button
             variant="ghost"
             size="sm"
@@ -259,7 +132,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <Plus className="h-5 w-5" />
             <span className="text-xs">{choresT('create')}</span>
           </Button>
-        </nav>
+        </div>
       </div>
 
       {/* Mobile Header */}
