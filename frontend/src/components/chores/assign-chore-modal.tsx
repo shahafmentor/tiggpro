@@ -41,15 +41,16 @@ import { assignmentsApi, Assignment } from '@/lib/api/assignments'
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { toast } from 'sonner'
 import { User, Users, Calendar, Flag } from 'lucide-react'
+import { useChoresTranslations, useCommonTranslations, useModalsTranslations } from '@/hooks/use-translations'
 
-const assignChoreSchema = z.object({
-  assignedTo: z.string().min(1, 'Please select a family member'),
-  dueDate: z.string().min(1, 'Please select a due date'),
+const getAssignChoreSchema = (modalsT: (key: string) => string) => z.object({
+  assignedTo: z.string().min(1, modalsT('assignChore.assignToPlaceholder')),
+  dueDate: z.string().min(1, modalsT('assignChore.dueDateLabel')),
   priority: z.nativeEnum(Priority),
   notes: z.string().optional(),
 })
 
-type AssignChoreForm = z.infer<typeof assignChoreSchema>
+type AssignChoreForm = z.infer<ReturnType<typeof getAssignChoreSchema>>
 
 interface AssignChoreModalProps {
   chore: Chore | null
@@ -63,6 +64,9 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
   const { currentTenant } = useTenant()
   const { data: session } = useSession()
   const queryClient = useQueryClient()
+  const choresT = useChoresTranslations()
+  const commonT = useCommonTranslations()
+  const modalsT = useModalsTranslations()
 
   // Fetch tenant members for assignment dropdown
   const { data: membersResponse, isLoading: membersLoading } = useQuery({
@@ -83,6 +87,8 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
 
   // Find current assignment for this chore
   const currentAssignment = chore ? assignments.find(a => a.choreId === chore.id) : null
+
+  const assignChoreSchema = getAssignChoreSchema(modalsT)
 
   const form = useForm<AssignChoreForm>({
     resolver: zodResolver(assignChoreSchema),
@@ -129,18 +135,18 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
     },
     onSuccess: (response) => {
       if (response.success) {
-        toast.success('Chore assigned successfully!')
+        toast.success(modalsT('assignChore.success'))
         queryClient.invalidateQueries({ queryKey: ['chores'] })
         queryClient.invalidateQueries({ queryKey: ['assignments'] })
         form.reset()
         onOpenChange(false)
         onSuccess?.()
       } else {
-        toast.error(response.error || 'Failed to assign chore')
+        toast.error(response.error || modalsT('assignChore.failed'))
       }
     },
     onError: (error: unknown) => {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to assign chore'
+      const errorMessage = error instanceof Error ? error.message : modalsT('assignChore.failed')
       toast.error(errorMessage)
     },
     onSettled: () => {
@@ -172,13 +178,16 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            {currentAssignment ? 'Reassign Chore' : 'Assign Chore'}
+            {currentAssignment ? modalsT('assignChore.reassignTitle') : modalsT('assignChore.title')}
           </DialogTitle>
           <DialogDescription>
-            {currentAssignment ? 'Reassign' : 'Assign'} &quot;{chore?.title}&quot; to a family member with a due date and priority.
+            {currentAssignment ?
+              modalsT('assignChore.reassignDescription').replace('{title}', chore?.title || '') :
+              modalsT('assignChore.description').replace('{title}', chore?.title || '')
+            }
             {currentAssignment && currentAssignment.assignedTo && (
               <span className="block mt-1 text-xs text-muted-foreground">
-                Currently assigned to {currentAssignment.assignedTo.displayName || currentAssignment.assignedTo.email}
+                {modalsT('assignChore.currentlyAssigned').replace('{name}', currentAssignment.assignedTo.displayName || currentAssignment.assignedTo.email)}
               </span>
             )}
           </DialogDescription>
@@ -211,7 +220,7 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
               name="assignedTo"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Assign to Family Member</FormLabel>
+                  <FormLabel>{modalsT('assignChore.assignToLabel')}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     value={field.value}
@@ -219,7 +228,7 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a family member" />
+                        <SelectValue placeholder={modalsT('assignChore.assignToPlaceholder')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -237,7 +246,7 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
                     </SelectContent>
                   </Select>
                   <FormDescription>
-                    Choose which family member should complete this chore
+                    {modalsT('assignChore.assignToDescription')}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -251,7 +260,7 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
                 <FormItem>
                   <FormLabel className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
-                    Due Date
+                    {modalsT('assignChore.dueDateLabel')}
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -262,7 +271,7 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
                     />
                   </FormControl>
                   <FormDescription>
-                    When should this chore be completed?
+                    {modalsT('assignChore.dueDateDescription')}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -276,7 +285,7 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
                 <FormItem>
                   <FormLabel className="flex items-center gap-2">
                     <Flag className="h-4 w-4" />
-                    Priority
+                    {modalsT('assignChore.priorityLabel')}
                   </FormLabel>
                   <Select
                     onValueChange={field.onChange}
@@ -285,29 +294,29 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select priority" />
+                        <SelectValue placeholder={modalsT('assignChore.priorityPlaceholder')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       <SelectItem value={Priority.LOW}>
                         <Badge variant="secondary" className={getPriorityColor(Priority.LOW)}>
-                          Low Priority
+                          {modalsT('assignChore.priorityLow')}
                         </Badge>
                       </SelectItem>
                       <SelectItem value={Priority.MEDIUM}>
                         <Badge variant="secondary" className={getPriorityColor(Priority.MEDIUM)}>
-                          Medium Priority
+                          {modalsT('assignChore.priorityMedium')}
                         </Badge>
                       </SelectItem>
                       <SelectItem value={Priority.HIGH}>
                         <Badge variant="secondary" className={getPriorityColor(Priority.HIGH)}>
-                          High Priority
+                          {modalsT('assignChore.priorityHigh')}
                         </Badge>
                       </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormDescription>
-                    How urgent is this chore assignment?
+                    {modalsT('assignChore.priorityDescription')}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -319,10 +328,10 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Assignment Notes (Optional)</FormLabel>
+                  <FormLabel>{modalsT('assignChore.notesLabel')}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Any special instructions or notes for the assigned person..."
+                      placeholder={modalsT('assignChore.notesPlaceholder')}
                       className="resize-none"
                       rows={3}
                       {...field}
@@ -330,7 +339,7 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
                     />
                   </FormControl>
                   <FormDescription>
-                    Optional notes or instructions for the person assigned to this chore
+                    {modalsT('assignChore.notesDescription')}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -344,10 +353,13 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
                 onClick={() => onOpenChange(false)}
                 disabled={isSubmitting}
               >
-                Cancel
+                {commonT('cancel')}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (currentAssignment ? 'Reassigning...' : 'Assigning...') : (currentAssignment ? 'Reassign Chore' : 'Assign Chore')}
+                {isSubmitting ?
+                  (currentAssignment ? modalsT('assignChore.reassigning') : modalsT('assignChore.assigning')) :
+                  (currentAssignment ? modalsT('assignChore.reassign') : modalsT('assignChore.assign'))
+                }
               </Button>
             </DialogFooter>
           </form>

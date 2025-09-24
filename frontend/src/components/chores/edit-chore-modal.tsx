@@ -37,7 +37,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { choresApi, Chore, UpdateChoreRequest } from '@/lib/api/chores'
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { toast } from 'sonner'
-import { useChoresTranslations, useCommonTranslations } from '@/hooks/use-translations'
+import { useChoresTranslations, useCommonTranslations, useModalsTranslations } from '@/hooks/use-translations'
 import {
   Clock,
   Star,
@@ -85,22 +85,23 @@ interface EditChoreModalProps {
   onSuccess?: () => void
 }
 
-const weekDays = [
-  { value: 1, label: 'Monday' },
-  { value: 2, label: 'Tuesday' },
-  { value: 3, label: 'Wednesday' },
-  { value: 4, label: 'Thursday' },
-  { value: 5, label: 'Friday' },
-  { value: 6, label: 'Saturday' },
-  { value: 0, label: 'Sunday' },
-]
-
 export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditChoreModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { currentTenant } = useTenant()
   const queryClient = useQueryClient()
   const choresT = useChoresTranslations()
   const commonT = useCommonTranslations()
+  const modalsT = useModalsTranslations()
+
+  const weekDays = [
+    { value: 1, label: choresT('monday') },
+    { value: 2, label: choresT('tuesday') },
+    { value: 3, label: choresT('wednesday') },
+    { value: 4, label: choresT('thursday') },
+    { value: 5, label: choresT('friday') },
+    { value: 6, label: choresT('saturday') },
+    { value: 0, label: choresT('sunday') },
+  ]
 
   const form = useForm<UpdateChoreForm>({
     resolver: zodResolver(updateChoreSchema),
@@ -148,11 +149,11 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
         onOpenChange(false)
         onSuccess?.()
       } else {
-        toast.error(response.error || 'modals.editChore.failed')
+        toast.error(response.error || modalsT('editChore.failed'))
       }
     },
     onError: (error: unknown) => {
-      toast.error((error as { error?: string }).error || 'modals.editChore.failed')
+      toast.error((error as { error?: string }).error || modalsT('editChore.failed'))
     },
     onSettled: () => {
       setIsSubmitting(false)
@@ -217,9 +218,9 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{'modals.editChore.title'}</DialogTitle>
+          <DialogTitle>{modalsT('editChore.title')}</DialogTitle>
           <DialogDescription>
-            {'modals.editChore.description'.replace('{title}', chore.title)}
+            {modalsT('editChore.description').replace('{title}', chore.title)}
           </DialogDescription>
         </DialogHeader>
 
@@ -403,7 +404,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
                         {choresT('recurring')}
                       </FormLabel>
                       <FormDescription>
-                        This chore repeats on a schedule
+                        {choresT('help.recurring')}
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -547,7 +548,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
                 {commonT('cancel')}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'modals.editChore.updating' : 'modals.editChore.update'}
+                {isSubmitting ? modalsT('editChore.updating') : modalsT('editChore.update')}
               </Button>
             </div>
           </form>

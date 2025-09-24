@@ -4,9 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { CheckSquare, Clock, User } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { CheckSquare, Clock, User, MoreVertical, Edit, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Assignment } from '@/lib/api/assignments'
+import { useChoresTranslations, useCommonTranslations } from '@/hooks/use-translations'
 
 export interface ChoreCardData {
   id: string
@@ -31,6 +38,8 @@ interface ChoreCardProps {
 }
 
 export function ChoreCard({ chore, isChild, onClick, onAssign, onSubmitAssignment, onEdit, onDelete }: ChoreCardProps) {
+  const choresT = useChoresTranslations()
+  const commonT = useCommonTranslations()
   const getStatusColor = (status?: string) => {
     switch ((status || 'PENDING').toUpperCase()) {
       case 'PENDING':
@@ -114,6 +123,19 @@ export function ChoreCard({ chore, isChild, onClick, onAssign, onSubmitAssignmen
             {chore.points} points
           </Badge>
           <div className="flex items-center gap-2">
+            {!isChild && !chore.assignment && (
+              <Button
+                size="sm"
+                className="h-8"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onAssign?.(chore.id)
+                }}
+              >
+                <User className="h-3 w-3 mr-1" />
+                {choresT('assignTo')}
+              </Button>
+            )}
             {isChild && chore.assignment && (
               <>
                 {chore.assignment.status?.toUpperCase() === 'PENDING' && (
@@ -126,7 +148,7 @@ export function ChoreCard({ chore, isChild, onClick, onAssign, onSubmitAssignmen
                     }}
                   >
                     <CheckSquare className="h-3 w-3 mr-1" />
-                    Submit
+                    {choresT('submit')}
                   </Button>
                 )}
                 {chore.assignment.status?.toUpperCase() === 'OVERDUE' && (
@@ -140,10 +162,50 @@ export function ChoreCard({ chore, isChild, onClick, onAssign, onSubmitAssignmen
                     }}
                   >
                     <Clock className="h-3 w-3 mr-1" />
-                    Submit
+                    {choresT('submit')}
                   </Button>
                 )}
               </>
+            )}
+            {!isChild && (onEdit || onDelete) && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                    <span className="sr-only">Open menu</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {onEdit && (
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onEdit(chore.id)
+                      }}
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      {commonT('edit')}
+                    </DropdownMenuItem>
+                  )}
+                  {onDelete && (
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onDelete(chore.id)
+                      }}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      {commonT('delete')}
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
         </div>
