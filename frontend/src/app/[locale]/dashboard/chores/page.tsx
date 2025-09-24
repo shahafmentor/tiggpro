@@ -296,6 +296,14 @@ export default function ChoresPage() {
               if (originalChore) setAssigningChore(originalChore)
             }}
             onSubmitAssignment={(assignment) => setSubmittingAssignment(assignment)}
+            onDelete={(id) => {
+              const originalChore = chores.find(c => c.id === id)
+              if (originalChore) setDeletingChore(originalChore)
+            }}
+            onEdit={(id) => {
+              const originalChore = chores.find(c => c.id === id)
+              if (originalChore) setEditingChore(originalChore)
+            }}
           />
         ))}
       </div>
