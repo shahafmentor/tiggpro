@@ -6,20 +6,15 @@ import { useQuery as useRewardsQuery } from '@tanstack/react-query'
 import {
   // MVP: Comment out unused imports
   // Calendar,
-  CheckSquare,
   Star,
   // TrendingUp,
   // Trophy,
   // Users,
-  Clock,
   AlertCircle,
-  Eye,
-  ChevronUp,
-  ChevronDown
+  Eye
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { StatusBadge, CountBadge, PointsBadge, DueDateBadge } from '@/components/ui/semantic-badges'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 // MVP: Comment out unused gamification components
@@ -27,6 +22,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 // import { FamilyLeaderboard } from '@/components/gamification/family-leaderboard'
 import { SubmitAssignmentModal } from '@/components/chores/submit-assignment-modal'
 import { RewardRedemptionModal } from '@/components/gamification/reward-redemption-modal'
+import { RewardsSection } from '@/components/dashboard/rewards-section'
+import { AssignmentsSection } from '@/components/dashboard/assignments-section'
 import { rewardsApi } from '@/lib/api/rewards'
 import { gamificationApi } from '@/lib/api/gamification'
 import { useQuery } from '@tanstack/react-query'
@@ -42,7 +39,6 @@ export default function DashboardPage() {
   const { data: session } = useSession()
   const { currentTenant } = useTenant()
   const [submittingAssignment, setSubmittingAssignment] = useState<Assignment | null>(null)
-  const [showAllAssignments, setShowAllAssignments] = useState(false)
   const [viewingAssignment, setViewingAssignment] = useState<Assignment | null>(null)
   const [requestRewardOpen, setRequestRewardOpen] = useState(false)
 
@@ -267,169 +263,25 @@ export default function DashboardPage() {
         </Card>
       )}
 
-      {/* Quick Actions for Kids */}
+      {/* Rewards Section for Kids */}
       {isChild && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              Rewards
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-2 mb-4">
-              <Button onClick={() => setRequestRewardOpen(true)}>
-                Request Reward
-              </Button>
-              <Button variant="outline" onClick={() => router.push('/dashboard/rewards')}>
-                View My Rewards
-              </Button>
-            </div>
-            {myRewards.length > 0 && (
-              <div className="space-y-2">
-                {myRewards.map((r: any) => (
-                  <div key={r.id} className="text-sm flex items-center justify-between p-2 rounded border">
-                    <span className="capitalize">{String(r.type).replace('_',' ')}</span>
-                    <span className="text-muted-foreground">
-                      <StatusBadge status={r.status as any} />
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <RewardsSection
+          rewards={myRewards}
+          isLoading={false}
+          error={null}
+          onRequestReward={() => setRequestRewardOpen(true)}
+        />
       )}
 
       {/* My Assignments Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CheckSquare className="h-5 w-5" />
-            {t('myAssignments')}
-            {assignmentStats.total > 0 && (
-              <CountBadge count={assignmentStats.total} className="ml-auto" />
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {assignmentsLoading ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center space-x-4">
-                  <Skeleton className="h-12 w-12 rounded" />
-                  <div className="space-y-2 flex-1">
-                    <Skeleton className="h-4 w-[200px]" />
-                    <Skeleton className="h-3 w-[100px]" />
-                  </div>
-                  <Skeleton className="h-6 w-16" />
-                </div>
-              ))}
-            </div>
-          ) : assignmentsError ? (
-            <div className="text-center py-6 text-muted-foreground">
-              <AlertCircle className="h-8 w-8 mx-auto mb-2" />
-              <p>{t('failedToLoadAssignments')}</p>
-            </div>
-          ) : assignments.length === 0 ? (
-            <div className="text-center py-6 text-muted-foreground">
-              <CheckSquare className="h-8 w-8 mx-auto mb-2" />
-              <p>{t('noAssignments')}</p>
-              <p className="text-sm">{t('checkBackLater')}</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {(showAllAssignments ? assignments : assignments.slice(0, 3)).map((assignment) => {
-                const dueDate = new Date(assignment.dueDate)
-                const isOverdue = dueDate < new Date() && assignment.status === 'pending'
-
-                return (
-                  <div
-                    key={assignment.id}
-                    className={`flex items-center space-x-4 p-3 rounded-lg border hover:bg-muted/50 transition-colors ${
-                      isChild ? 'cursor-pointer' : ''
-                    }`}
-                    onClick={isChild ? () => setViewingAssignment(assignment) : undefined}
-                  >
-                    <div className="flex-shrink-0">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        assignment.status === 'approved' ? 'bg-chore-completed/10' :
-                        assignment.status === 'submitted' ? 'bg-chore-submitted/10' :
-                        isOverdue ? 'bg-chore-overdue/10' :
-                        'bg-chore-pending/10'
-                      }`}>
-                        <CheckSquare className={`h-5 w-5 ${
-                          assignment.status === 'approved' ? 'text-chore-completed' :
-                          assignment.status === 'submitted' ? 'text-chore-submitted' :
-                          isOverdue ? 'text-chore-overdue' :
-                          'text-chore-pending'
-                        }`} />
-                      </div>
-                    </div>
-                    <div className="flex-1 space-y-1">
-                      <p className="text-sm font-medium text-foreground">
-                        {assignment.chore.title}
-                      </p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        <span>{t('due').replace('{date}', dueDate.toLocaleDateString())}</span>
-                        <DueDateBadge dueDate={dueDate} />
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <PointsBadge points={assignment.chore.pointsReward} />
-                      {assignment.status === 'pending' ? (
-                        <Button
-                          size="sm"
-                          className="text-xs h-6"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setSubmittingAssignment(assignment)
-                          }}
-                        >
-                          {t('submit')}
-                        </Button>
-                      ) : assignment.status === 'rejected' ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-xs h-6"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setSubmittingAssignment(assignment)
-                          }}
-                        >
-                          {t('resubmit')}
-                        </Button>
-                      ) : (
-                        <StatusBadge status={assignment.status as 'pending' | 'submitted' | 'approved' | 'completed' | 'rejected' | 'overdue'} />
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-              {assignments.length > 3 && (
-                <Button
-                  variant="outline"
-                  className="w-full mt-4"
-                  onClick={() => setShowAllAssignments(!showAllAssignments)}
-                >
-                  {showAllAssignments ? (
-                    <>
-                      <ChevronUp className="h-4 w-4 mr-2" />
-                      {t('showLess')}
-                    </>
-                  ) : (
-                    <>
-                      <ChevronDown className="h-4 w-4 mr-2" />
-                      {t('viewAllAssignments').replace('{count}', String(assignments.length))}
-                    </>
-                  )}
-                </Button>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <AssignmentsSection
+        assignments={assignments}
+        isLoading={assignmentsLoading}
+        error={assignmentsError?.message || null}
+        isChild={isChild}
+        onViewAssignment={setViewingAssignment}
+        onSubmitAssignment={setSubmittingAssignment}
+      />
 
       {/* MVP: Comment out complex features - keep it simple */}
       {/* <div className="grid gap-6 lg:grid-cols-3">

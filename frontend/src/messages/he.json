@@ -116,7 +116,12 @@
     "showLess": "הצג פחות",
     "viewAllAssignments": "צפה בכל המטלות ({count})",
     "rewards": "פרסים",
-    "requestReward": "בקשת פרס"
+    "requestReward": "בקשת פרס",
+    "viewMyRewards": "צפה בפרסים שלי",
+    "failedToLoadRewards": "נכשל בטעינת פרסים",
+    "noRewards": "אין פרסים עדיין",
+    "requestYourFirstReward": "בקש את הפרס הראשון שלך כדי להתחיל!",
+    "viewAllRewards": "צפה בכל הפרסים ({count})"
   }
   ,
   "pages": {

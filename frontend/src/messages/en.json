@@ -116,7 +116,12 @@
     "showLess": "Show Less",
     "viewAllAssignments": "View All Assignments ({count})",
     "rewards": "Rewards",
-    "requestReward": "Request Reward"
+    "requestReward": "Request Reward",
+    "viewMyRewards": "View My Rewards",
+    "failedToLoadRewards": "Failed to load rewards",
+    "noRewards": "No rewards yet",
+    "requestYourFirstReward": "Request your first reward to get started!",
+    "viewAllRewards": "View All Rewards ({count})"
   }
   ,
   "pages": {
