@@ -137,6 +137,7 @@
         "spending_money": "Spending Money",
         "special_experience": "Special Experience"
       },
+      "saveExplanation": "Changes save immediately.",
       "status": {
         "pending": "Pending",
         "approved": "Approved",

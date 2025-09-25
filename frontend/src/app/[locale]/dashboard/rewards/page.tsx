@@ -108,7 +108,7 @@ export default function RewardsPage() {
                 <Label htmlFor={`type-${t}`}>{p(`rewards.types.${t}` as any)}</Label>
               </div>
             ))}
-            <div className="text-xs text-muted-foreground col-span-full">Changes save immediately.</div>
+            <div className="text-xs text-muted-foreground col-span-full">{p('rewards.saveExplanation')}</div>
           </CardContent>
         </Card>
       )}

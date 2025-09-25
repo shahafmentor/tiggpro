@@ -137,6 +137,7 @@
         "spending_money": "דמי כיס",
         "special_experience": "חווייה מיוחדת"
       },
+      "saveExplanation": "השינויים נשמרים מיידית.",
       "status": {
         "pending": "ממתין",
         "approved": "אושר",
