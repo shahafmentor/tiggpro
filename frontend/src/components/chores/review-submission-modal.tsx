@@ -152,7 +152,7 @@ export function ReviewSubmissionModal({
                       </div>
                       <div className="flex items-center gap-1">
                         <Star className="h-3 w-3" />
-                        +{chore?.pointsReward || 0} {p('chores.subtitle')}
+                        +{chore?.pointsReward || 0}
                       </div>
                     </div>
                   </div>
