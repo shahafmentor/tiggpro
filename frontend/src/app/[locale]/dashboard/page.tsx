@@ -7,7 +7,7 @@ import {
   // MVP: Comment out unused imports
   // Calendar,
   CheckSquare,
-  // Star,
+  Star,
   // TrendingUp,
   // Trophy,
   // Users,
@@ -28,6 +28,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { SubmitAssignmentModal } from '@/components/chores/submit-assignment-modal'
 import { RewardRedemptionModal } from '@/components/gamification/reward-redemption-modal'
 import { rewardsApi } from '@/lib/api/rewards'
+import { gamificationApi } from '@/lib/api/gamification'
 import { useQuery } from '@tanstack/react-query'
 import { ChoreDetailModal } from '@/components/chores/chore-detail-modal'
 import { useTenant } from '@/lib/contexts/tenant-context'
@@ -44,6 +45,14 @@ export default function DashboardPage() {
   const [showAllAssignments, setShowAllAssignments] = useState(false)
   const [viewingAssignment, setViewingAssignment] = useState<Assignment | null>(null)
   const [requestRewardOpen, setRequestRewardOpen] = useState(false)
+
+  // User Stats (points balance)
+  const { data: userStatsResponse } = useQuery({
+    queryKey: ['user-stats', currentTenant?.tenant?.id],
+    queryFn: () => currentTenant ? gamificationApi.getUserStats(currentTenant.tenant.id) : Promise.resolve({ success: false } as any),
+    enabled: !!currentTenant && !!session,
+  })
+
   // My Rewards (recent)
   const { data: myRewardsResponse } = useRewardsQuery({
     queryKey: ['rewards-redemptions', currentTenant?.tenant?.id],
@@ -229,6 +238,34 @@ export default function DashboardPage() {
         availableGamingMinutes={mockData.stats.gamingTimeEarned}
         animated={true}
       /> */}
+
+      {/* Points Balance for Kids */}
+      {isChild && userStatsResponse?.success && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Star className="h-5 w-5" />
+              My Points
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">
+                  {(userStatsResponse as any).data?.availablePoints || 0}
+                </div>
+                <div className="text-sm text-muted-foreground">Available</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">
+                  {(userStatsResponse as any).data?.totalPoints || 0}
+                </div>
+                <div className="text-sm text-muted-foreground">Total Earned</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Quick Actions for Kids */}
       {isChild && (

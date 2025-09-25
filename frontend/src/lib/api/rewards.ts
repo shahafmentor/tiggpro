@@ -12,6 +12,16 @@ export interface UpdateSettingsRequest {
   defaultConversion?: Record<string, unknown>
 }
 
+export interface CostPreviewRequest {
+  type: RewardType
+  amount?: number
+}
+
+export interface CostPreviewResponse {
+  pointCost: number
+  remainingPoints: number
+}
+
 export const rewardsApi = {
   async requestRedemption(tenantId: string, body: CreateRedemptionRequest): Promise<ApiResponse<RewardRedemption>> {
     return api.post(`/tenants/${tenantId}/rewards/redemptions`, body)
@@ -35,6 +45,10 @@ export const rewardsApi = {
 
   async updateSettings(tenantId: string, body: UpdateSettingsRequest): Promise<ApiResponse<RewardSettings>> {
     return api.put(`/tenants/${tenantId}/rewards/settings`, body)
+  },
+
+  async getCostPreview(tenantId: string, body: CostPreviewRequest): Promise<ApiResponse<CostPreviewResponse>> {
+    return api.post(`/tenants/${tenantId}/rewards/cost-preview`, body)
   }
 }
 

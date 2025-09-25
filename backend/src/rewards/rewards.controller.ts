@@ -75,6 +75,16 @@ export class RewardsController {
   ): Promise<ApiResponse> {
     return this.settingsService.updateSettings(tenantId, body);
   }
+
+  @Post('cost-preview')
+  @ApiOperation({ summary: 'Get cost preview for a reward redemption' })
+  async getCostPreview(
+    @Param('tenantId') tenantId: string,
+    @Body() body: { type: string; amount?: number },
+    @Request() req: { user: { id: string } },
+  ): Promise<ApiResponse> {
+    return this.rewardsService.getCostPreview(tenantId, req.user.id, body);
+  }
 }
 
 

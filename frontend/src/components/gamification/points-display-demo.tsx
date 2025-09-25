@@ -74,11 +74,11 @@ const mockEarnedAchievements: UserAchievement[] = [
 export function PointsDisplayDemo() {
   const userStats: UserStats = {
     totalPoints: 850,
+    availablePoints: 120,
+    spentPoints: 730,
     level: 3,
     currentStreakDays: 12,
     longestStreakDays: 18,
-    availableGamingMinutes: 120,
-    usedGamingMinutes: 30,
   }
 
   return (
@@ -90,10 +90,11 @@ export function PointsDisplayDemo() {
         <h3 className="text-lg font-semibold">Points Display Component</h3>
         <PointsDisplay
           totalPoints={userStats.totalPoints}
+          availablePoints={userStats.availablePoints}
+          spentPoints={userStats.spentPoints}
           level={userStats.level}
           currentStreakDays={userStats.currentStreakDays}
           longestStreakDays={userStats.longestStreakDays}
-          availableGamingMinutes={userStats.availableGamingMinutes}
           animated={true}
         />
       </div>

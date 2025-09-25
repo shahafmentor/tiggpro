@@ -29,17 +29,18 @@ export class PointsService {
         userId,
         tenantId,
         totalPoints: 0,
-        availableGamingMinutes: 0,
-        usedGamingMinutes: 0,
+        availablePoints: 0,
+        spentPoints: 0,
         currentStreakDays: 0,
         longestStreakDays: 0,
         level: 1,
       });
     }
 
-    // Add points and gaming time
-    userPoints.totalPoints += submission.pointsAwarded || 0;
-    userPoints.availableGamingMinutes += submission.gamingTimeAwarded || 0;
+    // Add points only (no direct gaming time from chores)
+    const pointsAwarded = submission.pointsAwarded || 0;
+    userPoints.totalPoints += pointsAwarded;
+    userPoints.availablePoints += pointsAwarded;
 
     // Calculate level based on points
     userPoints.level = this.calculateLevel(userPoints.totalPoints);
@@ -68,28 +69,6 @@ export class PointsService {
     return updatedUserPoints;
   }
 
-  async redeemGamingTime(
-    userId: string,
-    tenantId: string,
-    minutes: number,
-  ): Promise<UserPoints> {
-    const userPoints = await this.userPointsRepository.findOne({
-      where: { userId, tenantId },
-    });
-
-    if (!userPoints) {
-      throw new Error('User points record not found');
-    }
-
-    if (userPoints.availableGamingMinutes < minutes) {
-      throw new Error('Insufficient gaming time available');
-    }
-
-    userPoints.availableGamingMinutes -= minutes;
-    userPoints.usedGamingMinutes += minutes;
-
-    return this.userPointsRepository.save(userPoints);
-  }
 
   async getUserStats(
     userId: string,

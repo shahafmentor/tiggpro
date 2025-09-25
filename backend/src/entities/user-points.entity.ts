@@ -23,11 +23,11 @@ export class UserPoints {
   @Column({ name: 'total_points', default: 0 })
   totalPoints: number;
 
-  @Column({ name: 'available_gaming_minutes', default: 0 })
-  availableGamingMinutes: number;
+  @Column({ name: 'available_points', default: 0 })
+  availablePoints: number;
 
-  @Column({ name: 'used_gaming_minutes', default: 0 })
-  usedGamingMinutes: number;
+  @Column({ name: 'spent_points', default: 0 })
+  spentPoints: number;
 
   @Column({ name: 'current_streak_days', default: 0 })
   currentStreakDays: number;

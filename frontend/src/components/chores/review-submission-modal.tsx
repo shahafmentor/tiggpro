@@ -95,7 +95,6 @@ export function ReviewSubmissionModal({
       reviewStatus: reviewDecision === 'approve' ? 'approved' : 'rejected',
       reviewFeedback: reviewFeedback.trim() || undefined,
       pointsAwarded: reviewDecision === 'approve' ? submission.assignment?.chore?.pointsReward : 0,
-      gamingTimeAwarded: reviewDecision === 'approve' ? submission.assignment?.chore?.gamingTimeMinutes : 0,
     }
 
     reviewMutation.mutate(request)
@@ -155,12 +154,6 @@ export function ReviewSubmissionModal({
                         <Star className="h-3 w-3" />
                         +{chore?.pointsReward || 0} {p('chores.subtitle')}
                       </div>
-                      {chore?.gamingTimeMinutes && chore.gamingTimeMinutes > 0 && (
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          +{chore.gamingTimeMinutes} {p('review.minGaming')}
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -283,9 +276,6 @@ export function ReviewSubmissionModal({
                 </div>
                 <div className="mt-1 text-sm text-green-700">
                   <div>• {chore?.pointsReward || 0} {p('review.pointsSuffix')}</div>
-                  {chore?.gamingTimeMinutes && chore.gamingTimeMinutes > 0 && (
-                    <div>• {chore.gamingTimeMinutes} {p('review.gamingTimeSuffix')}</div>
-                  )}
                 </div>
               </div>
             )}

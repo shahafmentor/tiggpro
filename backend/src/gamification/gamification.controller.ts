@@ -22,23 +22,7 @@ import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { TenantMembershipGuard } from '@/auth/guards/tenant-membership.guard';
 import type { ApiResponse as ApiResponseType } from '@tiggpro/shared';
 
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, Min, Max } from 'class-validator';
 
-export class RedeemGamingTimeDto {
-  @ApiProperty({
-    description: 'Number of minutes of gaming time to redeem',
-    example: 30,
-    minimum: 1,
-    maximum: 480,
-  })
-  @IsNumber()
-  @Min(1, { message: 'Minutes must be at least 1' })
-  @Max(480, {
-    message: 'Cannot redeem more than 8 hours (480 minutes) at once',
-  })
-  minutes: number;
-}
 
 @ApiTags('gamification')
 @ApiBearerAuth()
@@ -69,8 +53,8 @@ export class GamificationController {
           success: true,
           data: {
             totalPoints: 0,
-            availableGamingMinutes: 0,
-            usedGamingMinutes: 0,
+            availablePoints: 0,
+            spentPoints: 0,
             currentStreakDays: 0,
             longestStreakDays: 0,
             level: 1,
@@ -83,8 +67,8 @@ export class GamificationController {
         success: true,
         data: {
           totalPoints: stats.totalPoints,
-          availableGamingMinutes: stats.availableGamingMinutes,
-          usedGamingMinutes: stats.usedGamingMinutes,
+          availablePoints: stats.availablePoints,
+          spentPoints: stats.spentPoints,
           currentStreakDays: stats.currentStreakDays,
           longestStreakDays: stats.longestStreakDays,
           level: stats.level,
@@ -201,37 +185,4 @@ export class GamificationController {
     }
   }
 
-  @Post('redeem-time')
-  @HttpCode(HttpStatus.OK)
-  async redeemGamingTime(
-    @Param('tenantId') tenantId: string,
-    @Body() redeemDto: RedeemGamingTimeDto,
-    @Request() req: { user: { id: string } },
-  ): Promise<ApiResponseType> {
-    try {
-      const updatedStats = await this.pointsService.redeemGamingTime(
-        req.user.id,
-        tenantId,
-        redeemDto.minutes,
-      );
-
-      return {
-        success: true,
-        data: {
-          availableGamingMinutes: updatedStats.availableGamingMinutes,
-          usedGamingMinutes: updatedStats.usedGamingMinutes,
-          redeemedMinutes: redeemDto.minutes,
-        },
-        message: `Successfully redeemed ${redeemDto.minutes} minutes of gaming time`,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Failed to redeem gaming time',
-      };
-    }
-  }
 }

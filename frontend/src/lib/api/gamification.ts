@@ -5,8 +5,8 @@ import type { ApiResponse } from './config'
 
 export interface UserStats {
   totalPoints: number
-  availableGamingMinutes: number
-  usedGamingMinutes: number
+  availablePoints: number
+  spentPoints: number
   currentStreakDays: number
   longestStreakDays: number
   level: number
@@ -40,15 +40,6 @@ export interface UserAchievement {
   achievement: Achievement
 }
 
-export interface RedeemGamingTimeRequest {
-  minutes: number
-}
-
-export interface RedeemGamingTimeResponse {
-  availableGamingMinutes: number
-  usedGamingMinutes: number
-  redeemedMinutes: number
-}
 
 // Removed makeAuthenticatedRequest function - now using centralized api utility from base.ts
 
@@ -73,11 +64,4 @@ export const gamificationApi = {
     return api.get(`/tenants/${tenantId}/gamification/achievements/earned`)
   },
 
-  // Redeem gaming time
-  async redeemGamingTime(
-    tenantId: string,
-    request: RedeemGamingTimeRequest
-  ): Promise<ApiResponse<RedeemGamingTimeResponse>> {
-    return api.post(`/tenants/${tenantId}/gamification/redeem-time`, request)
-  },
 }

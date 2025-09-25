@@ -21,13 +21,13 @@ export class RewardSettingsService {
     return { success: true, data: settings };
   }
 
-  async updateSettings(tenantId: string, body: { enabledTypes?: RewardType[]; defaultConversion?: Record<string, unknown> }): Promise<ApiResponse> {
+  async updateSettings(tenantId: string, body: { enabledTypes?: RewardType[]; conversion?: Record<string, unknown> }): Promise<ApiResponse> {
     let settings = await this.settingsRepo.findOne({ where: { tenantId } });
     if (!settings) {
       settings = this.settingsRepo.create({ tenantId, enabledTypes: [] });
     }
     if (body.enabledTypes) settings.enabledTypes = body.enabledTypes;
-    if (body.defaultConversion !== undefined) settings.defaultConversion = body.defaultConversion;
+    if (body.conversion !== undefined) settings.conversion = body.conversion as any;
     settings = await this.settingsRepo.save(settings);
     return { success: true, data: settings };
   }

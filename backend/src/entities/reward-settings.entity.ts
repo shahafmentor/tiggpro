@@ -24,8 +24,12 @@ export class RewardSettings {
   enabledTypes: RewardType[];
 
   // Reserved for future conversion settings (JSONB for flexibility)
-  @Column({ name: 'default_conversion', type: 'jsonb', nullable: true })
-  defaultConversion?: Record<string, unknown>;
+  @Column({ name: 'conversion', type: 'jsonb', nullable: true })
+  conversion?: {
+    pointsPerMinute?: number;
+    fixedCosts?: Partial<Record<string, number>>;
+    spendingMoney?: { perUnit: number };
+  };
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

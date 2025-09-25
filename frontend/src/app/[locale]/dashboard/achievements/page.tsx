@@ -109,11 +109,11 @@ const mockEarnedAchievements: UserAchievement[] = [
 
 const mockUserStats: UserStats = {
   totalPoints: 850,
+  availablePoints: 120,
+  spentPoints: 730,
   level: 3,
   currentStreakDays: 12,
   longestStreakDays: 18,
-  availableGamingMinutes: 120,
-  usedGamingMinutes: 30,
 }
 
 export default function AchievementsPage() {

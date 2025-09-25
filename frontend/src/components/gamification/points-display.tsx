@@ -15,10 +15,11 @@ import { cn } from '@/lib/utils'
 
 interface PointsDisplayProps {
   totalPoints: number
+  availablePoints: number
+  spentPoints: number
   level: number
   currentStreakDays: number
   longestStreakDays: number
-  availableGamingMinutes: number
   className?: string
   animated?: boolean
 }
@@ -76,10 +77,11 @@ function AnimatedCounter({
 
 export function PointsDisplay({
   totalPoints,
+  availablePoints,
+  spentPoints,
   level,
   currentStreakDays,
   longestStreakDays,
-  availableGamingMinutes,
   className,
   animated = true
 }: PointsDisplayProps) {
@@ -133,18 +135,18 @@ export function PointsDisplay({
       delay: 0.2
     },
     {
-      title: "Gaming Time",
+      title: "Available Points",
       value: animated ? (
         <>
-          <AnimatedCounter value={availableGamingMinutes} />m
+          <AnimatedCounter value={availablePoints} />
         </>
       ) : (
-        `${availableGamingMinutes}m`
+        availablePoints.toLocaleString()
       ),
-      subtitle: "Available to use",
-      icon: Clock,
-      iconColor: "text-primary",
-      valueColor: "text-primary",
+      subtitle: `${spentPoints.toLocaleString()} spent`,
+      icon: Zap,
+      iconColor: "text-green-500",
+      valueColor: "text-green-600 dark:text-green-400",
       delay: 0.3
     }
   ]
