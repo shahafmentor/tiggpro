@@ -16,6 +16,7 @@ interface AssignmentsSectionProps {
   isChild?: boolean
   onViewAssignment?: (assignment: Assignment) => void
   onSubmitAssignment?: (assignment: Assignment) => void
+  showHeader?: boolean
 }
 
 export function AssignmentsSection({
@@ -24,22 +25,25 @@ export function AssignmentsSection({
   error = null,
   isChild = false,
   onViewAssignment,
-  onSubmitAssignment
+  onSubmitAssignment,
+  showHeader = true
 }: AssignmentsSectionProps) {
   const [showAllAssignments, setShowAllAssignments] = useState(false)
   const t = useDashboardTranslations()
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <CheckSquare className="h-5 w-5" />
-          {t('myAssignments')}
-          {assignments.length > 0 && (
-            <CountBadge count={assignments.length} className="ml-auto" />
-          )}
-        </CardTitle>
-      </CardHeader>
+      {showHeader && (
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CheckSquare className="h-5 w-5" />
+            {t('myAssignments')}
+            {assignments.length > 0 && (
+              <CountBadge count={assignments.length} className="ml-auto" />
+            )}
+          </CardTitle>
+        </CardHeader>
+      )}
       <CardContent>
         {isLoading ? (
           <div className="space-y-3">
@@ -74,24 +78,21 @@ export function AssignmentsSection({
               return (
                 <div
                   key={assignment.id}
-                  className={`flex items-center space-x-4 p-3 rounded-lg border hover:bg-muted/50 transition-colors ${
-                    isChild ? 'cursor-pointer' : ''
-                  }`}
+                  className={`flex items-center space-x-4 p-3 rounded-lg border hover:bg-muted/50 transition-colors ${isChild ? 'cursor-pointer' : ''
+                    }`}
                   onClick={isChild ? () => onViewAssignment?.(assignment) : undefined}
                 >
                   <div className="flex-shrink-0">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      assignment.status === 'approved' ? 'bg-chore-completed/10' :
-                      assignment.status === 'submitted' ? 'bg-chore-submitted/10' :
-                      isOverdue ? 'bg-chore-overdue/10' :
-                      'bg-chore-pending/10'
-                    }`}>
-                      <CheckSquare className={`h-5 w-5 ${
-                        assignment.status === 'approved' ? 'text-chore-completed' :
-                        assignment.status === 'submitted' ? 'text-chore-submitted' :
-                        isOverdue ? 'text-chore-overdue' :
-                        'text-chore-pending'
-                      }`} />
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${assignment.status === 'approved' ? 'bg-chore-completed/10' :
+                        assignment.status === 'submitted' ? 'bg-chore-submitted/10' :
+                          isOverdue ? 'bg-chore-overdue/10' :
+                            'bg-chore-pending/10'
+                      }`}>
+                      <CheckSquare className={`h-5 w-5 ${assignment.status === 'approved' ? 'text-chore-completed' :
+                          assignment.status === 'submitted' ? 'text-chore-submitted' :
+                            isOverdue ? 'text-chore-overdue' :
+                              'text-chore-pending'
+                        }`} />
                     </div>
                   </div>
                   <div className="flex-1 space-y-1">

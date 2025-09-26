@@ -188,7 +188,7 @@ export default function RewardsPage() {
         actions={isChild ? (
           <Button className="gap-2" onClick={() => setRequestAgain({})}>
             <Plus className="h-4 w-4" />
-            {p('rewards.requestYourFirstReward')}
+            {p('rewards.requestReward')}
           </Button>
         ) : undefined}
       />

@@ -11,12 +11,15 @@ import {
   // Trophy,
   // Users,
   AlertCircle,
-  Eye
+  Eye,
+  Filter,
+  CheckSquare
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 // MVP: Comment out unused gamification components
 // import { PointsDisplay } from '@/components/gamification/points-display'
 // import { FamilyLeaderboard } from '@/components/gamification/family-leaderboard'
@@ -39,6 +42,7 @@ export default function DashboardPage() {
   const { currentTenant } = useTenant()
   const [submittingAssignment, setSubmittingAssignment] = useState<Assignment | null>(null)
   const [viewingAssignment, setViewingAssignment] = useState<Assignment | null>(null)
+  const [statusFilter, setStatusFilter] = useState<string>('all-except-approved')
 
   // User Stats (points balance)
   const { data: userStatsResponse } = useQuery({
@@ -78,7 +82,27 @@ export default function DashboardPage() {
     staleTime: 30000, // 30 seconds
   })
 
-  const assignments: Assignment[] = (assignmentsResponse?.success ? assignmentsResponse.data : []) || []
+  const allAssignments: Assignment[] = (assignmentsResponse?.success ? assignmentsResponse.data : []) || []
+
+  // Filter assignments based on status filter
+  const assignments: Assignment[] = allAssignments.filter(assignment => {
+    switch (statusFilter) {
+      case 'all':
+        return true
+      case 'all-except-approved':
+        return assignment.status !== 'approved'
+      case 'pending':
+        return assignment.status === 'pending'
+      case 'submitted':
+        return assignment.status === 'submitted'
+      case 'approved':
+        return assignment.status === 'approved'
+      case 'rejected':
+        return assignment.status === 'rejected'
+      default:
+        return assignment.status !== 'approved'
+    }
+  })
 
   // Fetch pending submissions for review (only for parents/admins)
   const { data: pendingSubmissionsResponse } = useQuery({
@@ -91,13 +115,13 @@ export default function DashboardPage() {
   const pendingSubmissions: Submission[] = pendingSubmissionsResponse?.success ?
     (pendingSubmissionsResponse.data || []) : []
 
-  // Calculate assignment stats
+  // Calculate assignment stats (use all assignments for stats)
   const assignmentStats = {
-    total: assignments.length,
-    pending: assignments.filter(a => a.status === 'pending').length,
-    submitted: assignments.filter(a => a.status === 'submitted').length,
-    approved: assignments.filter(a => a.status === 'approved').length,
-    overdue: assignments.filter(a => {
+    total: allAssignments.length,
+    pending: allAssignments.filter(a => a.status === 'pending').length,
+    submitted: allAssignments.filter(a => a.status === 'submitted').length,
+    approved: allAssignments.filter(a => a.status === 'approved').length,
+    overdue: allAssignments.filter(a => {
       const dueDate = new Date(a.dueDate)
       const now = new Date()
       return dueDate < now && a.status === 'pending'
@@ -269,14 +293,48 @@ export default function DashboardPage() {
       )}
 
       {/* My Assignments Section */}
-      <AssignmentsSection
-        assignments={assignments}
-        isLoading={assignmentsLoading}
-        error={assignmentsError?.message || null}
-        isChild={isChild}
-        onViewAssignment={setViewingAssignment}
-        onSubmitAssignment={setSubmittingAssignment}
-      />
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <CheckSquare className="h-5 w-5" />
+              {t('myAssignments')}
+              {allAssignments.length > 0 && (
+                <Badge variant="secondary" className="ml-2">
+                  {allAssignments.length}
+                </Badge>
+              )}
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder={t('filterByStatus')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('allStatuses')}</SelectItem>
+                  <SelectItem value="all-except-approved">{t('allExceptApproved')}</SelectItem>
+                  <SelectItem value="pending">{t('pendingOnly')}</SelectItem>
+                  <SelectItem value="submitted">{t('submittedOnly')}</SelectItem>
+                  <SelectItem value="approved">{t('approvedOnly')}</SelectItem>
+                  <SelectItem value="rejected">{t('rejectedOnly')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <AssignmentsSection
+            assignments={assignments}
+            isLoading={assignmentsLoading}
+            error={assignmentsError?.message || null}
+            isChild={isChild}
+            onViewAssignment={setViewingAssignment}
+            onSubmitAssignment={setSubmittingAssignment}
+            showHeader={false}
+          />
+        </CardContent>
+      </Card>
 
       {/* MVP: Comment out complex features - keep it simple */}
       {/* <div className="grid gap-6 lg:grid-cols-3">
