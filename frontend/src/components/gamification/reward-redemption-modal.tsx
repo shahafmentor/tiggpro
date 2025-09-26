@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { rewardsApi, type CostPreviewResponse } from '@/lib/api/rewards'
 import { gamificationApi } from '@/lib/api/gamification'
 import { useTenant } from '@/lib/contexts/tenant-context'
+import { useModalsTranslations } from '@/hooks/use-translations'
 import type { RewardType } from '@tiggpro/shared'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Star, Coins } from 'lucide-react'
@@ -23,16 +24,17 @@ interface RewardRedemptionModalProps {
   onSuccess?: () => void
 }
 
-const REWARD_TABS: { key: RewardType; label: string }[] = [
-  { key: 'gaming_time' as RewardType, label: 'Gaming Time' },
-  { key: 'social_outing' as RewardType, label: 'Social Outing' },
-  { key: 'spending_money' as RewardType, label: 'Spending Money' },
-  { key: 'special_experience' as RewardType, label: 'Special Experience' },
+const REWARD_TAB_KEYS: RewardType[] = [
+  'gaming_time' as RewardType,
+  'social_outing' as RewardType,
+  'spending_money' as RewardType,
+  'special_experience' as RewardType,
 ]
 
 export function RewardRedemptionModal({ open, onOpenChange, initialType, initialAmount, initialNotes, onSuccess }: RewardRedemptionModalProps) {
   const { currentTenant } = useTenant()
   const queryClient = useQueryClient()
+  const t = useModalsTranslations()
   const [activeTab, setActiveTab] = useState<RewardType>((initialType as RewardType) || ('gaming_time' as RewardType))
   const [amount, setAmount] = useState<number | undefined>(initialAmount)
   const [notes, setNotes] = useState(initialNotes || '')
@@ -79,30 +81,30 @@ export function RewardRedemptionModal({ open, onOpenChange, initialType, initial
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Request Reward</DialogTitle>
+          <DialogTitle>{t('rewardRedemption.title')}</DialogTitle>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Coins className="h-4 w-4" />
-            <span>Available Points: {availablePoints}</span>
+            <span>{t('rewardRedemption.availablePoints').replace('{points}', availablePoints.toString())}</span>
           </div>
         </DialogHeader>
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as RewardType)}>
           <TabsList className="grid grid-cols-2 md:grid-cols-4">
-            {REWARD_TABS.filter(t => enabledTypes.length === 0 || enabledTypes.includes(t.key)).map((tab) => (
-              <TabsTrigger key={tab.key} value={tab.key}>{tab.label}</TabsTrigger>
+            {REWARD_TAB_KEYS.filter(key => enabledTypes.length === 0 || enabledTypes.includes(key)).map((key) => (
+              <TabsTrigger key={key} value={key}>{t(`rewardRedemption.tabs.${key}`)}</TabsTrigger>
             ))}
           </TabsList>
 
-          {REWARD_TABS.map((tab) => (
-            <TabsContent key={tab.key} value={tab.key} className="mt-4 space-y-4">
+          {REWARD_TAB_KEYS.map((key) => (
+            <TabsContent key={key} value={key} className="mt-4 space-y-4">
               <div className="space-y-2">
-                <Label htmlFor={`amount-${tab.key}`}>Amount</Label>
+                <Label htmlFor={`amount-${key}`}>{t('rewardRedemption.amount')}</Label>
                 <Input
-                  id={`amount-${tab.key}`}
+                  id={`amount-${key}`}
                   type="number"
                   min={1}
                   value={amount ?? ''}
                   onChange={(e) => setAmount(e.target.value ? parseInt(e.target.value) : undefined)}
-                  placeholder={tab.key === 'gaming_time' ? 'Minutes (e.g., 30)' : tab.key === 'spending_money' ? 'Amount (e.g., 20)' : 'Optional'}
+                  placeholder={key === 'gaming_time' ? t('rewardRedemption.amountPlaceholder.gaming_time') : key === 'spending_money' ? t('rewardRedemption.amountPlaceholder.spending_money') : t('rewardRedemption.amountPlaceholder.default')}
                 />
               </div>
 
@@ -110,33 +112,33 @@ export function RewardRedemptionModal({ open, onOpenChange, initialType, initial
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                   <div className="flex items-center gap-2 text-blue-800">
                     <Star className="h-4 w-4" />
-                    <span className="text-sm font-medium">Cost Preview</span>
+                    <span className="text-sm font-medium">{t('rewardRedemption.costPreview')}</span>
                   </div>
                   <div className="mt-1 text-sm text-blue-700">
-                    <div>• Cost: {previewData.pointCost} points</div>
-                    <div>• Remaining: {previewData.remainingPoints} points</div>
+                    <div>• {t('rewardRedemption.cost').replace('{points}', previewData.pointCost.toString())}</div>
+                    <div>• {t('rewardRedemption.remaining').replace('{points}', previewData.remainingPoints.toString())}</div>
                     {previewData.remainingPoints < 0 && (
-                      <div className="text-red-600 font-medium">• Insufficient points!</div>
+                      <div className="text-red-600 font-medium">• {t('rewardRedemption.insufficientPoints')}</div>
                     )}
                   </div>
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor={`notes-${tab.key}`}>Notes (optional)</Label>
-                <Textarea id={`notes-${tab.key}`} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Add details" />
+                <Label htmlFor={`notes-${key}`}>{t('rewardRedemption.notes')}</Label>
+                <Textarea id={`notes-${key}`} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t('rewardRedemption.notesPlaceholder')} />
               </div>
             </TabsContent>
           ))}
         </Tabs>
 
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t('rewardRedemption.cancel')}</Button>
           <Button
             onClick={() => requestMutation.mutate()}
-            disabled={requestMutation.isPending || (previewData && previewData.remainingPoints < 0)}
+            disabled={requestMutation.isPending || (previewData ? previewData.remainingPoints < 0 : false)}
           >
-            {requestMutation.isPending ? 'Requesting...' : 'Submit Request'}
+            {requestMutation.isPending ? t('rewardRedemption.submitting') : t('rewardRedemption.submit')}
           </Button>
         </div>
       </DialogContent>

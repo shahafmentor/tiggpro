@@ -328,6 +328,31 @@
       "networkDesc": "Please check your connection and try again.",
       "pointsPlus": "+{points} points",
       "gamingPlus": "+{minutes} min gaming"
+    },
+    "rewardRedemption": {
+      "title": "Request Reward",
+      "availablePoints": "Available Points: {points}",
+      "amount": "Amount",
+      "amountPlaceholder": {
+        "gaming_time": "Minutes (e.g., 30)",
+        "spending_money": "Amount (e.g., 20)",
+        "default": "Optional"
+      },
+      "costPreview": "Cost Preview",
+      "cost": "Cost: {points} points",
+      "remaining": "Remaining: {points} points",
+      "insufficientPoints": "Insufficient points!",
+      "notes": "Notes (optional)",
+      "notesPlaceholder": "Add details",
+      "cancel": "Cancel",
+      "submit": "Submit Request",
+      "submitting": "Requesting...",
+      "tabs": {
+        "gaming_time": "Gaming Time",
+        "social_outing": "Social Outing",
+        "spending_money": "Spending Money",
+        "special_experience": "Special Experience"
+      }
     }
   }
 }

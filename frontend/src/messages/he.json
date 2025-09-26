@@ -328,6 +328,31 @@
       "networkDesc": "אנא בדוק את החיבור ונסה שוב.",
       "pointsPlus": "+{points} נקודות",
       "gamingPlus": "+{minutes} דק' משחק"
+    },
+    "rewardRedemption": {
+      "title": "בקשת פרס",
+      "availablePoints": "נקודות זמינות: {points}",
+      "amount": "כמות",
+      "amountPlaceholder": {
+        "gaming_time": "דקות (למשל, 30)",
+        "spending_money": "סכום (למשל, 20)",
+        "default": "אופציונלי"
+      },
+      "costPreview": "תצוגה מקדימה של עלות",
+      "cost": "עלות: {points} נקודות",
+      "remaining": "נותרו: {points} נקודות",
+      "insufficientPoints": "נקודות לא מספיקות!",
+      "notes": "הערות (אופציונלי)",
+      "notesPlaceholder": "הוסף פרטים",
+      "cancel": "ביטול",
+      "submit": "שלח בקשה",
+      "submitting": "מבקש...",
+      "tabs": {
+        "gaming_time": "זמן משחק",
+        "social_outing": "בילוי חברתי",
+        "spending_money": "דמי כיס",
+        "special_experience": "חווייה מיוחדת"
+      }
     }
   }
 }
