@@ -42,7 +42,6 @@ import {
   Clock,
   Star,
   Zap,
-  Gamepad2,
   Calendar,
   CalendarDays,
   CalendarRange
@@ -61,10 +60,6 @@ const updateChoreSchema = z.object({
     .number()
     .min(1, 'Points must be at least 1')
     .max(1000, 'Points must not exceed 1000'),
-  gamingTimeMinutes: z
-    .number()
-    .min(0, 'Gaming time cannot be negative')
-    .max(480, 'Gaming time must not exceed 8 hours'),
   difficultyLevel: z.nativeEnum(DifficultyLevel),
   estimatedDurationMinutes: z
     .number()
@@ -109,7 +104,6 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
       title: '',
       description: '',
       pointsReward: 10,
-      gamingTimeMinutes: 15,
       difficultyLevel: DifficultyLevel.EASY,
       estimatedDurationMinutes: 30,
       isRecurring: false,
@@ -126,7 +120,6 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
         title: chore.title,
         description: chore.description || '',
         pointsReward: chore.pointsReward,
-        gamingTimeMinutes: chore.gamingTimeMinutes,
         difficultyLevel: chore.difficultyLevel,
         estimatedDurationMinutes: chore.estimatedDurationMinutes,
         isRecurring: chore.isRecurring,
@@ -168,7 +161,6 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
       title: data.title,
       description: data.description || undefined,
       pointsReward: data.pointsReward,
-      gamingTimeMinutes: data.gamingTimeMinutes,
       difficultyLevel: data.difficultyLevel,
       estimatedDurationMinutes: data.estimatedDurationMinutes,
       isRecurring: data.isRecurring,
@@ -315,7 +307,7 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">{choresT('rewardsDuration')}</h3>
 
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="pointsReward"
@@ -330,30 +322,6 @@ export function EditChoreModal({ chore, open, onOpenChange, onSuccess }: EditCho
                           type="number"
                           min={1}
                           max={1000}
-                          {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                          disabled={isSubmitting}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="gamingTimeMinutes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        <Gamepad2 className="h-4 w-4 text-primary" />
-                        {choresT('gamingTime')}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={0}
-                          max={480}
                           {...field}
                           onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                           disabled={isSubmitting}

@@ -13,7 +13,6 @@ interface ReviewSubmissionRequest {
   reviewStatus: 'approved' | 'rejected'
   reviewFeedback?: string
   pointsAwarded?: number
-  gamingTimeAwarded?: number
 }
 
 interface Assignment {
@@ -28,7 +27,6 @@ interface Assignment {
     title: string
     description?: string
     pointsReward: number
-    gamingTimeMinutes: number
     difficultyLevel: string
     estimatedDurationMinutes: number
   }
@@ -55,7 +53,6 @@ interface Submission {
   reviewStatus: 'pending' | 'approved' | 'rejected'
   reviewFeedback?: string
   pointsAwarded?: number
-  gamingTimeAwarded?: number
   reviewedAt?: string
   reviewedBy?: {
     id: string

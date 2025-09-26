@@ -23,7 +23,6 @@
     "done": "Done ✓",
     "difficulty": "Difficulty Level",
     "points": "Points Reward",
-    "gamingTime": "Gaming Time (minutes)",
     "duration": "Estimated Duration (minutes)",
     "overdue": "Overdue",
     "dueSoon": "Due Soon",
@@ -142,7 +141,9 @@
         "spending_money": "Spending Money",
         "special_experience": "Special Experience"
       },
-      "saveExplanation": "Changes save immediately.",
+      "saveExplanation": "Click 'Save Settings' to save your changes.",
+      "conversionSettings": "Conversion Settings",
+      "conversionDescription": "Configure how points are converted to different reward types.",
       "status": {
         "pending": "Pending",
         "approved": "Approved",
@@ -184,7 +185,6 @@
       "characters": "characters",
       "pointsAwarded": "Points to be awarded:",
       "pointsSuffix": "points",
-      "gamingTimeSuffix": "minutes of gaming time",
       "approving": "Approving...",
       "rejecting": "Rejecting...",
       "approveSubmission": "Approve Submission",

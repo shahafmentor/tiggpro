@@ -47,16 +47,6 @@ export class CreateChoreDto {
   @Max(1000, { message: 'Points reward must not exceed 1000' })
   pointsReward: number;
 
-  @ApiProperty({
-    description: 'Gaming time awarded in minutes for completing this chore',
-    example: 30,
-    minimum: 0,
-    maximum: 480,
-  })
-  @IsNumber()
-  @Min(0, { message: 'Gaming time cannot be negative' })
-  @Max(480, { message: 'Gaming time must not exceed 8 hours (480 minutes)' })
-  gamingTimeMinutes: number;
 
   @ApiProperty({
     description: 'Difficulty level of the chore',

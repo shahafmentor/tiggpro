@@ -67,7 +67,6 @@ export interface Chore {
   title: string;
   description: string | null;
   pointsReward: number;
-  gamingTimeMinutes: number;
   difficultyLevel: DifficultyLevel;
   estimatedDurationMinutes: number;
   isRecurring: boolean;
@@ -130,7 +129,6 @@ export interface ChoreSubmission {
   reviewStatus: ReviewStatus;
   reviewFeedback?: string;
   pointsAwarded?: number;
-  gamingTimeAwarded?: number;
 }
 
 export enum ReviewStatus {
@@ -258,7 +256,6 @@ export interface CreateChoreDto {
   title: string;
   description: string;
   pointsReward: number;
-  gamingTimeMinutes: number;
   difficultyLevel: DifficultyLevel;
   estimatedDurationMinutes: number;
   isRecurring: boolean;
@@ -274,7 +271,6 @@ export interface ReviewSubmissionDto {
   reviewStatus: ReviewStatus;
   reviewFeedback?: string;
   pointsAwarded?: number;
-  gamingTimeAwarded?: number;
 }
 
 export interface CreateTenantDto {

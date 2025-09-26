@@ -4,36 +4,12 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import {
-  Calendar,
   CheckSquare,
-  Clock,
   Plus,
-  // MVP: Comment out unused imports
-  // Search,
   Star,
-  User,
-  Edit,
-  Trash2,
-  MoreHorizontal
 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-// MVP: Comment out unused imports
-// import { Input } from '@/components/ui/input'
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from '@/components/ui/select'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,7 +20,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { EditChoreModal } from '@/components/chores/edit-chore-modal'
 import { AssignChoreModal } from '@/components/chores/assign-chore-modal'
 import { SubmitAssignmentModal } from '@/components/chores/submit-assignment-modal'
@@ -52,7 +27,6 @@ import { choresApi, Chore } from '@/lib/api/chores'
 import { assignmentsApi, Assignment } from '@/lib/api/assignments'
 import { tenantsApi, TenantMember } from '@/lib/api/tenants'
 import { TenantMemberRole } from '@tiggpro/shared'
-import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { useLocalizedRouter } from '@/hooks/use-localized-router'
 import { useTenant } from '@/lib/contexts/tenant-context'
@@ -78,10 +52,6 @@ interface ChoreWithAssignment {
 }
 
 export default function ChoresPage() {
-  // MVP: Comment out unused filter states
-  // const [searchTerm, setSearchTerm] = useState('')
-  // const [statusFilter, setStatusFilter] = useState('all')
-  // const [difficultyFilter, setDifficultyFilter] = useState('all')
   const [editingChore, setEditingChore] = useState<Chore | null>(null)
   const [deletingChore, setDeletingChore] = useState<Chore | null>(null)
   const [assigningChore, setAssigningChore] = useState<Chore | null>(null)
@@ -237,48 +207,6 @@ export default function ChoresPage() {
           </Button>
         ) : undefined}
       />
-
-      {/* MVP: Comment out advanced filtering - keep it simple */}
-      {/* <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search chores..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="overdue">Overdue</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Filter by difficulty" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Difficulties</SelectItem>
-                <SelectItem value="easy">Easy</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="hard">Hard</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card> */}
 
       {/* Chore Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

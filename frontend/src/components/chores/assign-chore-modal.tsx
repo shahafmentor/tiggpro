@@ -205,9 +205,6 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
                 <Badge variant="secondary" className="bg-points-primary/10 text-points-primary">
                   {chore?.pointsReward} points
                 </Badge>
-                <Badge variant="secondary" className="bg-primary/10 text-primary">
-                  {chore?.gamingTimeMinutes}min gaming
-                </Badge>
                 <Badge variant="outline">
                   ~{chore?.estimatedDurationMinutes}min
                 </Badge>

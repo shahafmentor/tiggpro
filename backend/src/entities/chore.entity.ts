@@ -28,8 +28,6 @@ export class Chore {
   @Column({ name: 'points_reward' })
   pointsReward: number;
 
-  @Column({ name: 'gaming_time_minutes' })
-  gamingTimeMinutes: number;
 
   @Column({
     name: 'difficulty_level',

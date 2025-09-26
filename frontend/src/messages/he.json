@@ -23,7 +23,6 @@
     "done": "סיים ✓",
     "difficulty": "רמת קושי",
     "points": "פרס נקודות",
-    "gamingTime": "זמן משחק (דקות)",
     "duration": "משך זמן משוער (דקות)",
     "overdue": "באיחור",
     "dueSoon": "פוגע בקרוב",
@@ -142,7 +141,9 @@
         "spending_money": "דמי כיס",
         "special_experience": "חווייה מיוחדת"
       },
-      "saveExplanation": "השינויים נשמרים מיידית.",
+      "saveExplanation": "לחץ על 'שמור הגדרות' כדי לשמור את השינויים.",
+      "conversionSettings": "הגדרות המרה",
+      "conversionDescription": "הגדר כיצד נקודות מומרות לסוגי פרסים שונים.",
       "status": {
         "pending": "ממתין",
         "approved": "אושר",
@@ -184,7 +185,6 @@
       "characters": "תווים",
       "pointsAwarded": "נקודות שיוענקו:",
       "pointsSuffix": "נקודות",
-      "gamingTimeSuffix": "דקות משחק",
       "approving": "מאשר...",
       "rejecting": "דוחה...",
       "approveSubmission": "אשר הגשה",

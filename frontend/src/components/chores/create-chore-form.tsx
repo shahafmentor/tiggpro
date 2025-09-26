@@ -32,12 +32,11 @@ import { Badge } from '@/components/ui/badge'
 import { choresApi, CreateChoreRequest } from '@/lib/api/chores'
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { toast } from 'sonner'
-import { useChoresTranslations, useCommonTranslations } from '@/hooks/use-translations'
+import { useChoresTranslations } from '@/hooks/use-translations'
 import {
   Clock,
   Star,
   Zap,
-  Gamepad2,
   RefreshCw,
   Calendar,
   CalendarDays,
@@ -58,10 +57,6 @@ const createChoreSchema = z.object({
     .number()
     .min(1, 'Points must be at least 1')
     .max(1000, 'Points must not exceed 1000'),
-  gamingTimeMinutes: z
-    .number()
-    .min(0, 'Gaming time cannot be negative')
-    .max(480, 'Gaming time must not exceed 8 hours'),
   difficultyLevel: z.nativeEnum(DifficultyLevel),
   estimatedDurationMinutes: z
     .number()
@@ -94,7 +89,6 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
   const { currentTenant } = useTenant()
   const queryClient = useQueryClient()
   const choresT = useChoresTranslations()
-  const commonT = useCommonTranslations()
 
   // Removed tenant members query - assignments are now handled separately from chore creation
 
@@ -104,7 +98,6 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
       title: '',
       description: '',
       pointsReward: 10,
-      gamingTimeMinutes: 15,
       difficultyLevel: DifficultyLevel.EASY,
       estimatedDurationMinutes: 30,
       isRecurring: false,
@@ -148,7 +141,6 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
       title: data.title,
       description: data.description || undefined,
       pointsReward: data.pointsReward,
-      gamingTimeMinutes: data.gamingTimeMinutes,
       difficultyLevel: data.difficultyLevel,
       estimatedDurationMinutes: data.estimatedDurationMinutes,
       isRecurring: data.isRecurring,
@@ -354,32 +346,6 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="gamingTimeMinutes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      <Gamepad2 className="h-4 w-4 text-primary" />
-                      {choresT('gamingTime')}
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min={0}
-                        max={480}
-                        {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                        disabled={isSubmitting}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Gaming time earned for completion
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
 
             <FormField
@@ -596,9 +562,6 @@ export function CreateChoreForm({ onSuccess }: CreateChoreFormProps) {
               <div className="flex items-center gap-4 text-sm">
                 <Badge variant="secondary" className="bg-points-primary/10 text-points-primary">
                   {form.watch('pointsReward')} pts
-                </Badge>
-                <Badge variant="secondary" className="bg-primary/10 text-primary">
-                  {form.watch('gamingTimeMinutes')}min gaming
                 </Badge>
                 <Badge variant="outline">
                   ~{form.watch('estimatedDurationMinutes')}min

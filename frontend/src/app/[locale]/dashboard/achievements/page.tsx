@@ -1,6 +1,7 @@
+'use client'
+
 import { PageHeader } from '@/components/layout/page-header'
 import { usePagesTranslations } from '@/hooks/use-translations'
-'use client'
 
 import { AchievementGallery } from '@/components/gamification/achievement-gallery'
 import type { Achievement, UserAchievement, UserStats } from '@/lib/api/gamification'

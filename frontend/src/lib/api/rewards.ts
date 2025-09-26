@@ -7,9 +7,15 @@ export interface CreateRedemptionRequest {
   notes?: string
 }
 
+export interface ConversionSettings {
+  pointsPerMinute?: number
+  fixedCosts?: Partial<Record<string, number>>
+  spendingMoney?: { perUnit: number }
+}
+
 export interface UpdateSettingsRequest {
   enabledTypes?: RewardType[]
-  defaultConversion?: Record<string, unknown>
+  conversion?: ConversionSettings
 }
 
 export interface CostPreviewRequest {

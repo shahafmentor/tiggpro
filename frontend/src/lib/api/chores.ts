@@ -14,7 +14,6 @@ interface CreateChoreRequest {
   title: string
   description?: string
   pointsReward: number
-  gamingTimeMinutes: number
   difficultyLevel: DifficultyLevel
   estimatedDurationMinutes: number
   isRecurring: boolean
@@ -36,7 +35,6 @@ interface Chore {
   title: string
   description?: string
   pointsReward: number
-  gamingTimeMinutes: number
   difficultyLevel: DifficultyLevel
   estimatedDurationMinutes: number
   isRecurring: boolean

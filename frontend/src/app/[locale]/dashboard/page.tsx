@@ -114,7 +114,6 @@ export default function DashboardPage() {
   //     nextLevelPoints: 150,
   //     completedChores: assignmentStats.approved,
   //     pendingChores: assignmentStats.pending,
-  //     gamingTimeEarned: 45,
   //     streakDays: 7,
   //   },
   //   recentActivity: [
@@ -231,7 +230,6 @@ export default function DashboardPage() {
         level={mockData.stats.currentLevel}
         currentStreakDays={mockData.stats.streakDays}
         longestStreakDays={mockData.stats.streakDays + 3} // Mock longer streak
-        availableGamingMinutes={mockData.stats.gamingTimeEarned}
         animated={true}
       /> */}
 

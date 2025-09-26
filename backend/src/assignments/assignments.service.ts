@@ -173,16 +173,12 @@ export class AssignmentsService {
     submission.reviewedBy = reviewerId;
     submission.reviewedAt = new Date();
 
-    // Set points and gaming time (use chore defaults if not specified)
+    // Set points (use chore defaults if not specified)
     if (reviewDto.reviewStatus === ReviewStatus.APPROVED) {
       submission.pointsAwarded =
         reviewDto.pointsAwarded ?? submission.assignment.chore.pointsReward;
-      submission.gamingTimeAwarded =
-        reviewDto.gamingTimeAwarded ??
-        submission.assignment.chore.gamingTimeMinutes;
     } else {
       submission.pointsAwarded = 0;
-      submission.gamingTimeAwarded = 0;
     }
 
     const savedSubmission = await this.submissionRepository.save(submission);

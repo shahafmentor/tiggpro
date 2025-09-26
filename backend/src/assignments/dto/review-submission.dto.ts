@@ -41,17 +41,4 @@ export class ReviewSubmissionDto {
   @Max(1000, { message: 'Points awarded must not exceed 1000' })
   pointsAwarded?: number;
 
-  @ApiPropertyOptional({
-    description: 'Gaming time awarded in minutes for the completed chore',
-    example: 30,
-    minimum: 0,
-    maximum: 480,
-  })
-  @IsNumber()
-  @IsOptional()
-  @Min(0, { message: 'Gaming time awarded cannot be negative' })
-  @Max(480, {
-    message: 'Gaming time awarded must not exceed 8 hours (480 minutes)',
-  })
-  gamingTimeAwarded?: number;
 }

@@ -146,11 +146,6 @@ export function SubmitAssignmentModal({
                   <Badge variant="secondary">
                     {m('submitAssignment.pointsPlus').replace('{points}', String(assignment.chore.pointsReward))}
                   </Badge>
-                  {assignment.chore.gamingTimeMinutes > 0 && (
-                    <Badge variant="outline">
-                      {m('submitAssignment.gamingPlus').replace('{minutes}', String(assignment.chore.gamingTimeMinutes))}
-                    </Badge>
-                  )}
                 </div>
               </div>
             </CardContent>

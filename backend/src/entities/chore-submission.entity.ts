@@ -48,8 +48,6 @@ export class ChoreSubmission {
   @Column({ name: 'points_awarded', nullable: true })
   pointsAwarded?: number;
 
-  @Column({ name: 'gaming_time_awarded', nullable: true })
-  gamingTimeAwarded?: number;
 
   // Relations
   @ManyToOne('ChoreAssignment', 'submissions')

@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Clock, Star, Gamepad, CheckSquare } from 'lucide-react'
+import { Clock, Star, CheckSquare } from 'lucide-react'
 import { StatusBadge, PointsBadge, DueDateBadge } from '@/components/ui/semantic-badges'
 import { useChoresTranslations, useCommonTranslations } from '@/hooks/use-translations'
 
@@ -112,17 +112,6 @@ export function ChoreDetailModal({
                 <div>
                   <p className="text-xs text-muted-foreground">{choresT('points')}</p>
                   <PointsBadge points={assignment.chore.pointsReward} showPlus={false} />
-                </div>
-              </div>
-
-              {/* Gaming Time */}
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                  <Gamepad className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">{choresT('gamingTime')}</p>
-                  <p className="text-sm font-medium">{assignment.chore.gamingTimeMinutes} {choresT('min')}</p>
                 </div>
               </div>
 
