@@ -9,8 +9,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/ui/semantic-badges'
 import { TenantMemberRole } from '@tiggpro/shared'
-import { usePagesTranslations } from '@/hooks/use-translations'
-import { Gift, Plus, ArrowUpDown, ArrowUp, ArrowDown, Eye, RefreshCcw } from 'lucide-react'
+import { usePagesTranslations, useDashboardTranslations } from '@/hooks/use-translations'
+import { Gift, Plus, ArrowUpDown, ArrowUp, ArrowDown, Eye, RefreshCcw, Filter } from 'lucide-react'
 import { RewardReviewModal } from '@/components/rewards/reward-review-modal'
 import { RewardRedemptionModal } from '@/components/gamification/reward-redemption-modal'
 import { PageHeader } from '@/components/layout/page-header'
@@ -18,6 +18,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useSession } from 'next-auth/react'
 import { useLocalizedRouter } from '@/hooks/use-localized-router'
 import { toast } from 'sonner'
@@ -31,6 +32,7 @@ export default function RewardsPage() {
   const isReviewer = currentTenant?.role === TenantMemberRole.ADMIN || currentTenant?.role === TenantMemberRole.PARENT
   const isChild = currentTenant?.role === TenantMemberRole.CHILD
   const p = usePagesTranslations()
+  const t = useDashboardTranslations()
   const { data: session } = useSession()
   const router = useLocalizedRouter()
 
@@ -70,6 +72,12 @@ export default function RewardsPage() {
     }
   })
 
+  const [reviewing, setReviewing] = useState<any | null>(null)
+  const [requestAgain, setRequestAgain] = useState<any | null>(null)
+  const [sortField, setSortField] = useState<string>('requestedAt')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+  const [statusFilter, setStatusFilter] = useState<string>('pending')
+
   const allRedemptions = redemptions?.success ? (redemptions.data || []) : []
 
   // Transform data structure to match frontend expectations
@@ -83,22 +91,27 @@ export default function RewardsPage() {
     }
   }))
 
-  // Filter based on user role
-  // Note: Backend already filters for children, so we don't need additional filtering
-  const displayRedemptions = transformedRedemptions
+  // Filter based on user role and status filter
+  const displayRedemptions = transformedRedemptions.filter((redemption: any) => {
+    switch (statusFilter) {
+      case 'all':
+        return true
+      case 'pending':
+        return redemption.status === 'pending'
+      case 'approved':
+        return redemption.status === 'approved'
+      case 'rejected':
+        return redemption.status === 'rejected'
+      default:
+        return true
+    }
+  })
 
   // Debug: Log the data structure to understand what we're working with
   if (allRedemptions.length > 0) {
     console.log('Sample redemption data:', allRedemptions[0])
     console.log('Transformed redemption data:', transformedRedemptions[0])
   }
-
-
-
-  const [reviewing, setReviewing] = useState<any | null>(null)
-  const [requestAgain, setRequestAgain] = useState<any | null>(null)
-  const [sortField, setSortField] = useState<string>('requestedAt')
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
 
   // Sort redemptions
   const sortedRedemptions = [...displayRedemptions].sort((a: any, b: any) => {
@@ -214,7 +227,7 @@ export default function RewardsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Star className="h-5 w-5" />
-              My Points
+              {t('myPoints')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -266,7 +279,23 @@ export default function RewardsPage() {
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle>{isChild ? p('rewards.myRequests') : p('rewards.allRequests')}</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>{isChild ? p('rewards.myRequests') : p('rewards.allRequests')}</CardTitle>
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder={p('rewards.filterByStatus')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{p('rewards.allStatuses')}</SelectItem>
+                    <SelectItem value="pending">{p('rewards.pendingOnly')}</SelectItem>
+                    <SelectItem value="approved">{p('rewards.approvedOnly')}</SelectItem>
+                    <SelectItem value="rejected">{p('rewards.rejectedOnly')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <Table className="w-full">

@@ -180,7 +180,12 @@
         "pending": "Pending",
         "approved": "Approved",
         "rejected": "Rejected"
-      }
+      },
+      "filterByStatus": "Filter by Status",
+      "allStatuses": "All Statuses",
+      "pendingOnly": "Pending Only",
+      "approvedOnly": "Approved Only",
+      "rejectedOnly": "Rejected Only"
     },
     "settings": {
       "title": "Settings",

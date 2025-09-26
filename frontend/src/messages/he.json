@@ -180,7 +180,12 @@
         "pending": "ממתין",
         "approved": "אושר",
         "rejected": "נדחה"
-      }
+      },
+      "filterByStatus": "סנן לפי סטטוס",
+      "allStatuses": "כל הסטטוסים",
+      "pendingOnly": "רק ממתינים",
+      "approvedOnly": "רק מאושרים",
+      "rejectedOnly": "רק נדחים"
     },
     "settings": {
       "title": "הגדרות",
