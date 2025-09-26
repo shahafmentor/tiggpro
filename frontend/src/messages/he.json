@@ -120,21 +120,46 @@
     "failedToLoadRewards": "נכשל בטעינת פרסים",
     "noRewards": "אין פרסים עדיין",
     "requestYourFirstReward": "בקש את הפרס הראשון שלך כדי להתחיל!",
-    "viewAllRewards": "צפה בכל הפרסים ({count})"
+    "viewAllRewards": "צפה בכל הפרסים ({count})",
+    "myPoints": "הנקודות שלי"
   }
   ,
   "pages": {
     "rewards": {
       "title": "בקשות פרסים",
+      "titleChild": "בקשות הפרסים שלי",
+      "subtitleChild": "בקש פרסים ועקוב אחרי ההתקדמות שלך!",
       "settings": "הגדרות פרסים",
       "saving": "שומר...",
       "noRequests": "אין בקשות פרסים עדיין",
+      "noRequestsChild": "אין בקשות פרסים עדיין",
       "reviewSubtitle": "בדוק ואשר בקשות פרסים של ילדים",
       "requestedLabel": "זמן בקשה",
       "amountLabel": "כמות",
       "notesLabel": "הערות",
       "approveRequest": "אשר בקשה",
       "rejectRequest": "דחה בקשה",
+      "requestReward": "בקש פרס",
+      "createFirst": "צור את בקשת הפרס הראשונה שלך כדי להתחיל!",
+      "createFirstChild": "בקש את הפרס הראשון שלך כדי להתחיל!",
+      "requestFirst": "בקש פרס ראשון",
+      "myRequests": "הבקשות שלי",
+      "allRequests": "כל הבקשות",
+      "noFamilySelectedTitle": "לא נבחרה משפחה",
+      "noFamilySelectedDesc": "בחר משפחה כדי לראות ולנהל פרסים.",
+      "tableHeaders": {
+        "type": "סוג",
+        "requestedBy": "נדרש על ידי",
+        "amount": "כמות",
+        "status": "סטטוס",
+        "requestedAt": "זמן בקשה",
+        "actions": "פעולות"
+      },
+      "actions": {
+        "review": "בדיקה",
+        "reject": "דחה",
+        "requestAgain": "בקש שוב"
+      },
       "types": {
         "gaming_time": "זמן משחק",
         "social_outing": "בילוי חברתי",
@@ -149,6 +174,14 @@
         "approved": "אושר",
         "rejected": "נדחה"
       }
+    },
+    "settings": {
+      "title": "הגדרות",
+      "subtitle": "נהל הגדרות משפחה והעדפות",
+      "noFamilySelectedTitle": "לא נבחרה משפחה",
+      "noFamilySelectedDesc": "בחר משפחה כדי לראות ולנהל הגדרות.",
+      "accessRestricted": "גישה מוגבלת",
+      "onlyParentsAdmins": "רק הורים ומנהלים יכולים לגשת להגדרות."
     },
     "review": {
       "title": "בדיקת הגשות",

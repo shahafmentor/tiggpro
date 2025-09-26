@@ -120,21 +120,46 @@
     "failedToLoadRewards": "Failed to load rewards",
     "noRewards": "No rewards yet",
     "requestYourFirstReward": "Request your first reward to get started!",
-    "viewAllRewards": "View All Rewards ({count})"
+    "viewAllRewards": "View All Rewards ({count})",
+    "myPoints": "My Points"
   }
   ,
   "pages": {
     "rewards": {
       "title": "Reward Redemptions",
+      "titleChild": "My Reward Requests",
+      "subtitleChild": "Request rewards and track your progress!",
       "settings": "Reward Settings",
       "saving": "Saving...",
       "noRequests": "No reward requests yet",
+      "noRequestsChild": "No reward requests yet",
       "reviewSubtitle": "Review and approve children's reward requests",
       "requestedLabel": "Requested",
       "amountLabel": "Amount",
       "notesLabel": "Notes",
       "approveRequest": "Approve Request",
       "rejectRequest": "Reject Request",
+      "requestReward": "Request a Reward",
+      "createFirst": "Create your first reward request to get started!",
+      "createFirstChild": "Request your first reward to get started!",
+      "requestFirst": "Request First Reward",
+      "myRequests": "My Requests",
+      "allRequests": "All Requests",
+      "noFamilySelectedTitle": "No Family Selected",
+      "noFamilySelectedDesc": "Please select a family to view and manage rewards.",
+      "tableHeaders": {
+        "type": "Type",
+        "requestedBy": "Requested By",
+        "amount": "Amount",
+        "status": "Status",
+        "requestedAt": "Requested At",
+        "actions": "Actions"
+      },
+      "actions": {
+        "review": "Review",
+        "reject": "Reject",
+        "requestAgain": "Request Again"
+      },
       "types": {
         "gaming_time": "Gaming Time",
         "social_outing": "Social Outing",
@@ -149,6 +174,14 @@
         "approved": "Approved",
         "rejected": "Rejected"
       }
+    },
+    "settings": {
+      "title": "Settings",
+      "subtitle": "Manage family settings and preferences",
+      "noFamilySelectedTitle": "No Family Selected",
+      "noFamilySelectedDesc": "Please select a family to view and manage settings.",
+      "accessRestricted": "Access Restricted",
+      "onlyParentsAdmins": "Only parents and admins can access settings."
     },
     "review": {
       "title": "Review Submissions",

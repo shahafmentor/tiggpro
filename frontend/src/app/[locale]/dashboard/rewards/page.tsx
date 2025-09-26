@@ -10,19 +10,19 @@ import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/ui/semantic-badges'
 import { TenantMemberRole } from '@tiggpro/shared'
 import { usePagesTranslations } from '@/hooks/use-translations'
-import { Gift, Plus, ArrowUpDown, ArrowUp, ArrowDown, MoreHorizontal, Eye, RefreshCcw } from 'lucide-react'
+import { Gift, Plus, ArrowUpDown, ArrowUp, ArrowDown, Eye, RefreshCcw } from 'lucide-react'
 import { RewardReviewModal } from '@/components/rewards/reward-review-modal'
 import { RewardRedemptionModal } from '@/components/gamification/reward-redemption-modal'
-import { UnifiedRewardSettings } from '@/components/settings/unified-reward-settings'
 import { PageHeader } from '@/components/layout/page-header'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useSession } from 'next-auth/react'
 import { useLocalizedRouter } from '@/hooks/use-localized-router'
 import { toast } from 'sonner'
+import { gamificationApi } from '@/lib/api/gamification'
+import { Star } from 'lucide-react'
 
 export default function RewardsPage() {
   const { currentTenant } = useTenant()
@@ -39,6 +39,13 @@ export default function RewardsPage() {
     queryFn: () => tenantId ? rewardsApi.listRedemptions(tenantId) : Promise.resolve({ success: false } as any),
     enabled: !!tenantId && !!session,
     refetchInterval: 30000,
+  })
+
+  // User Stats (points balance) for children
+  const { data: userStatsResponse } = useQuery({
+    queryKey: ['user-stats', tenantId],
+    queryFn: () => tenantId ? gamificationApi.getUserStats(tenantId) : Promise.resolve({ success: false } as any),
+    enabled: !!tenantId && !!session && isChild,
   })
 
   const approveMutation = useMutation({
@@ -65,22 +72,28 @@ export default function RewardsPage() {
 
   const allRedemptions = redemptions?.success ? (redemptions.data || []) : []
 
-  // Filter based on user role
-  const displayRedemptions = allRedemptions.filter((redemption: any) => {
-    // If user is a child, only show their own redemptions
-    if (isChild) {
-      return redemption.requestedBy?.id === session?.user?.id
+  // Transform data structure to match frontend expectations
+  const transformedRedemptions = allRedemptions.map((redemption: any) => ({
+    ...redemption,
+    requestedBy: {
+      id: redemption.userId,
+      displayName: redemption.user?.name || redemption.user?.displayName || 'Unknown User',
+      email: redemption.user?.email || '',
+      avatarUrl: redemption.user?.avatarUrl
     }
-    // For reviewers, show all redemptions
-    return true
-  })
+  }))
 
-  // Settings
-  const { data: settings } = useQuery({
-    queryKey: ['rewards-settings', tenantId],
-    queryFn: () => tenantId ? rewardsApi.getSettings(tenantId) : Promise.resolve({ success: false } as any),
-    enabled: !!tenantId,
-  })
+  // Filter based on user role
+  // Note: Backend already filters for children, so we don't need additional filtering
+  const displayRedemptions = transformedRedemptions
+
+  // Debug: Log the data structure to understand what we're working with
+  if (allRedemptions.length > 0) {
+    console.log('Sample redemption data:', allRedemptions[0])
+    console.log('Transformed redemption data:', transformedRedemptions[0])
+  }
+
+
 
   const [reviewing, setReviewing] = useState<any | null>(null)
   const [requestAgain, setRequestAgain] = useState<any | null>(null)
@@ -171,11 +184,11 @@ export default function RewardsPage() {
       {/* Header */}
       <PageHeader
         title={isChild ? p('rewards.titleChild') : p('rewards.title')}
-        subtitle={isChild ? p('rewards.subtitleChild') : p('rewards.subtitle')}
-        actions={!isChild ? (
+        subtitle={isChild ? p('rewards.subtitleChild') : p('rewards.reviewSubtitle')}
+        actions={isChild ? (
           <Button className="gap-2" onClick={() => setRequestAgain({})}>
             <Plus className="h-4 w-4" />
-            {p('rewards.requestReward')}
+            {p('rewards.requestYourFirstReward')}
           </Button>
         ) : undefined}
       />
@@ -195,20 +208,53 @@ export default function RewardsPage() {
         onSuccess={() => setRequestAgain(null)}
       />
 
-      {/* Unified Reward Settings for Reviewers */}
-      {isReviewer && (
-        <UnifiedRewardSettings settings={settings?.success ? settings.data : undefined} />
+      {/* Points Balance for Kids */}
+      {isChild && userStatsResponse?.success && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Star className="h-5 w-5" />
+              My Points
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">
+                  {(userStatsResponse as any).data?.availablePoints || 0}
+                </div>
+                <div className="text-sm text-muted-foreground">Available</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">
+                  {(userStatsResponse as any).data?.totalPoints || 0}
+                </div>
+                <div className="text-sm text-muted-foreground">Total Earned</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Rewards Table */}
-      {sortedRedemptions.length === 0 ? (
+      {isLoading ? (
+        <Card>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+            </div>
+          </CardContent>
+        </Card>
+      ) : sortedRedemptions.length === 0 ? (
         <Card>
           <CardContent>
             <EmptyState
               icon={<Gift className="h-12 w-12 text-muted-foreground" />}
               title={isChild ? p('rewards.noRequestsChild') : p('rewards.noRequests')}
               description={isChild ? p('rewards.createFirstChild') : p('rewards.createFirst')}
-              action={!isChild ? (
+              action={isChild ? (
                 <Button onClick={() => setRequestAgain({})}>
                   <Plus className="h-4 w-4 mr-2" />
                   {p('rewards.requestFirst')}
@@ -223,7 +269,7 @@ export default function RewardsPage() {
             <CardTitle>{isChild ? p('rewards.myRequests') : p('rewards.allRequests')}</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
+            <Table className="w-full">
               <TableHeader>
                 <TableRow>
                   <TableHead
@@ -231,7 +277,7 @@ export default function RewardsPage() {
                     onClick={() => handleSort('type')}
                   >
                     <div className="flex items-center gap-2">
-                      Type
+                      {p('rewards.tableHeaders.type')}
                       {getSortIcon('type')}
                     </div>
                   </TableHead>
@@ -241,7 +287,7 @@ export default function RewardsPage() {
                       onClick={() => handleSort('requestedBy')}
                     >
                       <div className="flex items-center gap-2">
-                        Requested By
+                        {p('rewards.tableHeaders.requestedBy')}
                         {getSortIcon('requestedBy')}
                       </div>
                     </TableHead>
@@ -251,7 +297,7 @@ export default function RewardsPage() {
                     onClick={() => handleSort('amount')}
                   >
                     <div className="flex items-center gap-2">
-                      Amount
+                      {p('rewards.tableHeaders.amount')}
                       {getSortIcon('amount')}
                     </div>
                   </TableHead>
@@ -260,7 +306,7 @@ export default function RewardsPage() {
                     onClick={() => handleSort('status')}
                   >
                     <div className="flex items-center gap-2">
-                      Status
+                      {p('rewards.tableHeaders.status')}
                       {getSortIcon('status')}
                     </div>
                   </TableHead>
@@ -269,11 +315,11 @@ export default function RewardsPage() {
                     onClick={() => handleSort('requestedAt')}
                   >
                     <div className="flex items-center gap-2">
-                      Requested At
+                      {p('rewards.tableHeaders.requestedAt')}
                       {getSortIcon('requestedAt')}
                     </div>
                   </TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-center">{p('rewards.tableHeaders.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -295,11 +341,11 @@ export default function RewardsPage() {
                           <div className="flex items-center gap-2">
                             <Avatar className="h-6 w-6">
                               <AvatarImage
-                                src={redemption.requestedBy.avatarUrl}
-                                alt={redemption.requestedBy.displayName || redemption.requestedBy.email}
+                                src={redemption.requestedBy?.avatarUrl}
+                                alt={redemption.requestedBy?.displayName || redemption.requestedBy?.email}
                               />
                               <AvatarFallback className="text-xs">
-                                {(redemption.requestedBy.displayName || redemption.requestedBy.email)
+                                {(redemption.requestedBy?.displayName || redemption.requestedBy?.email || 'U')
                                   .split(' ')
                                   .map((n: string) => n[0])
                                   .join('')
@@ -307,7 +353,7 @@ export default function RewardsPage() {
                               </AvatarFallback>
                             </Avatar>
                             <span className="text-sm">
-                              {redemption.requestedBy.displayName || redemption.requestedBy.email}
+                              {redemption.requestedBy?.displayName || redemption.requestedBy?.email || 'Unknown User'}
                             </span>
                           </div>
                         ) : (
@@ -330,24 +376,26 @@ export default function RewardsPage() {
                         {new Date(redemption.requestedAt).toLocaleString()}
                       </span>
                     </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center gap-2 justify-end">
+                    <TableCell className="text-center py-2">
+                      <div className="flex items-center justify-center gap-2">
                         {isReviewer && redemption.status === 'pending' && (
                           <>
                             <Button
                               size="sm"
                               onClick={() => setReviewing(redemption)}
+                              className="min-w-[80px]"
                             >
                               <Eye className="h-3 w-3 mr-1" />
-                              Review
+                              {p('rewards.actions.review')}
                             </Button>
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => rejectMutation.mutate(redemption.id)}
                               disabled={rejectMutation.isPending}
+                              className="min-w-[80px]"
                             >
-                              Reject
+                              {p('rewards.actions.reject')}
                             </Button>
                           </>
                         )}
@@ -356,26 +404,11 @@ export default function RewardsPage() {
                             size="sm"
                             variant="outline"
                             onClick={() => setRequestAgain(redemption)}
+                            className="min-w-[120px]"
                           >
                             <RefreshCcw className="h-3 w-3 mr-1" />
-                            Request Again
+                            {p('rewards.actions.requestAgain')}
                           </Button>
-                        )}
-                        {redemption.status === 'pending' && !isReviewer && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Open menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => setReviewing(redemption)}>
-                                <Eye className="h-4 w-4 mr-2" />
-                                View Details
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
                         )}
                       </div>
                     </TableCell>

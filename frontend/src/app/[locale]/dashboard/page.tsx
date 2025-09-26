@@ -21,8 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 // import { PointsDisplay } from '@/components/gamification/points-display'
 // import { FamilyLeaderboard } from '@/components/gamification/family-leaderboard'
 import { SubmitAssignmentModal } from '@/components/chores/submit-assignment-modal'
-import { RewardRedemptionModal } from '@/components/gamification/reward-redemption-modal'
-import { RewardsSection } from '@/components/dashboard/rewards-section'
+import { RewardsStatus } from '@/components/dashboard/rewards-status'
 import { AssignmentsSection } from '@/components/dashboard/assignments-section'
 import { rewardsApi } from '@/lib/api/rewards'
 import { gamificationApi } from '@/lib/api/gamification'
@@ -40,7 +39,6 @@ export default function DashboardPage() {
   const { currentTenant } = useTenant()
   const [submittingAssignment, setSubmittingAssignment] = useState<Assignment | null>(null)
   const [viewingAssignment, setViewingAssignment] = useState<Assignment | null>(null)
-  const [requestRewardOpen, setRequestRewardOpen] = useState(false)
 
   // User Stats (points balance)
   const { data: userStatsResponse } = useQuery({
@@ -62,7 +60,7 @@ export default function DashboardPage() {
 
   // Check if user can review submissions
   const canReview = currentTenant?.role === TenantMemberRole.ADMIN ||
-                   currentTenant?.role === TenantMemberRole.PARENT
+    currentTenant?.role === TenantMemberRole.PARENT
 
   // Check if user is a child (for chore detail modal)
   const isChild = currentTenant?.role === TenantMemberRole.CHILD
@@ -239,7 +237,7 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Star className="h-5 w-5" />
-              My Points
+              {t('myPoints')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -261,13 +259,12 @@ export default function DashboardPage() {
         </Card>
       )}
 
-      {/* Rewards Section for Kids */}
+      {/* Rewards Status for Kids */}
       {isChild && (
-        <RewardsSection
+        <RewardsStatus
           rewards={myRewards}
           isLoading={false}
           error={null}
-          onRequestReward={() => setRequestRewardOpen(true)}
         />
       )}
 
@@ -398,8 +395,6 @@ export default function DashboardPage() {
         }}
       />
 
-      {/* Reward Redemption Modal */}
-      <RewardRedemptionModal open={requestRewardOpen} onOpenChange={setRequestRewardOpen} />
     </div>
   )
 }
