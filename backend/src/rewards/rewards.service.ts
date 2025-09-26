@@ -75,7 +75,11 @@ export class RewardsService {
     const isReviewer = [TenantMemberRole.ADMIN, TenantMemberRole.PARENT].includes(membership.role);
 
     const where = isReviewer ? { tenantId } : { tenantId, userId };
-    const list = await this.redemptionRepo.find({ where, order: { requestedAt: 'DESC' } });
+    const list = await this.redemptionRepo.find({
+      where,
+      relations: ['user'], // Include user data to display requester information
+      order: { requestedAt: 'DESC' }
+    });
     return { success: true, data: list };
   }
 

@@ -77,7 +77,7 @@ export default function RewardsPage() {
     ...redemption,
     requestedBy: {
       id: redemption.userId,
-      displayName: redemption.user?.name || redemption.user?.displayName || 'Unknown User',
+      displayName: redemption.user?.displayName || 'Unknown User',
       email: redemption.user?.email || '',
       avatarUrl: redemption.user?.avatarUrl
     }

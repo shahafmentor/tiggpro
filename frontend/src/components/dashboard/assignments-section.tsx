@@ -84,14 +84,14 @@ export function AssignmentsSection({
                 >
                   <div className="flex-shrink-0">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${assignment.status === 'approved' ? 'bg-chore-completed/10' :
-                        assignment.status === 'submitted' ? 'bg-chore-submitted/10' :
-                          isOverdue ? 'bg-chore-overdue/10' :
-                            'bg-chore-pending/10'
+                      assignment.status === 'submitted' ? 'bg-chore-submitted/10' :
+                        isOverdue ? 'bg-chore-overdue/10' :
+                          'bg-chore-pending/10'
                       }`}>
                       <CheckSquare className={`h-5 w-5 ${assignment.status === 'approved' ? 'text-chore-completed' :
-                          assignment.status === 'submitted' ? 'text-chore-submitted' :
-                            isOverdue ? 'text-chore-overdue' :
-                              'text-chore-pending'
+                        assignment.status === 'submitted' ? 'text-chore-submitted' :
+                          isOverdue ? 'text-chore-overdue' :
+                            'text-chore-pending'
                         }`} />
                     </div>
                   </div>
