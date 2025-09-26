@@ -233,13 +233,6 @@ export default function DashboardPage() {
                   <Eye className="h-4 w-4 mr-2" />
                   {t('reviewSubmissions')}
                 </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => router.push('/dashboard/review')}
-                  className="border-orange-300 text-orange-700 hover:bg-orange-100 dark:border-orange-700 dark:text-orange-300 dark:hover:bg-orange-900"
-                >
-                  {t('viewAll')}
-                </Button>
               </div>
             </div>
           </CardContent>
