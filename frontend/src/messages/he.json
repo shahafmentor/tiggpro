@@ -185,7 +185,13 @@
       "allStatuses": "כל הסטטוסים",
       "pendingOnly": "רק ממתינים",
       "approvedOnly": "רק מאושרים",
-      "rejectedOnly": "רק נדחים"
+      "rejectedOnly": "רק נדחים",
+      "filterButtons": {
+        "allRequests": "כל הבקשות שלי",
+        "waitingForReview": "ממתין לבדיקה",
+        "approved": "אושר",
+        "needChanges": "דרוש שינויים"
+      }
     },
     "settings": {
       "title": "הגדרות",

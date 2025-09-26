@@ -185,7 +185,13 @@
       "allStatuses": "All Statuses",
       "pendingOnly": "Pending Only",
       "approvedOnly": "Approved Only",
-      "rejectedOnly": "Rejected Only"
+      "rejectedOnly": "Rejected Only",
+      "filterButtons": {
+        "allRequests": "All my requests",
+        "waitingForReview": "Waiting for review",
+        "approved": "Approved",
+        "needChanges": "Need changes"
+      }
     },
     "settings": {
       "title": "Settings",

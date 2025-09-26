@@ -76,7 +76,7 @@ export default function RewardsPage() {
   const [requestAgain, setRequestAgain] = useState<any | null>(null)
   const [sortField, setSortField] = useState<string>('requestedAt')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
-  const [statusFilter, setStatusFilter] = useState<string>('pending')
+  const [statusFilter, setStatusFilter] = useState<string>(isChild ? 'all' : 'pending')
 
   const allRedemptions = redemptions?.success ? (redemptions.data || []) : []
 
@@ -249,12 +249,50 @@ export default function RewardsPage() {
         </Card>
       )}
 
-      {/* Filter Section - Always visible */}
+      {/* Filter Section */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>{isChild ? p('rewards.myRequests') : p('rewards.allRequests')}</CardTitle>
-            <div className="flex items-center gap-2">
+          <CardTitle>{isChild ? p('rewards.myRequests') : p('rewards.allRequests')}</CardTitle>
+          {isChild ? (
+            <div className="flex flex-wrap gap-2 pt-4">
+              <Button
+                variant={statusFilter === 'all' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setStatusFilter('all')}
+                className="gap-2"
+              >
+                {p('rewards.filterButtons.allRequests')}
+              </Button>
+              <Button
+                variant={statusFilter === 'pending' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setStatusFilter('pending')}
+                className="gap-2"
+              >
+                <div className="h-2 w-2 bg-yellow-400 rounded-full"></div>
+                {p('rewards.filterButtons.waitingForReview')}
+              </Button>
+              <Button
+                variant={statusFilter === 'approved' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setStatusFilter('approved')}
+                className="gap-2"
+              >
+                <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                {p('rewards.filterButtons.approved')}
+              </Button>
+              <Button
+                variant={statusFilter === 'rejected' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setStatusFilter('rejected')}
+                className="gap-2"
+              >
+                <div className="h-2 w-2 bg-red-500 rounded-full"></div>
+                {p('rewards.filterButtons.needChanges')}
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 pt-4">
               <Filter className="h-4 w-4 text-muted-foreground" />
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[180px]">
@@ -268,7 +306,7 @@ export default function RewardsPage() {
                 </SelectContent>
               </Select>
             </div>
-          </div>
+          )}
         </CardHeader>
       </Card>
 
