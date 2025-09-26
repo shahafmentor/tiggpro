@@ -13,13 +13,14 @@ import { cn } from '@/lib/utils'
 import { useNavigationTranslations } from '@/hooks/use-translations'
 import { useLocalizedRouter } from '@/hooks/use-localized-router'
 import { useLocale } from '@/hooks/use-locale'
+import { TenantMemberRole } from '@tiggpro/shared'
 
 interface NavItem {
   href: string
   label: string
   icon: React.ComponentType<{ className?: string }>
   badge?: number
-  roles?: ('admin' | 'parent' | 'child')[]
+  roles?: TenantMemberRole[]
 }
 
 interface DashboardNavigationProps {
@@ -62,12 +63,13 @@ export function DashboardNavigation({ userRole, pendingCount = 0, isMobile = fal
       href: '/dashboard/chores',
       label: navT('chores'),
       icon: CheckSquare,
+      roles: [TenantMemberRole.ADMIN, TenantMemberRole.PARENT],
     },
     {
       href: '/dashboard/review',
       label: navT('review'),
       icon: Eye,
-      roles: ['admin', 'parent'],
+      roles: [TenantMemberRole.ADMIN, TenantMemberRole.PARENT],
       badge: pendingCount > 0 ? pendingCount : undefined,
     },
     {
@@ -80,12 +82,12 @@ export function DashboardNavigation({ userRole, pendingCount = 0, isMobile = fal
       href: '/dashboard/family',
       label: navT('family'),
       icon: Users,
-      roles: ['admin', 'parent'],
+      roles: [TenantMemberRole.ADMIN, TenantMemberRole.PARENT],
     },
   ]
 
   const filteredNavItems = dynamicNavItems.filter(item =>
-    !item.roles || item.roles.includes(userRole.toLowerCase() as 'admin' | 'parent')
+    !item.roles || item.roles.includes(userRole as TenantMemberRole)
   )
 
   if (isMobile) {

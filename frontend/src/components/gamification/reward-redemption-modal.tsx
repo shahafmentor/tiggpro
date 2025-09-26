@@ -136,7 +136,7 @@ export function RewardRedemptionModal({ open, onOpenChange, initialType, initial
           <Button variant="outline" onClick={() => onOpenChange(false)}>{t('rewardRedemption.cancel')}</Button>
           <Button
             onClick={() => requestMutation.mutate()}
-            disabled={requestMutation.isPending || (previewData ? previewData.remainingPoints < 0 : false)}
+            disabled={requestMutation.isPending || !amount || amount <= 0 || (previewData ? previewData.remainingPoints < 0 : false)}
           >
             {requestMutation.isPending ? t('rewardRedemption.submitting') : t('rewardRedemption.submit')}
           </Button>

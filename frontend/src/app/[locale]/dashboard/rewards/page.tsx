@@ -249,6 +249,29 @@ export default function RewardsPage() {
         </Card>
       )}
 
+      {/* Filter Section - Always visible */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>{isChild ? p('rewards.myRequests') : p('rewards.allRequests')}</CardTitle>
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder={p('rewards.filterByStatus')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{p('rewards.allStatuses')}</SelectItem>
+                  <SelectItem value="pending">{p('rewards.pendingOnly')}</SelectItem>
+                  <SelectItem value="approved">{p('rewards.approvedOnly')}</SelectItem>
+                  <SelectItem value="rejected">{p('rewards.rejectedOnly')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+
       {/* Rewards Table */}
       {isLoading ? (
         <Card>
@@ -278,25 +301,6 @@ export default function RewardsPage() {
         </Card>
       ) : (
         <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>{isChild ? p('rewards.myRequests') : p('rewards.allRequests')}</CardTitle>
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-muted-foreground" />
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder={p('rewards.filterByStatus')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{p('rewards.allStatuses')}</SelectItem>
-                    <SelectItem value="pending">{p('rewards.pendingOnly')}</SelectItem>
-                    <SelectItem value="approved">{p('rewards.approvedOnly')}</SelectItem>
-                    <SelectItem value="rejected">{p('rewards.rejectedOnly')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardHeader>
           <CardContent>
             <Table className="w-full">
               <TableHeader>

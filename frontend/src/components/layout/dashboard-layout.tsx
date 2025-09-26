@@ -37,7 +37,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   // Check if user has permission to review submissions
   const canReview = currentTenant?.role === TenantMemberRole.ADMIN ||
-                   currentTenant?.role === TenantMemberRole.PARENT
+    currentTenant?.role === TenantMemberRole.PARENT
 
   // Fetch pending submissions count for review badge
   const { data: pendingSubmissionsResponse } = useQuery({
@@ -64,7 +64,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   // Get user role from current tenant context
-  const userRole = currentTenant?.role || 'CHILD'
+  const userRole = currentTenant?.role || 'child'
 
   return (
     <div className="min-h-screen bg-background">
@@ -98,15 +98,17 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           />
 
           {/* Quick Actions */}
-          <div className="px-4 pb-6">
-            <Button
-              className="w-full gap-2"
-              onClick={() => router.push('/dashboard/chores/new')}
-            >
-              <Plus className="h-4 w-4" />
-              {choresT('create')}
-            </Button>
-          </div>
+          {userRole !== 'child' && (
+            <div className="px-4 pb-6">
+              <Button
+                className="w-full gap-2"
+                onClick={() => router.push('/dashboard/chores/new')}
+              >
+                <Plus className="h-4 w-4" />
+                {choresT('create')}
+              </Button>
+            </div>
+          )}
 
           <div className="px-4 pb-4 border-t border-border pt-4 space-y-2">
             <ThemeSwitcher />
@@ -123,15 +125,17 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             pendingCount={pendingCount}
             isMobile={true}
           />
-          <Button
-            variant="ghost"
-            size="sm"
-            className="flex-col h-16 w-16 gap-1"
-            onClick={() => router.push('/dashboard/chores/new')}
-          >
-            <Plus className="h-5 w-5" />
-            <span className="text-xs">{choresT('create')}</span>
-          </Button>
+          {userRole !== TenantMemberRole.CHILD && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-col h-16 w-16 gap-1"
+              onClick={() => router.push('/dashboard/chores/new')}
+            >
+              <Plus className="h-5 w-5" />
+              <span className="text-xs">{choresT('create')}</span>
+            </Button>
+          )}
         </div>
       </div>
 
