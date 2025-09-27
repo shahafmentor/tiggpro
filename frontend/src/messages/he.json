@@ -94,6 +94,22 @@
   "brand": {
     "productName": "טיגפרו"
   },
+  "realtime": {
+    "choreAssigned": "מטלה חדשה הוקצתה: {choreTitle}",
+    "choreAssignedDescription": "הוקצה על ידי {assignedBy}",
+    "assignmentSubmitted": "מטלה הוגשה: {choreTitle}",
+    "assignmentSubmittedDescription": "הוגש על ידי {submittedBy}",
+    "assignmentApproved": "מטלה אושרה: {choreTitle}",
+    "assignmentApprovedDescription": "{pointsAwarded} נקודות הוענקו!",
+    "assignmentRejected": "מטלה נדחתה: {choreTitle}",
+    "assignmentRejectedDescription": "{reviewFeedback}",
+    "rewardRequested": "בקשת פרס: {rewardType}",
+    "rewardRequestedDescription": "{pointsCost} נקודות - נדרש על ידי {requestedBy}",
+    "rewardApproved": "פרס אושר: {rewardType}",
+    "rewardApprovedDescription": "אושר על ידי {reviewedBy}",
+    "rewardRejected": "פרס נדחה: {rewardType}",
+    "rewardRejectedDescription": "{reviewFeedback}"
+  },
   "roles": {
     "admin": "מנהל",
     "parent": "הורה",

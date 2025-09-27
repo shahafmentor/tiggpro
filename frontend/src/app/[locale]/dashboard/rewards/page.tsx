@@ -22,6 +22,7 @@ import { useLocalizedRouter } from '@/hooks/use-localized-router'
 import { toast } from 'sonner'
 import { gamificationApi } from '@/lib/api/gamification'
 import { Star } from 'lucide-react'
+import { RealtimePageWrapper } from '@/components/realtime/realtime-page-wrapper'
 
 export default function RewardsPage() {
   const { currentTenant } = useTenant()
@@ -123,192 +124,194 @@ export default function RewardsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <PageHeader
-        title={isChild ? p('rewards.titleChild') : p('rewards.title')}
-        subtitle={isChild ? p('rewards.subtitleChild') : p('rewards.reviewSubtitle')}
-        actions={isChild ? (
-          <Button className="gap-2" onClick={() => setRequestAgain({})}>
-            <Plus className="h-4 w-4" />
-            {p('rewards.requestReward')}
-          </Button>
-        ) : undefined}
-      />
-
-      <RewardReviewModal
-        redemption={reviewing}
-        open={!!reviewing}
-        onOpenChange={(open) => !open && setReviewing(null)}
-        onReviewComplete={() => setReviewing(null)}
-      />
-      <RewardRedemptionModal
-        open={!!requestAgain}
-        onOpenChange={(open) => !open && setRequestAgain(null)}
-        initialType={(requestAgain?.type as any) || undefined}
-        initialAmount={requestAgain?.amount}
-        initialNotes={requestAgain?.notes}
-        onSuccess={() => setRequestAgain(null)}
-      />
-
-      {/* Points Balance for Kids */}
-      {isChild && userStatsResponse?.success && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Star className="h-5 w-5" />
-              {t('myPoints')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">
-                  {(userStatsResponse as any).data?.availablePoints || 0}
-                </div>
-                <div className="text-sm text-muted-foreground">{t('available')}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">
-                  {(userStatsResponse as any).data?.totalPoints || 0}
-                </div>
-                <div className="text-sm text-muted-foreground">{t('totalEarned')}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Use table for parent/admin view, keep existing UI for children */}
-      {isReviewer ? (
-        <RedemptionReviewTable
-          redemptions={allRedemptions}
-          isLoading={isLoading}
-          isChild={isChild}
-          onReview={(redemption) => setReviewing(redemption)}
-          onReject={(redemption) => rejectMutation.mutate(redemption.id)}
-          onApprove={(redemption) => approveMutation.mutate(redemption.id)}
-          onRequestAgain={(redemption) => setRequestAgain(redemption)}
-          emptyStateIcon={<Gift className="h-12 w-12 text-muted-foreground" />}
-          emptyStateTitle={isChild ? p('rewards.noRequestsChild') : p('rewards.noRequests')}
-          emptyStateDescription={isChild ? p('rewards.createFirstChild') : p('rewards.createFirst')}
-          emptyStateAction={isChild ? (
-            <Button onClick={() => setRequestAgain({})}>
-              <Plus className="h-4 w-4 mr-2" />
-              {p('rewards.requestFirst')}
+    <RealtimePageWrapper>
+      <div className="space-y-6">
+        {/* Header */}
+        <PageHeader
+          title={isChild ? p('rewards.titleChild') : p('rewards.title')}
+          subtitle={isChild ? p('rewards.subtitleChild') : p('rewards.reviewSubtitle')}
+          actions={isChild ? (
+            <Button className="gap-2" onClick={() => setRequestAgain({})}>
+              <Plus className="h-4 w-4" />
+              {p('rewards.requestReward')}
             </Button>
           ) : undefined}
         />
-      ) : (
-        <>
-          {/* Filter Section for Children */}
+
+        <RewardReviewModal
+          redemption={reviewing}
+          open={!!reviewing}
+          onOpenChange={(open) => !open && setReviewing(null)}
+          onReviewComplete={() => setReviewing(null)}
+        />
+        <RewardRedemptionModal
+          open={!!requestAgain}
+          onOpenChange={(open) => !open && setRequestAgain(null)}
+          initialType={(requestAgain?.type as any) || undefined}
+          initialAmount={requestAgain?.amount}
+          initialNotes={requestAgain?.notes}
+          onSuccess={() => setRequestAgain(null)}
+        />
+
+        {/* Points Balance for Kids */}
+        {isChild && userStatsResponse?.success && (
           <Card>
             <CardHeader>
-              <CardTitle>{p('rewards.myRequests')}</CardTitle>
-              <div className="flex flex-wrap gap-2 pt-4">
-                <Button
-                  variant={statusFilter === 'all' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setStatusFilter('all')}
-                  className="gap-2"
-                >
-                  {p('rewards.filterButtons.allRequests')}
-                </Button>
-                <Button
-                  variant={statusFilter === 'pending' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setStatusFilter('pending')}
-                  className="gap-2"
-                >
-                  <div className="h-2 w-2 bg-yellow-400 rounded-full"></div>
-                  {p('rewards.filterButtons.waitingForReview')}
-                </Button>
-                <Button
-                  variant={statusFilter === 'approved' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setStatusFilter('approved')}
-                  className="gap-2"
-                >
-                  <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                  {p('rewards.filterButtons.approved')}
-                </Button>
-                <Button
-                  variant={statusFilter === 'rejected' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setStatusFilter('rejected')}
-                  className="gap-2"
-                >
-                  <div className="h-2 w-2 bg-red-500 rounded-full"></div>
-                  {p('rewards.filterButtons.needChanges')}
-                </Button>
-              </div>
+              <CardTitle className="flex items-center gap-2">
+                <Star className="h-5 w-5" />
+                {t('myPoints')}
+              </CardTitle>
             </CardHeader>
-          </Card>
-
-          {/* Keep existing UI for children */}
-          {isLoading ? (
-            <Card>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <Skeleton className="h-8 w-full" />
-                  <Skeleton className="h-8 w-full" />
-                  <Skeleton className="h-8 w-full" />
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {(userStatsResponse as any).data?.availablePoints || 0}
+                  </div>
+                  <div className="text-sm text-muted-foreground">{t('available')}</div>
                 </div>
-              </CardContent>
-            </Card>
-          ) : filteredRedemptions.length === 0 ? (
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {(userStatsResponse as any).data?.totalPoints || 0}
+                  </div>
+                  <div className="text-sm text-muted-foreground">{t('totalEarned')}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Use table for parent/admin view, keep existing UI for children */}
+        {isReviewer ? (
+          <RedemptionReviewTable
+            redemptions={allRedemptions}
+            isLoading={isLoading}
+            isChild={isChild}
+            onReview={(redemption) => setReviewing(redemption)}
+            onReject={(redemption) => rejectMutation.mutate(redemption.id)}
+            onApprove={(redemption) => approveMutation.mutate(redemption.id)}
+            onRequestAgain={(redemption) => setRequestAgain(redemption)}
+            emptyStateIcon={<Gift className="h-12 w-12 text-muted-foreground" />}
+            emptyStateTitle={isChild ? p('rewards.noRequestsChild') : p('rewards.noRequests')}
+            emptyStateDescription={isChild ? p('rewards.createFirstChild') : p('rewards.createFirst')}
+            emptyStateAction={isChild ? (
+              <Button onClick={() => setRequestAgain({})}>
+                <Plus className="h-4 w-4 mr-2" />
+                {p('rewards.requestFirst')}
+              </Button>
+            ) : undefined}
+          />
+        ) : (
+          <>
+            {/* Filter Section for Children */}
             <Card>
-              <CardContent>
-                <EmptyState
-                  icon={<Gift className="h-12 w-12 text-muted-foreground" />}
-                  title={p('rewards.noRequestsChild')}
-                  description={p('rewards.createFirstChild')}
-                  action={
-                    <Button onClick={() => setRequestAgain({})}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      {p('rewards.requestFirst')}
-                    </Button>
-                  }
-                />
-              </CardContent>
+              <CardHeader>
+                <CardTitle>{p('rewards.myRequests')}</CardTitle>
+                <div className="flex flex-wrap gap-2 pt-4">
+                  <Button
+                    variant={statusFilter === 'all' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setStatusFilter('all')}
+                    className="gap-2"
+                  >
+                    {p('rewards.filterButtons.allRequests')}
+                  </Button>
+                  <Button
+                    variant={statusFilter === 'pending' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setStatusFilter('pending')}
+                    className="gap-2"
+                  >
+                    <div className="h-2 w-2 bg-yellow-400 rounded-full"></div>
+                    {p('rewards.filterButtons.waitingForReview')}
+                  </Button>
+                  <Button
+                    variant={statusFilter === 'approved' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setStatusFilter('approved')}
+                    className="gap-2"
+                  >
+                    <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                    {p('rewards.filterButtons.approved')}
+                  </Button>
+                  <Button
+                    variant={statusFilter === 'rejected' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setStatusFilter('rejected')}
+                    className="gap-2"
+                  >
+                    <div className="h-2 w-2 bg-red-500 rounded-full"></div>
+                    {p('rewards.filterButtons.needChanges')}
+                  </Button>
+                </div>
+              </CardHeader>
             </Card>
-          ) : (
-            <Card>
-              <CardContent>
-                <div className="space-y-4">
-                  {filteredRedemptions.map((redemption: any) => (
-                    <div key={redemption.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <Badge variant="secondary">{p(`rewards.types.${redemption.type}` as any)}</Badge>
-                        <div>
-                          <p className="font-medium">{redemption.notes || c('noNotes')}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(redemption.requestedAt).toLocaleString()}
-                          </p>
+
+            {/* Keep existing UI for children */}
+            {isLoading ? (
+              <Card>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <Skeleton className="h-8 w-full" />
+                    <Skeleton className="h-8 w-full" />
+                    <Skeleton className="h-8 w-full" />
+                  </div>
+                </CardContent>
+              </Card>
+            ) : filteredRedemptions.length === 0 ? (
+              <Card>
+                <CardContent>
+                  <EmptyState
+                    icon={<Gift className="h-12 w-12 text-muted-foreground" />}
+                    title={p('rewards.noRequestsChild')}
+                    description={p('rewards.createFirstChild')}
+                    action={
+                      <Button onClick={() => setRequestAgain({})}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        {p('rewards.requestFirst')}
+                      </Button>
+                    }
+                  />
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent>
+                  <div className="space-y-4">
+                    {filteredRedemptions.map((redemption: any) => (
+                      <div key={redemption.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <Badge variant="secondary">{p(`rewards.types.${redemption.type}` as any)}</Badge>
+                          <div>
+                            <p className="font-medium">{redemption.notes || c('noNotes')}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {new Date(redemption.requestedAt).toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <StatusBadge status={redemption.status as any} />
+                          {redemption.status === 'rejected' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setRequestAgain(redemption)}
+                            >
+                              <RefreshCcw className="h-3 w-3 mr-1" />
+                              {p('rewards.requestAgain')}
+                            </Button>
+                          )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <StatusBadge status={redemption.status as any} />
-                        {redemption.status === 'rejected' && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setRequestAgain(redemption)}
-                          >
-                            <RefreshCcw className="h-3 w-3 mr-1" />
-                            {p('rewards.requestAgain')}
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </>
-      )}
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </>
+        )}
 
-    </div>
+      </div>
+    </RealtimePageWrapper>
   )
 }

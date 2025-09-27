@@ -16,6 +16,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { SubmissionCard } from '@/components/review/submission-card'
 import { SubmissionReviewTable } from '@/components/review/submission-review-table'
 import { usePagesTranslations } from '@/hooks/use-translations'
+import { RealtimePageWrapper } from '@/components/realtime/realtime-page-wrapper'
 
 export default function ReviewPage() {
   const { data: session } = useSession()
@@ -108,60 +109,62 @@ export default function ReviewPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title={p('review.title')}
-        subtitle={p('review.subtitle')}
-        badgeContent={p('review.pendingCount').replace('{count}', String(submissions.length))}
-      />
-
-      {/* Use table for parent/admin view, cards for children */}
-      {canReview ? (
-        <SubmissionReviewTable
-          submissions={submissions}
-          isLoading={isLoading}
-          onReview={(submission) => setReviewingSubmission(submission)}
-          emptyStateIcon={<CheckCircle className="h-12 w-12 text-muted-foreground" />}
-          emptyStateTitle={p('review.allCaughtUp')}
-          emptyStateDescription={p('review.noPending')}
+    <RealtimePageWrapper>
+      <div className="space-y-6">
+        <PageHeader
+          title={p('review.title')}
+          subtitle={p('review.subtitle')}
+          badgeContent={p('review.pendingCount').replace('{count}', String(submissions.length))}
         />
-      ) : (
-        <>
-          {/* Empty State for children */}
-          {submissions.length === 0 && (
-            <Card>
-              <CardContent>
-                <EmptyState
-                  icon={<CheckCircle className="h-12 w-12 text-muted-foreground" />}
-                  title={p('review.allCaughtUp')}
-                  description={p('review.noPending')}
-                />
-              </CardContent>
-            </Card>
-          )}
 
-          {/* Submissions Grid for children */}
-          {submissions.length > 0 && (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {submissions.map((submission) => (
-                <SubmissionCard
-                  key={submission.id}
-                  submission={submission}
-                  onReview={(s) => setReviewingSubmission(s)}
-                />
-              ))}
-            </div>
-          )}
-        </>
-      )}
+        {/* Use table for parent/admin view, cards for children */}
+        {canReview ? (
+          <SubmissionReviewTable
+            submissions={submissions}
+            isLoading={isLoading}
+            onReview={(submission) => setReviewingSubmission(submission)}
+            emptyStateIcon={<CheckCircle className="h-12 w-12 text-muted-foreground" />}
+            emptyStateTitle={p('review.allCaughtUp')}
+            emptyStateDescription={p('review.noPending')}
+          />
+        ) : (
+          <>
+            {/* Empty State for children */}
+            {submissions.length === 0 && (
+              <Card>
+                <CardContent>
+                  <EmptyState
+                    icon={<CheckCircle className="h-12 w-12 text-muted-foreground" />}
+                    title={p('review.allCaughtUp')}
+                    description={p('review.noPending')}
+                  />
+                </CardContent>
+              </Card>
+            )}
 
-      {/* Review Modal */}
-      <ReviewSubmissionModal
-        submission={reviewingSubmission}
-        open={!!reviewingSubmission}
-        onOpenChange={(open) => !open && setReviewingSubmission(null)}
-        onReviewComplete={handleReviewComplete}
-      />
-    </div>
+            {/* Submissions Grid for children */}
+            {submissions.length > 0 && (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {submissions.map((submission) => (
+                  <SubmissionCard
+                    key={submission.id}
+                    submission={submission}
+                    onReview={(s) => setReviewingSubmission(s)}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Review Modal */}
+        <ReviewSubmissionModal
+          submission={reviewingSubmission}
+          open={!!reviewingSubmission}
+          onOpenChange={(open) => !open && setReviewingSubmission(null)}
+          onReviewComplete={handleReviewComplete}
+        />
+      </div>
+    </RealtimePageWrapper>
   )
 }

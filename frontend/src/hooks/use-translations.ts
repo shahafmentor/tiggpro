@@ -56,3 +56,9 @@ export function useBrandTranslations() {
 
   return (key: string) => t(dictionary, `brand.${key}`)
 }
+
+export function useRealtimeTranslations() {
+  const { dictionary } = useDictionary()
+
+  return (key: string, params?: Record<string, any>) => t(dictionary, `realtime.${key}`, params)
+}

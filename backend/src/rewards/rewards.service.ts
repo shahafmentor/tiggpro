@@ -1,10 +1,11 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { RewardRedemption, UserPoints } from '@/entities';
+import { RewardRedemption, UserPoints, User } from '@/entities';
 import { TenantMemberRole, type ApiResponse, RewardType, RedemptionStatus } from '@tiggpro/shared';
 import { TenantsService } from '@/tenants/tenants.service';
 import { RewardSettingsService } from './settings.service';
+import { RealtimeEventsService } from '@/websocket/realtime-events.service';
 
 @Injectable()
 export class RewardsService {
@@ -13,8 +14,11 @@ export class RewardsService {
     private readonly redemptionRepo: Repository<RewardRedemption>,
     @InjectRepository(UserPoints)
     private readonly userPointsRepo: Repository<UserPoints>,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
     private readonly tenantsService: TenantsService,
     private readonly settingsService: RewardSettingsService,
+    private readonly realtimeEventsService: RealtimeEventsService,
   ) {}
   private async ensureReviewer(tenantId: string, userId: string): Promise<void> {
     await this.tenantsService.verifyUserPermission(tenantId, userId, [TenantMemberRole.ADMIN, TenantMemberRole.PARENT]);
@@ -66,6 +70,32 @@ export class RewardsService {
     });
 
     const saved = await this.redemptionRepo.save(redemption);
+
+    // Get user details for real-time event
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (user) {
+      // Calculate point cost for the event
+      const pointCost = await this.calculatePointCost(tenantId, saved.type, saved.amount);
+
+      // Emit real-time event for reward request
+      this.realtimeEventsService.emitRewardRequested(
+        tenantId,
+        {
+          redemptionId: saved.id,
+          rewardType: saved.type,
+          rewardAmount: saved.amount ?? undefined,
+          pointsCost: pointCost,
+          requestedBy: {
+            id: user.id,
+            displayName: user.displayName,
+            email: user.email,
+          },
+          description: saved.notes ?? undefined,
+        },
+        userId, // Exclude the requester from receiving the notification
+      );
+    }
+
     return { success: true, data: saved };
   }
 
@@ -144,6 +174,36 @@ export class RewardsService {
     await this.userPointsRepo.save(userPoints);
     const saved = await this.redemptionRepo.save(redemption);
 
+    // Get user details for real-time event
+    const [requestedByUser, reviewedByUser] = await Promise.all([
+      this.userRepo.findOne({ where: { id: saved.userId } }),
+      this.userRepo.findOne({ where: { id: reviewerId } }),
+    ]);
+
+    if (requestedByUser && reviewedByUser) {
+      // Emit real-time event for reward approval
+      this.realtimeEventsService.emitRewardReviewed(
+        tenantId,
+        {
+          redemptionId: saved.id,
+          rewardType: saved.type,
+          reviewStatus: 'approved',
+          reviewFeedback: dto.notes,
+          reviewedBy: {
+            id: reviewedByUser.id,
+            displayName: reviewedByUser.displayName,
+            email: reviewedByUser.email,
+          },
+          requestedBy: {
+            id: requestedByUser.id,
+            displayName: requestedByUser.displayName,
+            email: requestedByUser.email,
+          },
+        },
+        reviewerId, // Exclude the reviewer from receiving the notification
+      );
+    }
+
     return {
       success: true,
       data: {
@@ -172,6 +232,37 @@ export class RewardsService {
     if (dto.reason) redemption.notes = redemption.notes ? `${redemption.notes}\nRejected: ${dto.reason}` : `Rejected: ${dto.reason}`;
 
     const saved = await this.redemptionRepo.save(redemption);
+
+    // Get user details for real-time event
+    const [requestedByUser, reviewedByUser] = await Promise.all([
+      this.userRepo.findOne({ where: { id: saved.userId } }),
+      this.userRepo.findOne({ where: { id: reviewerId } }),
+    ]);
+
+    if (requestedByUser && reviewedByUser) {
+      // Emit real-time event for reward rejection
+      this.realtimeEventsService.emitRewardReviewed(
+        tenantId,
+        {
+          redemptionId: saved.id,
+          rewardType: saved.type,
+          reviewStatus: 'rejected',
+          reviewFeedback: dto.reason,
+          reviewedBy: {
+            id: reviewedByUser.id,
+            displayName: reviewedByUser.displayName,
+            email: reviewedByUser.email,
+          },
+          requestedBy: {
+            id: requestedByUser.id,
+            displayName: requestedByUser.displayName,
+            email: requestedByUser.email,
+          },
+        },
+        reviewerId, // Exclude the reviewer from receiving the notification
+      );
+    }
+
     return { success: true, data: saved };
   }
 

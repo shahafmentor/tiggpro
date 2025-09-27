@@ -27,6 +27,7 @@ import { assignmentsApi, type Assignment, type Submission } from '@/lib/api/assi
 import { TenantMemberRole, type RewardRedemption } from '@tiggpro/shared'
 import { useLocalizedRouter } from '@/hooks/use-localized-router'
 import { useDashboardTranslations } from '@/hooks/use-translations'
+import { RealtimePageWrapper } from '@/components/realtime/realtime-page-wrapper'
 
 export default function DashboardPage() {
   const { data: session } = useSession()
@@ -133,185 +134,187 @@ export default function DashboardPage() {
 
 
   return (
-    <div className="space-y-6">
-      {/* Welcome Header */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-foreground">
-          {t('welcome').replace('{name}', session?.user?.name?.split(' ')[0] || 'Champion')}
-        </h1>
-        <p className="text-muted-foreground">
-          {t('whatsHappening')}
-        </p>
-      </div>
+    <RealtimePageWrapper>
+      <div className="space-y-6">
+        {/* Welcome Header */}
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold text-foreground">
+            {t('welcome').replace('{name}', session?.user?.name?.split(' ')[0] || 'Champion')}
+          </h1>
+          <p className="text-muted-foreground">
+            {t('whatsHappening')}
+          </p>
+        </div>
 
-      {/* Pending Reviews Section - Only for Parents/Admins */}
-      {canReview && pendingSubmissions.length > 0 && (
-        <Card className="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-200">
-              <AlertCircle className="h-5 w-5" />
-              {t('pendingReviews')}
-              <Badge variant="destructive" className="ml-auto">
-                {pendingSubmissions.length}
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <p className="text-sm text-orange-700 dark:text-orange-300">
-                {t('youHaveSubmissions').replace('{count}', String(pendingSubmissions.length))}
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => router.push('/dashboard/review')}
-                  className="bg-orange-600 hover:bg-orange-700 text-white"
-                >
-                  <Eye className="h-4 w-4 mr-2" />
-                  {t('reviewSubmissions')}
-                </Button>
+        {/* Pending Reviews Section - Only for Parents/Admins */}
+        {canReview && pendingSubmissions.length > 0 && (
+          <Card className="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-200">
+                <AlertCircle className="h-5 w-5" />
+                {t('pendingReviews')}
+                <Badge variant="destructive" className="ml-auto">
+                  {pendingSubmissions.length}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <p className="text-sm text-orange-700 dark:text-orange-300">
+                  {t('youHaveSubmissions').replace('{count}', String(pendingSubmissions.length))}
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => router.push('/dashboard/review')}
+                    className="bg-orange-600 hover:bg-orange-700 text-white"
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    {t('reviewSubmissions')}
+                  </Button>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        )}
 
-      {/* Pending Rewards Section - Only for Parents/Admins */}
-      {canReview && pendingRedemptions.length > 0 && (
-        <Card className="border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-purple-800 dark:text-purple-200">
-              <Gift className="h-5 w-5" />
-              {t('pendingRewards')}
-              <Badge variant="destructive" className="ml-auto">
-                {pendingRedemptions.length}
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <p className="text-sm text-purple-700 dark:text-purple-300">
-                {t('youHaveRewards').replace('{count}', String(pendingRedemptions.length))}
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => router.push('/dashboard/rewards')}
-                  className="bg-purple-600 hover:bg-purple-700 text-white"
-                >
-                  <Eye className="h-4 w-4 mr-2" />
-                  {t('reviewRewards')}
-                </Button>
+        {/* Pending Rewards Section - Only for Parents/Admins */}
+        {canReview && pendingRedemptions.length > 0 && (
+          <Card className="border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-purple-800 dark:text-purple-200">
+                <Gift className="h-5 w-5" />
+                {t('pendingRewards')}
+                <Badge variant="destructive" className="ml-auto">
+                  {pendingRedemptions.length}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <p className="text-sm text-purple-700 dark:text-purple-300">
+                  {t('youHaveRewards').replace('{count}', String(pendingRedemptions.length))}
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => router.push('/dashboard/rewards')}
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    {t('reviewRewards')}
+                  </Button>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        )}
 
 
-      {/* Points Balance for Kids */}
-      {isChild && userStatsResponse?.success && (
+        {/* Points Balance for Kids */}
+        {isChild && userStatsResponse?.success && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Star className="h-5 w-5" />
+                {t('myPoints')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {(userStatsResponse as any).data?.availablePoints || 0}
+                  </div>
+                  <div className="text-sm text-muted-foreground">{t('available')}</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {(userStatsResponse as any).data?.totalPoints || 0}
+                  </div>
+                  <div className="text-sm text-muted-foreground">{t('totalEarned')}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Rewards Status for Kids */}
+        {isChild && (
+          <RewardsStatus
+            rewards={myRewards}
+            isLoading={false}
+            error={null}
+          />
+        )}
+
+        {/* My Assignments Section */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Star className="h-5 w-5" />
-              {t('myPoints')}
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <CheckSquare className="h-5 w-5" />
+                {t('myAssignments')}
+                {allAssignments.length > 0 && (
+                  <Badge variant="secondary" className="ml-2">
+                    {allAssignments.length}
+                  </Badge>
+                )}
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder={t('filterByStatus')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('allStatuses')}</SelectItem>
+                    <SelectItem value="all-except-approved">{t('allExceptApproved')}</SelectItem>
+                    <SelectItem value="pending">{t('pendingOnly')}</SelectItem>
+                    <SelectItem value="submitted">{t('submittedOnly')}</SelectItem>
+                    <SelectItem value="approved">{t('approvedOnly')}</SelectItem>
+                    <SelectItem value="rejected">{t('rejectedOnly')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">
-                  {(userStatsResponse as any).data?.availablePoints || 0}
-                </div>
-                <div className="text-sm text-muted-foreground">{t('available')}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">
-                  {(userStatsResponse as any).data?.totalPoints || 0}
-                </div>
-                <div className="text-sm text-muted-foreground">{t('totalEarned')}</div>
-              </div>
-            </div>
+            <AssignmentsSection
+              assignments={assignments}
+              isLoading={assignmentsLoading}
+              error={assignmentsError?.message || null}
+              isChild={isChild}
+              onViewAssignment={setViewingAssignment}
+              onSubmitAssignment={setSubmittingAssignment}
+              showHeader={false}
+            />
           </CardContent>
         </Card>
-      )}
 
-      {/* Rewards Status for Kids */}
-      {isChild && (
-        <RewardsStatus
-          rewards={myRewards}
-          isLoading={false}
-          error={null}
+
+        {/* Submit Assignment Modal */}
+        <SubmitAssignmentModal
+          assignment={submittingAssignment}
+          open={!!submittingAssignment}
+          onOpenChange={(open) => {
+            if (!open) setSubmittingAssignment(null)
+          }}
         />
-      )}
 
-      {/* My Assignments Section */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <CheckSquare className="h-5 w-5" />
-              {t('myAssignments')}
-              {allAssignments.length > 0 && (
-                <Badge variant="secondary" className="ml-2">
-                  {allAssignments.length}
-                </Badge>
-              )}
-            </CardTitle>
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder={t('filterByStatus')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('allStatuses')}</SelectItem>
-                  <SelectItem value="all-except-approved">{t('allExceptApproved')}</SelectItem>
-                  <SelectItem value="pending">{t('pendingOnly')}</SelectItem>
-                  <SelectItem value="submitted">{t('submittedOnly')}</SelectItem>
-                  <SelectItem value="approved">{t('approvedOnly')}</SelectItem>
-                  <SelectItem value="rejected">{t('rejectedOnly')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <AssignmentsSection
-            assignments={assignments}
-            isLoading={assignmentsLoading}
-            error={assignmentsError?.message || null}
-            isChild={isChild}
-            onViewAssignment={setViewingAssignment}
-            onSubmitAssignment={setSubmittingAssignment}
-            showHeader={false}
-          />
-        </CardContent>
-      </Card>
+        {/* Chore Detail Modal for Kids */}
+        <ChoreDetailModal
+          assignment={viewingAssignment}
+          open={!!viewingAssignment}
+          onOpenChange={(open) => {
+            if (!open) setViewingAssignment(null)
+          }}
+          canSubmit={isChild}
+          onSubmit={(assignment) => {
+            setViewingAssignment(null)
+            setSubmittingAssignment(assignment)
+          }}
+        />
 
-
-      {/* Submit Assignment Modal */}
-      <SubmitAssignmentModal
-        assignment={submittingAssignment}
-        open={!!submittingAssignment}
-        onOpenChange={(open) => {
-          if (!open) setSubmittingAssignment(null)
-        }}
-      />
-
-      {/* Chore Detail Modal for Kids */}
-      <ChoreDetailModal
-        assignment={viewingAssignment}
-        open={!!viewingAssignment}
-        onOpenChange={(open) => {
-          if (!open) setViewingAssignment(null)
-        }}
-        canSubmit={isChild}
-        onSubmit={(assignment) => {
-          setViewingAssignment(null)
-          setSubmittingAssignment(assignment)
-        }}
-      />
-
-    </div>
+      </div>
+    </RealtimePageWrapper>
   )
 }

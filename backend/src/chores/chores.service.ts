@@ -6,9 +6,10 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Chore, ChoreAssignment, TenantMember } from '@/entities';
+import { Chore, ChoreAssignment, TenantMember, User } from '@/entities';
 import { CreateChoreDto, UpdateChoreDto, AssignChoreDto } from './dto';
 import { AssignmentStatus, TenantMemberRole } from '@tiggpro/shared';
+import { RealtimeEventsService } from '@/websocket/realtime-events.service';
 
 @Injectable()
 export class ChoresService {
@@ -19,6 +20,9 @@ export class ChoresService {
     private assignmentRepository: Repository<ChoreAssignment>,
     @InjectRepository(TenantMember)
     private tenantMemberRepository: Repository<TenantMember>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+    private realtimeEventsService: RealtimeEventsService,
   ) {}
 
   async createChore(
@@ -162,7 +166,41 @@ export class ChoresService {
       status: AssignmentStatus.PENDING,
     });
 
-    return this.assignmentRepository.save(assignment);
+    const savedAssignment = await this.assignmentRepository.save(assignment);
+
+    // Get user details for real-time event
+    const [assignedToUser, assignedByUser] = await Promise.all([
+      this.userRepository.findOne({ where: { id: assignChoreDto.assignedTo } }),
+      this.userRepository.findOne({ where: { id: assignedById } }),
+    ]);
+
+    if (assignedToUser && assignedByUser) {
+      // Emit real-time event for chore assignment
+      this.realtimeEventsService.emitChoreAssigned(
+        tenantId,
+        {
+          assignmentId: savedAssignment.id,
+          choreId: chore.id,
+          choreTitle: chore.title,
+          assignedTo: {
+            id: assignedToUser.id,
+            displayName: assignedToUser.displayName,
+            email: assignedToUser.email,
+          },
+          assignedBy: {
+            id: assignedByUser.id,
+            displayName: assignedByUser.displayName,
+            email: assignedByUser.email,
+          },
+          dueDate: savedAssignment.dueDate.toISOString(),
+          priority: savedAssignment.priority,
+          pointsReward: chore.pointsReward,
+        },
+        assignedById, // Exclude the assigner from receiving the notification
+      );
+    }
+
+    return savedAssignment;
   }
 
   private async verifyUserMembership(

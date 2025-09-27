@@ -11,6 +11,7 @@ import {
   ChoreSubmission,
   TenantMember,
   Chore,
+  User,
 } from '@/entities';
 import { SubmitAssignmentDto, ReviewSubmissionDto } from './dto';
 import {
@@ -19,6 +20,7 @@ import {
   TenantMemberRole,
 } from '@tiggpro/shared';
 import { PointsService } from '@/gamification/services/points.service';
+import { RealtimeEventsService } from '@/websocket/realtime-events.service';
 
 @Injectable()
 export class AssignmentsService {
@@ -31,7 +33,10 @@ export class AssignmentsService {
     private tenantMemberRepository: Repository<TenantMember>,
     @InjectRepository(Chore)
     private choreRepository: Repository<Chore>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
     private pointsService: PointsService,
+    private realtimeEventsService: RealtimeEventsService,
   ) {}
 
   async getUserAssignments(
@@ -131,6 +136,32 @@ export class AssignmentsService {
     assignment.status = AssignmentStatus.SUBMITTED;
     await this.assignmentRepository.save(assignment);
 
+    // Get user details and chore details for real-time event
+    const [submittedByUser, chore] = await Promise.all([
+      this.userRepository.findOne({ where: { id: userId } }),
+      this.choreRepository.findOne({ where: { id: assignment.choreId } }),
+    ]);
+
+    if (submittedByUser && chore) {
+      // Emit real-time event for assignment submission
+      this.realtimeEventsService.emitAssignmentSubmitted(
+        chore.tenantId,
+        {
+          submissionId: savedSubmission.id,
+          assignmentId: assignment.id,
+          choreTitle: chore.title,
+          submittedBy: {
+            id: submittedByUser.id,
+            displayName: submittedByUser.displayName,
+            email: submittedByUser.email,
+          },
+          submissionNotes: savedSubmission.submissionNotes,
+          mediaUrls: savedSubmission.mediaUrls,
+        },
+        userId, // Exclude the submitter from receiving the notification
+      );
+    }
+
     return savedSubmission;
   }
 
@@ -210,6 +241,38 @@ export class AssignmentsService {
           error,
         );
       }
+    }
+
+    // Get user details for real-time event
+    const [reviewedByUser, submittedByUser] = await Promise.all([
+      this.userRepository.findOne({ where: { id: reviewerId } }),
+      this.userRepository.findOne({ where: { id: submission.submittedBy } }),
+    ]);
+
+    if (reviewedByUser && submittedByUser) {
+      // Emit real-time event for assignment review
+      this.realtimeEventsService.emitAssignmentReviewed(
+        tenantId,
+        {
+          submissionId: savedSubmission.id,
+          assignmentId: savedSubmission.assignmentId,
+          choreTitle: submission.assignment.chore.title,
+          reviewStatus: savedSubmission.reviewStatus as 'approved' | 'rejected',
+          reviewFeedback: savedSubmission.reviewFeedback,
+          pointsAwarded: savedSubmission.pointsAwarded,
+          reviewedBy: {
+            id: reviewedByUser.id,
+            displayName: reviewedByUser.displayName,
+            email: reviewedByUser.email,
+          },
+          submittedBy: {
+            id: submittedByUser.id,
+            displayName: submittedByUser.displayName,
+            email: submittedByUser.email,
+          },
+        },
+        reviewerId, // Exclude the reviewer from receiving the notification
+      );
     }
 
     return savedSubmission;

@@ -7,6 +7,7 @@ import { ReactNode, createContext, useContext } from 'react';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from '@/lib/theme-context';
 import { TenantProvider } from '@/lib/contexts/tenant-context';
+import { RealtimeProvider } from '@/components/realtime/realtime-provider';
 import { queryClient } from '@/lib/query-client';
 import type { Dictionary } from './[locale]/dictionaries';
 
@@ -38,9 +39,11 @@ export function Providers({ children, dictionary, locale }: ProvidersProps) {
         <QueryClientProvider client={queryClient}>
           <ThemeProvider>
             <TenantProvider>
-              {children}
-              <Toaster position="top-center" />
-              <ReactQueryDevtools initialIsOpen={false} />
+              <RealtimeProvider>
+                {children}
+                <Toaster position="top-center" />
+                <ReactQueryDevtools initialIsOpen={false} />
+              </RealtimeProvider>
             </TenantProvider>
           </ThemeProvider>
         </QueryClientProvider>

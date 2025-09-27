@@ -94,6 +94,22 @@
   "brand": {
     "productName": "Tiggpro"
   },
+  "realtime": {
+    "choreAssigned": "New chore assigned: {choreTitle}",
+    "choreAssignedDescription": "Assigned by {assignedBy}",
+    "assignmentSubmitted": "Assignment submitted: {choreTitle}",
+    "assignmentSubmittedDescription": "Submitted by {submittedBy}",
+    "assignmentApproved": "Assignment approved: {choreTitle}",
+    "assignmentApprovedDescription": "{pointsAwarded} points awarded!",
+    "assignmentRejected": "Assignment rejected: {choreTitle}",
+    "assignmentRejectedDescription": "{reviewFeedback}",
+    "rewardRequested": "Reward requested: {rewardType}",
+    "rewardRequestedDescription": "{pointsCost} points - Requested by {requestedBy}",
+    "rewardApproved": "Reward approved: {rewardType}",
+    "rewardApprovedDescription": "Approved by {reviewedBy}",
+    "rewardRejected": "Reward rejected: {rewardType}",
+    "rewardRejectedDescription": "{reviewFeedback}"
+  },
   "roles": {
     "admin": "Admin",
     "parent": "Parent",

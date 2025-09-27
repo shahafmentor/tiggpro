@@ -4,7 +4,7 @@ import type { Dictionary } from '@/app/[locale]/dictionaries';
  * Simple translation function that navigates nested object keys
  * Example: t(dict, 'navigation.dashboard') -> dict.navigation.dashboard
  */
-export function t(dictionary: Dictionary, key: string): string {
+export function t(dictionary: Dictionary, key: string, params?: Record<string, any>): string {
   const keys = key.split('.');
   let current: any = dictionary;
 
@@ -17,7 +17,16 @@ export function t(dictionary: Dictionary, key: string): string {
     }
   }
 
-  return typeof current === 'string' ? current : key;
+  let result = typeof current === 'string' ? current : key;
+
+  // Simple interpolation: replace {key} with params[key]
+  if (params) {
+    for (const [paramKey, paramValue] of Object.entries(params)) {
+      result = result.replace(new RegExp(`{${paramKey}}`, 'g'), String(paramValue));
+    }
+  }
+
+  return result;
 }
 
 /**
