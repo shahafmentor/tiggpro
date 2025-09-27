@@ -9,8 +9,8 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { UserProfileHeader } from '@/components/layout/user-profile-header'
 import { TenantSelector } from '@/components/tenant/tenant-selector'
-import { ThemeSwitcher } from '@/components/ui/theme-switcher'
 import { LanguageSelector } from '@/components/ui/language-selector'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { DashboardNavigation } from '@/components/layout/dashboard-navigation'
 import { useQuery } from '@tanstack/react-query'
 import { assignmentsApi } from '@/lib/api/assignments'
@@ -87,6 +87,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               </div>
               <span className="font-bold text-xl text-foreground">{brandT('productName')}</span>
             </div>
+            <ThemeToggle />
           </div>
 
           {/* User Profile */}
@@ -120,7 +121,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           )}
 
           <div className="px-4 pb-4 border-t border-border pt-4 space-y-2">
-            <ThemeSwitcher />
             <LanguageSelector className="w-full" />
           </div>
         </div>

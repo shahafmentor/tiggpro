@@ -1,7 +1,7 @@
 'use client'
 
 import { AuthButton } from '@/components/auth/auth-button';
-import { ThemeSwitcher } from '@/components/ui/theme-switcher';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { LandingPageContent } from '@/components/landing/landing-page-content';
 import { useBrandTranslations } from '@/hooks/use-translations';
 
@@ -16,7 +16,7 @@ export default function Home() {
             🎮 {brandT('productName')}
           </h1>
           <div className="flex items-center gap-4">
-            <ThemeSwitcher />
+            <ThemeToggle />
             <AuthButton />
           </div>
         </header>

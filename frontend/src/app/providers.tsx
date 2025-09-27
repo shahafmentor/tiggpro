@@ -37,15 +37,15 @@ export function Providers({ children, dictionary, locale }: ProvidersProps) {
     <DictionaryContext.Provider value={{ dictionary, locale }}>
       <SessionProvider>
         <QueryClientProvider client={queryClient}>
-          <ThemeProvider>
-            <TenantProvider>
+          <TenantProvider>
+            <ThemeProvider>
               <RealtimeProvider>
                 {children}
                 <Toaster position="top-center" />
                 <ReactQueryDevtools initialIsOpen={false} />
               </RealtimeProvider>
-            </TenantProvider>
-          </ThemeProvider>
+            </ThemeProvider>
+          </TenantProvider>
         </QueryClientProvider>
       </SessionProvider>
     </DictionaryContext.Provider>

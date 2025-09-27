@@ -1,6 +1,8 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
+import { useTenant } from '@/lib/contexts/tenant-context'
+import { TenantMemberRole } from '@tiggpro/shared'
 
 type Theme = 'light' | 'dark'
 type UserTheme = 'parent' | 'kid'
@@ -18,11 +20,11 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('light')
   const [userTheme, setUserTheme] = useState<UserTheme>('parent')
+  const { currentTenant } = useTenant()
 
   // Initialize theme from localStorage or system preference
   useEffect(() => {
     const savedTheme = localStorage.getItem('tiggpro-theme') as Theme
-    const savedUserTheme = localStorage.getItem('tiggpro-user-theme') as UserTheme
 
     if (savedTheme) {
       setTheme(savedTheme)
@@ -31,11 +33,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
       setTheme(prefersDark ? 'dark' : 'light')
     }
-
-    if (savedUserTheme) {
-      setUserTheme(savedUserTheme)
-    }
   }, [])
+
+  // Auto-set user theme based on current tenant role
+  useEffect(() => {
+    if (currentTenant?.role) {
+      const roleBasedTheme: UserTheme = currentTenant.role === TenantMemberRole.CHILD ? 'kid' : 'parent'
+      setUserTheme(roleBasedTheme)
+    }
+  }, [currentTenant?.role])
 
   // Apply theme classes to document
   useEffect(() => {
@@ -47,9 +53,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // Add current theme classes
     root.classList.add(theme, `theme-${userTheme}`)
 
-    // Save to localStorage
+    // Save theme to localStorage (userTheme is now auto-determined by role)
     localStorage.setItem('tiggpro-theme', theme)
-    localStorage.setItem('tiggpro-user-theme', userTheme)
   }, [theme, userTheme])
 
   const toggleTheme = () => {
