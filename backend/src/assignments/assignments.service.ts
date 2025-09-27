@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import {
   ChoreAssignment,
   ChoreSubmission,
@@ -225,8 +225,23 @@ export class AssignmentsService {
       TenantMemberRole.PARENT,
     ]);
 
-    return this.submissionRepository.find({
-      where: { reviewStatus: ReviewStatus.PENDING },
+    // First get all assignments for this tenant
+    const tenantAssignments = await this.assignmentRepository.find({
+      where: {
+        chore: {
+          tenantId: tenantId
+        }
+      },
+      select: ['id']
+    });
+
+    const assignmentIds = tenantAssignments.map(a => a.id);
+
+    const submissions = await this.submissionRepository.find({
+      where: {
+        reviewStatus: ReviewStatus.PENDING,
+        assignmentId: In(assignmentIds)
+      },
       relations: [
         'assignment',
         'assignment.chore',
@@ -235,6 +250,8 @@ export class AssignmentsService {
       ],
       order: { submittedAt: 'ASC' },
     });
+
+    return submissions;
   }
 
   private async verifyUserMembership(

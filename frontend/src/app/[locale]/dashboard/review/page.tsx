@@ -10,10 +10,11 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ReviewSubmissionModal } from '@/components/chores/review-submission-modal'
 import { assignmentsApi, type Submission } from '@/lib/api/assignments'
 import { useTenant } from '@/lib/contexts/tenant-context'
-import { TenantMemberRole } from '@tiggpro/shared'
+import { TenantMemberRole, ReviewStatus } from '@tiggpro/shared'
 import { PageHeader } from '@/components/layout/page-header'
 import { EmptyState } from '@/components/ui/empty-state'
 import { SubmissionCard } from '@/components/review/submission-card'
+import { SubmissionReviewTable } from '@/components/review/submission-review-table'
 import { usePagesTranslations } from '@/hooks/use-translations'
 
 export default function ReviewPage() {
@@ -25,17 +26,18 @@ export default function ReviewPage() {
 
   // Check if user has permission to review submissions
   const canReview = currentTenant?.role === TenantMemberRole.ADMIN ||
-                   currentTenant?.role === TenantMemberRole.PARENT
+    currentTenant?.role === TenantMemberRole.PARENT
 
   // Fetch pending submissions for review
   const { data: submissionsResponse, isLoading, error } = useQuery({
-    queryKey: ['pending-submissions', currentTenant?.tenant.id],
+    queryKey: ['pending-submissions-count', currentTenant?.tenant.id],
     queryFn: () => currentTenant ? assignmentsApi.getPendingSubmissions(currentTenant.tenant.id) : null,
     enabled: !!currentTenant && !!session && canReview,
     refetchInterval: 30000, // Refetch every 30 seconds to keep data fresh
   })
 
   const submissions: Submission[] = submissionsResponse?.success ? submissionsResponse.data || [] : []
+
 
   // Redirect if user doesn't have permission
   if (!canReview) {
@@ -99,7 +101,7 @@ export default function ReviewPage() {
 
   const handleReviewComplete = () => {
     // Refresh the submissions list
-    queryClient.invalidateQueries({ queryKey: ['pending-submissions'] })
+    queryClient.invalidateQueries({ queryKey: ['pending-submissions-count'] })
     queryClient.invalidateQueries({ queryKey: ['assignments'] })
     queryClient.invalidateQueries({ queryKey: ['chores'] })
     setReviewingSubmission(null)
@@ -113,30 +115,44 @@ export default function ReviewPage() {
         badgeContent={p('review.pendingCount').replace('{count}', String(submissions.length))}
       />
 
-      {/* Empty State */}
-      {submissions.length === 0 && (
-        <Card>
-          <CardContent>
-            <EmptyState
-              icon={<CheckCircle className="h-12 w-12 text-muted-foreground" />}
-              title={p('review.allCaughtUp')}
-              description={p('review.noPending')}
-            />
-          </CardContent>
-        </Card>
-      )}
+      {/* Use table for parent/admin view, cards for children */}
+      {canReview ? (
+        <SubmissionReviewTable
+          submissions={submissions}
+          isLoading={isLoading}
+          onReview={(submission) => setReviewingSubmission(submission)}
+          emptyStateIcon={<CheckCircle className="h-12 w-12 text-muted-foreground" />}
+          emptyStateTitle={p('review.allCaughtUp')}
+          emptyStateDescription={p('review.noPending')}
+        />
+      ) : (
+        <>
+          {/* Empty State for children */}
+          {submissions.length === 0 && (
+            <Card>
+              <CardContent>
+                <EmptyState
+                  icon={<CheckCircle className="h-12 w-12 text-muted-foreground" />}
+                  title={p('review.allCaughtUp')}
+                  description={p('review.noPending')}
+                />
+              </CardContent>
+            </Card>
+          )}
 
-      {/* Submissions Grid */}
-      {submissions.length > 0 && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {submissions.map((submission) => (
-            <SubmissionCard
-              key={submission.id}
-              submission={submission}
-              onReview={(s) => setReviewingSubmission(s)}
-            />
-          ))}
-        </div>
+          {/* Submissions Grid for children */}
+          {submissions.length > 0 && (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {submissions.map((submission) => (
+                <SubmissionCard
+                  key={submission.id}
+                  submission={submission}
+                  onReview={(s) => setReviewingSubmission(s)}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {/* Review Modal */}

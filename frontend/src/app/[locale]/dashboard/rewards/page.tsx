@@ -16,9 +16,7 @@ import { RewardRedemptionModal } from '@/components/gamification/reward-redempti
 import { PageHeader } from '@/components/layout/page-header'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { RedemptionReviewTable } from '@/components/rewards/redemption-review-table'
 import { useSession } from 'next-auth/react'
 import { useLocalizedRouter } from '@/hooks/use-localized-router'
 import { toast } from 'sonner'
@@ -74,97 +72,22 @@ export default function RewardsPage() {
 
   const [reviewing, setReviewing] = useState<any | null>(null)
   const [requestAgain, setRequestAgain] = useState<any | null>(null)
-  const [sortField, setSortField] = useState<string>('requestedAt')
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [statusFilter, setStatusFilter] = useState<string>(isChild ? 'all' : 'pending')
 
   const allRedemptions = redemptions?.success ? (redemptions.data || []) : []
 
-  // Transform data structure to match frontend expectations
-  const transformedRedemptions = allRedemptions.map((redemption: any) => ({
-    ...redemption,
-    requestedBy: {
-      id: redemption.userId,
-      displayName: redemption.user?.displayName || 'Unknown User',
-      email: redemption.user?.email || '',
-      avatarUrl: redemption.user?.avatarUrl
-    }
-  }))
-
-  // Filter based on user role and status filter
-  const displayRedemptions = transformedRedemptions.filter((redemption: any) => {
+  // Filter redemptions for children based on status
+  const filteredRedemptions = isChild ? allRedemptions.filter((redemption: any) => {
     switch (statusFilter) {
-      case 'all':
-        return true
-      case 'pending':
-        return redemption.status === 'pending'
-      case 'approved':
-        return redemption.status === 'approved'
-      case 'rejected':
-        return redemption.status === 'rejected'
-      default:
-        return true
+      case 'all': return true
+      case 'pending': return redemption.status === 'pending'
+      case 'approved': return redemption.status === 'approved'
+      case 'rejected': return redemption.status === 'rejected'
+      default: return true
     }
-  })
+  }) : allRedemptions
 
-  // Debug: Log the data structure to understand what we're working with
-  if (allRedemptions.length > 0) {
-    console.log('Sample redemption data:', allRedemptions[0])
-    console.log('Transformed redemption data:', transformedRedemptions[0])
-  }
 
-  // Sort redemptions
-  const sortedRedemptions = [...displayRedemptions].sort((a: any, b: any) => {
-    let aVal, bVal
-
-    switch (sortField) {
-      case 'type':
-        aVal = p(`rewards.types.${a.type}` as any)
-        bVal = p(`rewards.types.${b.type}` as any)
-        break
-      case 'requestedBy':
-        aVal = a.requestedBy?.displayName || a.requestedBy?.email || ''
-        bVal = b.requestedBy?.displayName || b.requestedBy?.email || ''
-        break
-      case 'status':
-        aVal = a.status
-        bVal = b.status
-        break
-      case 'requestedAt':
-        aVal = new Date(a.requestedAt).getTime()
-        bVal = new Date(b.requestedAt).getTime()
-        break
-      case 'amount':
-        aVal = a.amount || 0
-        bVal = b.amount || 0
-        break
-      default:
-        aVal = a.requestedAt
-        bVal = b.requestedAt
-    }
-
-    if (sortDirection === 'asc') {
-      return aVal < bVal ? -1 : aVal > bVal ? 1 : 0
-    } else {
-      return aVal > bVal ? -1 : aVal < bVal ? 1 : 0
-    }
-  })
-
-  const handleSort = (field: string) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
-    } else {
-      setSortField(field)
-      setSortDirection('asc')
-    }
-  }
-
-  const getSortIcon = (field: string) => {
-    if (sortField !== field) {
-      return <ArrowUpDown className="h-4 w-4" />
-    }
-    return sortDirection === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
-  }
 
   if (isLoading) {
     return (
@@ -249,247 +172,135 @@ export default function RewardsPage() {
         </Card>
       )}
 
-      {/* Filter Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{isChild ? p('rewards.myRequests') : p('rewards.allRequests')}</CardTitle>
-          {isChild ? (
-            <div className="flex flex-wrap gap-2 pt-4">
-              <Button
-                variant={statusFilter === 'all' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setStatusFilter('all')}
-                className="gap-2"
-              >
-                {p('rewards.filterButtons.allRequests')}
-              </Button>
-              <Button
-                variant={statusFilter === 'pending' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setStatusFilter('pending')}
-                className="gap-2"
-              >
-                <div className="h-2 w-2 bg-yellow-400 rounded-full"></div>
-                {p('rewards.filterButtons.waitingForReview')}
-              </Button>
-              <Button
-                variant={statusFilter === 'approved' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setStatusFilter('approved')}
-                className="gap-2"
-              >
-                <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                {p('rewards.filterButtons.approved')}
-              </Button>
-              <Button
-                variant={statusFilter === 'rejected' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setStatusFilter('rejected')}
-                className="gap-2"
-              >
-                <div className="h-2 w-2 bg-red-500 rounded-full"></div>
-                {p('rewards.filterButtons.needChanges')}
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 pt-4">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder={p('rewards.filterByStatus')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{p('rewards.allStatuses')}</SelectItem>
-                  <SelectItem value="pending">{p('rewards.pendingOnly')}</SelectItem>
-                  <SelectItem value="approved">{p('rewards.approvedOnly')}</SelectItem>
-                  <SelectItem value="rejected">{p('rewards.rejectedOnly')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-        </CardHeader>
-      </Card>
-
-      {/* Rewards Table */}
-      {isLoading ? (
-        <Card>
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-8 w-full" />
-            </div>
-          </CardContent>
-        </Card>
-      ) : sortedRedemptions.length === 0 ? (
-        <Card>
-          <CardContent>
-            <EmptyState
-              icon={<Gift className="h-12 w-12 text-muted-foreground" />}
-              title={isChild ? p('rewards.noRequestsChild') : p('rewards.noRequests')}
-              description={isChild ? p('rewards.createFirstChild') : p('rewards.createFirst')}
-              action={isChild ? (
-                <Button onClick={() => setRequestAgain({})}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  {p('rewards.requestFirst')}
-                </Button>
-              ) : undefined}
-            />
-          </CardContent>
-        </Card>
+      {/* Use table for parent/admin view, keep existing UI for children */}
+      {isReviewer ? (
+        <RedemptionReviewTable
+          redemptions={allRedemptions}
+          isLoading={isLoading}
+          isChild={isChild}
+          onReview={(redemption) => setReviewing(redemption)}
+          onReject={(redemption) => rejectMutation.mutate(redemption.id)}
+          onRequestAgain={(redemption) => setRequestAgain(redemption)}
+          emptyStateIcon={<Gift className="h-12 w-12 text-muted-foreground" />}
+          emptyStateTitle={isChild ? p('rewards.noRequestsChild') : p('rewards.noRequests')}
+          emptyStateDescription={isChild ? p('rewards.createFirstChild') : p('rewards.createFirst')}
+          emptyStateAction={isChild ? (
+            <Button onClick={() => setRequestAgain({})}>
+              <Plus className="h-4 w-4 mr-2" />
+              {p('rewards.requestFirst')}
+            </Button>
+          ) : undefined}
+        />
       ) : (
-        <Card>
-          <CardContent>
-            <Table className="w-full">
-              <TableHeader>
-                <TableRow>
-                  <TableHead
-                    className="cursor-pointer select-none hover:bg-muted/50"
-                    onClick={() => handleSort('type')}
-                  >
-                    <div className="flex items-center gap-2">
-                      {p('rewards.tableHeaders.type')}
-                      {getSortIcon('type')}
-                    </div>
-                  </TableHead>
-                  {!isChild && (
-                    <TableHead
-                      className="cursor-pointer select-none hover:bg-muted/50"
-                      onClick={() => handleSort('requestedBy')}
-                    >
-                      <div className="flex items-center gap-2">
-                        {p('rewards.tableHeaders.requestedBy')}
-                        {getSortIcon('requestedBy')}
-                      </div>
-                    </TableHead>
-                  )}
-                  <TableHead
-                    className="cursor-pointer select-none hover:bg-muted/50"
-                    onClick={() => handleSort('amount')}
-                  >
-                    <div className="flex items-center gap-2">
-                      {p('rewards.tableHeaders.amount')}
-                      {getSortIcon('amount')}
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="cursor-pointer select-none hover:bg-muted/50"
-                    onClick={() => handleSort('status')}
-                  >
-                    <div className="flex items-center gap-2">
-                      {p('rewards.tableHeaders.status')}
-                      {getSortIcon('status')}
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="cursor-pointer select-none hover:bg-muted/50"
-                    onClick={() => handleSort('requestedAt')}
-                  >
-                    <div className="flex items-center gap-2">
-                      {p('rewards.tableHeaders.requestedAt')}
-                      {getSortIcon('requestedAt')}
-                    </div>
-                  </TableHead>
-                  <TableHead className="text-center">{p('rewards.tableHeaders.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sortedRedemptions.map((redemption: any) => (
-                  <TableRow key={redemption.id}>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
+        <>
+          {/* Filter Section for Children */}
+          <Card>
+            <CardHeader>
+              <CardTitle>{p('rewards.myRequests')}</CardTitle>
+              <div className="flex flex-wrap gap-2 pt-4">
+                <Button
+                  variant={statusFilter === 'all' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setStatusFilter('all')}
+                  className="gap-2"
+                >
+                  {p('rewards.filterButtons.allRequests')}
+                </Button>
+                <Button
+                  variant={statusFilter === 'pending' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setStatusFilter('pending')}
+                  className="gap-2"
+                >
+                  <div className="h-2 w-2 bg-yellow-400 rounded-full"></div>
+                  {p('rewards.filterButtons.waitingForReview')}
+                </Button>
+                <Button
+                  variant={statusFilter === 'approved' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setStatusFilter('approved')}
+                  className="gap-2"
+                >
+                  <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                  {p('rewards.filterButtons.approved')}
+                </Button>
+                <Button
+                  variant={statusFilter === 'rejected' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setStatusFilter('rejected')}
+                  className="gap-2"
+                >
+                  <div className="h-2 w-2 bg-red-500 rounded-full"></div>
+                  {p('rewards.filterButtons.needChanges')}
+                </Button>
+              </div>
+            </CardHeader>
+          </Card>
+
+          {/* Keep existing UI for children */}
+          {isLoading ? (
+            <Card>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-full" />
+                </div>
+              </CardContent>
+            </Card>
+          ) : filteredRedemptions.length === 0 ? (
+            <Card>
+              <CardContent>
+                <EmptyState
+                  icon={<Gift className="h-12 w-12 text-muted-foreground" />}
+                  title={p('rewards.noRequestsChild')}
+                  description={p('rewards.createFirstChild')}
+                  action={
+                    <Button onClick={() => setRequestAgain({})}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      {p('rewards.requestFirst')}
+                    </Button>
+                  }
+                />
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent>
+                <div className="space-y-4">
+                  {filteredRedemptions.map((redemption: any) => (
+                    <div key={redemption.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-3">
                         <Badge variant="secondary">{p(`rewards.types.${redemption.type}` as any)}</Badge>
-                        {redemption.notes && (
-                          <span className="text-xs text-muted-foreground truncate max-w-[200px]">
-                            {redemption.notes}
-                          </span>
-                        )}
+                        <div>
+                          <p className="font-medium">{redemption.notes || 'No notes'}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(redemption.requestedAt).toLocaleString()}
+                          </p>
+                        </div>
                       </div>
-                    </TableCell>
-                    {!isChild && (
-                      <TableCell>
-                        {redemption.requestedBy ? (
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-6 w-6">
-                              <AvatarImage
-                                src={redemption.requestedBy?.avatarUrl}
-                                alt={redemption.requestedBy?.displayName || redemption.requestedBy?.email}
-                              />
-                              <AvatarFallback className="text-xs">
-                                {(redemption.requestedBy?.displayName || redemption.requestedBy?.email || 'U')
-                                  .split(' ')
-                                  .map((n: string) => n[0])
-                                  .join('')
-                                  .toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm">
-                              {redemption.requestedBy?.displayName || redemption.requestedBy?.email || 'Unknown User'}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">Unknown</span>
-                        )}
-                      </TableCell>
-                    )}
-                    <TableCell>
-                      {redemption.amount ? (
-                        <span className="text-sm">{redemption.amount}</span>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge status={redemption.status as any} />
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-muted-foreground">
-                        {new Date(redemption.requestedAt).toLocaleString()}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-center py-2">
-                      <div className="flex items-center justify-center gap-2">
-                        {isReviewer && redemption.status === 'pending' && (
-                          <>
-                            <Button
-                              size="sm"
-                              onClick={() => setReviewing(redemption)}
-                              className="min-w-[80px]"
-                            >
-                              <Eye className="h-3 w-3 mr-1" />
-                              {p('rewards.actions.review')}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => rejectMutation.mutate(redemption.id)}
-                              disabled={rejectMutation.isPending}
-                              className="min-w-[80px]"
-                            >
-                              {p('rewards.actions.reject')}
-                            </Button>
-                          </>
-                        )}
-                        {!isReviewer && redemption.status === 'rejected' && (
+                      <div className="flex items-center gap-2">
+                        <StatusBadge status={redemption.status as any} />
+                        {redemption.status === 'rejected' && (
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => setRequestAgain(redemption)}
-                            className="min-w-[120px]"
                           >
                             <RefreshCcw className="h-3 w-3 mr-1" />
-                            {p('rewards.actions.requestAgain')}
+                            {p('rewards.requestAgain')}
                           </Button>
                         )}
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </>
       )}
+
     </div>
   )
 }

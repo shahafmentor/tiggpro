@@ -150,8 +150,6 @@
       "createFirst": "No reward requests found for the selected filter. Try changing the filter or create a new request!",
       "createFirstChild": "No reward requests found for the selected filter. Try changing the filter or request a new reward!",
       "requestFirst": "Request Reward",
-      "myRequests": "My Requests",
-      "allRequests": "All Requests",
       "noFamilySelectedTitle": "No Family Selected",
       "noFamilySelectedDesc": "Please select a family to view and manage rewards.",
       "tableHeaders": {
@@ -164,8 +162,7 @@
       },
       "actions": {
         "review": "Review",
-        "reject": "Reject",
-        "requestAgain": "Request Again"
+        "reject": "Reject"
       },
       "types": {
         "gaming_time": "Gaming Time",
@@ -181,17 +178,20 @@
         "approved": "Approved",
         "rejected": "Rejected"
       },
-      "filterByStatus": "Filter by Status",
-      "allStatuses": "All Statuses",
-      "pendingOnly": "Pending Only",
-      "approvedOnly": "Approved Only",
-      "rejectedOnly": "Rejected Only",
       "filterButtons": {
         "allRequests": "All my requests",
         "waitingForReview": "Waiting for review",
         "approved": "Approved",
         "needChanges": "Need changes"
-      }
+      },
+      "myRequests": "My Requests",
+      "allRequests": "All Requests",
+      "filterByStatus": "Filter by Status",
+      "allStatuses": "All Statuses",
+      "pendingOnly": "Pending Only",
+      "approvedOnly": "Approved Only",
+      "rejectedOnly": "Rejected Only",
+      "requestAgain": "Request Again"
     },
     "settings": {
       "title": "Settings",
@@ -239,7 +239,35 @@
       "approving": "Approving...",
       "rejecting": "Rejecting...",
       "approveSubmission": "Approve Submission",
-      "rejectSubmission": "Reject Submission"
+      "rejectSubmission": "Reject Submission",
+      "noSubmissions": "No submissions found",
+      "noSubmissionsDesc": "No submissions match your current filter.",
+      "mySubmissions": "My Submissions",
+      "allSubmissions": "All Submissions",
+      "filterByStatus": "Filter by Status",
+      "allStatuses": "All Statuses",
+      "pendingOnly": "Pending Only",
+      "approvedOnly": "Approved Only",
+      "rejectedOnly": "Rejected Only",
+      "filterButtons": {
+        "allSubmissions": "All submissions",
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+        "tableHeaders": {
+          "chore": "Chore",
+          "submittedBy": "Submitted By",
+          "points": "Points",
+          "status": "Status",
+          "submittedAt": "Submitted At",
+          "actions": "Actions"
+        },
+      "actions": {
+        "review": "Review",
+        "reject": "Reject",
+        "requestAgain": "Request Again"
+      }
     },
     "chores": {
       "titleChild": "My Assignments",

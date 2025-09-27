@@ -150,8 +150,6 @@
       "createFirst": "לא נמצאו בקשות פרסים עבור המסנן שנבחר. נסה לשנות את המסנן או ליצור בקשה חדשה!",
       "createFirstChild": "לא נמצאו בקשות פרסים עבור המסנן שנבחר. נסה לשנות את המסנן או לבקש פרס חדש!",
       "requestFirst": "בקש פרס",
-      "myRequests": "הבקשות שלי",
-      "allRequests": "כל הבקשות",
       "noFamilySelectedTitle": "לא נבחרה משפחה",
       "noFamilySelectedDesc": "בחר משפחה כדי לראות ולנהל פרסים.",
       "tableHeaders": {
@@ -164,8 +162,7 @@
       },
       "actions": {
         "review": "בדיקה",
-        "reject": "דחה",
-        "requestAgain": "בקש שוב"
+        "reject": "דחה"
       },
       "types": {
         "gaming_time": "זמן משחק",
@@ -181,17 +178,20 @@
         "approved": "אושר",
         "rejected": "נדחה"
       },
-      "filterByStatus": "סנן לפי סטטוס",
-      "allStatuses": "כל הסטטוסים",
-      "pendingOnly": "רק ממתינים",
-      "approvedOnly": "רק מאושרים",
-      "rejectedOnly": "רק נדחים",
       "filterButtons": {
         "allRequests": "כל הבקשות שלי",
         "waitingForReview": "ממתין לבדיקה",
         "approved": "אושר",
         "needChanges": "דרוש שינויים"
-      }
+      },
+      "myRequests": "הבקשות שלי",
+      "allRequests": "כל הבקשות",
+      "filterByStatus": "סנן לפי סטטוס",
+      "allStatuses": "כל הסטטוסים",
+      "pendingOnly": "רק ממתינים",
+      "approvedOnly": "רק מאושרים",
+      "rejectedOnly": "רק נדחים",
+      "requestAgain": "בקש שוב"
     },
     "settings": {
       "title": "הגדרות",
@@ -239,7 +239,35 @@
       "approving": "מאשר...",
       "rejecting": "דוחה...",
       "approveSubmission": "אשר הגשה",
-      "rejectSubmission": "דחה הגשה"
+      "rejectSubmission": "דחה הגשה",
+      "noSubmissions": "לא נמצאו הגשות",
+      "noSubmissionsDesc": "אין הגשות התואמות למסנן הנוכחי שלך.",
+      "mySubmissions": "ההגשות שלי",
+      "allSubmissions": "כל ההגשות",
+      "filterByStatus": "סנן לפי סטטוס",
+      "allStatuses": "כל הסטטוסים",
+      "pendingOnly": "ממתינות בלבד",
+      "approvedOnly": "מאושרות בלבד",
+      "rejectedOnly": "נדחות בלבד",
+      "filterButtons": {
+        "allSubmissions": "כל ההגשות",
+        "pending": "ממתינות",
+        "approved": "מאושרות",
+        "rejected": "נדחות"
+      },
+        "tableHeaders": {
+          "chore": "משימה",
+          "submittedBy": "הוגש על ידי",
+          "points": "נקודות",
+          "status": "סטטוס",
+          "submittedAt": "הוגש ב",
+          "actions": "פעולות"
+        },
+      "actions": {
+        "review": "סקור",
+        "reject": "דחה",
+        "requestAgain": "בקש שוב"
+      }
     },
     "chores": {
       "titleChild": "המטלות שלי",

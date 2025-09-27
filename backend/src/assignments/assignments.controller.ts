@@ -224,6 +224,7 @@ export class AssignmentsController {
           mediaUrls: submission.mediaUrls,
           submittedAt: submission.submittedAt,
           submittedBy: submission.submittedBy,
+          reviewStatus: submission.reviewStatus,
           assignment: {
             id: submission.assignment.id,
             dueDate: submission.assignment.dueDate,
