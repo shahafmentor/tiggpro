@@ -82,7 +82,11 @@
     "emailInvitationHint": "The person will receive an invitation via email",
     "role": "Role",
     "personalMessage": "Personal Message (Optional)",
-    "noNotes": "No notes"
+    "noNotes": "No notes",
+    "profile": "Profile",
+    "settings": "Settings",
+    "signOut": "Sign out",
+    "user": "User"
   },
   "language": {
     "selectLanguage": "Select Language"
@@ -129,7 +133,12 @@
     "noRewards": "No rewards yet",
     "requestYourFirstReward": "Request your first reward to get started!",
     "viewAllRewards": "View All Rewards ({count})",
-    "myPoints": "My Points"
+    "myPoints": "My Points",
+    "dollars": "dollars",
+    "minutes": "minutes",
+    "pending": "pending",
+    "approved": "approved",
+    "rejected": "rejected"
   }
   ,
   "pages": {

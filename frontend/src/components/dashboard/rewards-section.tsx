@@ -6,13 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { StatusBadge, CountBadge } from '@/components/ui/semantic-badges'
-import { useDashboardTranslations } from '@/hooks/use-translations'
+import { useDashboardTranslations, usePagesTranslations } from '@/hooks/use-translations'
 import { useLocalizedRouter } from '@/hooks/use-localized-router'
+import type { RewardType, RedemptionStatus } from '@tiggpro/shared'
 
 interface Reward {
   id: string
-  type: string
-  status: 'pending' | 'approved' | 'rejected'
+  type: RewardType
+  status: RedemptionStatus
   amount?: number
   notes?: string
   requestedAt?: string
@@ -33,13 +34,11 @@ export function RewardsSection({
 }: RewardsSectionProps) {
   const [showAllRewards, setShowAllRewards] = useState(false)
   const t = useDashboardTranslations()
+  const pagesT = usePagesTranslations()
   const router = useLocalizedRouter()
 
-  const getRewardTypeDisplay = (type: string) => {
-    // Convert snake_case to readable format
-    return type.split('_').map(word =>
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ')
+  const getRewardTypeDisplay = (type: RewardType) => {
+    return pagesT(`rewards.types.${type}`)
   }
 
   const getRewardIcon = (type: string) => {
@@ -122,7 +121,7 @@ export function RewardsSection({
                   </p>
                   {reward.amount && (
                     <p className="text-xs text-muted-foreground">
-                      {reward.amount} {reward.type === 'spending_money' ? 'dollars' : 'minutes'}
+                      {reward.amount} {reward.type === 'spending_money' ? t('dollars') : t('minutes')}
                     </p>
                   )}
                   {reward.notes && (
@@ -132,7 +131,7 @@ export function RewardsSection({
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  <StatusBadge status={reward.status as 'pending' | 'approved' | 'rejected'} />
+                  <StatusBadge status={reward.status} />
                 </div>
               </div>
             ))}

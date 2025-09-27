@@ -82,7 +82,11 @@
     "emailInvitationHint": "האדם יקבל הזמנה באמצעות אימייל",
     "role": "תפקיד",
     "personalMessage": "הודעה אישית (אופציונלי)",
-    "noNotes": "אין הערות"
+    "noNotes": "אין הערות",
+    "profile": "פרופיל",
+    "settings": "הגדרות",
+    "signOut": "התנתק",
+    "user": "משתמש"
   },
   "language": {
     "selectLanguage": "בחר שפה"
@@ -129,7 +133,12 @@
     "noRewards": "אין פרסים עדיין",
     "requestYourFirstReward": "בקש את הפרס הראשון שלך כדי להתחיל!",
     "viewAllRewards": "צפה בכל הפרסים ({count})",
-    "myPoints": "הנקודות שלי"
+    "myPoints": "הנקודות שלי",
+    "dollars": "דולרים",
+    "minutes": "דקות",
+    "pending": "ממתין",
+    "approved": "אושר",
+    "rejected": "נדחה"
   }
   ,
   "pages": {

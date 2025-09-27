@@ -1,13 +1,13 @@
 import { Badge, badgeVariants } from "./badge"
 import { cn } from "@/lib/utils"
 import type { VariantProps } from "class-variance-authority"
-import { TenantMemberRole } from "@tiggpro/shared"
+import { TenantMemberRole, AssignmentStatus, Priority, RedemptionStatus } from "@tiggpro/shared"
 import { useRolesTranslations, useChoresTranslations } from "@/hooks/use-translations"
 
 // Status Badge - for assignment/chore statuses
 interface StatusBadgeProps extends React.ComponentProps<"span">,
   Omit<VariantProps<typeof badgeVariants>, 'variant'> {
-  status: 'pending' | 'submitted' | 'approved' | 'completed' | 'rejected' | 'overdue'
+  status: AssignmentStatus | RedemptionStatus | 'completed' | 'overdue'
   asChild?: boolean
 }
 
@@ -107,21 +107,27 @@ export function PointsBadge({ points, showPlus = true, className, asChild, ...pr
 // Priority Badge - for displaying task priorities
 interface PriorityBadgeProps extends React.ComponentProps<"span">,
   Omit<VariantProps<typeof badgeVariants>, 'variant'> {
-  priority: 'low' | 'medium' | 'high'
+  priority: Priority
   asChild?: boolean
 }
 
 export function PriorityBadge({ priority, className, asChild, ...props }: PriorityBadgeProps) {
+  const choresT = useChoresTranslations()
+
   const getPriorityVariant = (priority: PriorityBadgeProps['priority']) => {
     switch (priority) {
-      case 'high':
+      case Priority.HIGH:
         return 'error'
-      case 'medium':
+      case Priority.MEDIUM:
         return 'warning'
-      case 'low':
+      case Priority.LOW:
       default:
         return 'secondary'
     }
+  }
+
+  const getPriorityText = (priority: Priority) => {
+    return choresT(`priority${priority.charAt(0).toUpperCase() + priority.slice(1)}`)
   }
 
   return (
@@ -131,7 +137,7 @@ export function PriorityBadge({ priority, className, asChild, ...props }: Priori
       asChild={asChild}
       {...props}
     >
-      {priority.charAt(0).toUpperCase() + priority.slice(1)}
+      {getPriorityText(priority)}
     </Badge>
   )
 }

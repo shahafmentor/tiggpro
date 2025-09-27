@@ -69,7 +69,7 @@ export function RewardsStatus({
                                     <div className="text-2xl font-bold text-yellow-600">
                                         {statusCounts.pending}
                                     </div>
-                                    <div className="text-sm text-muted-foreground">Pending</div>
+                                    <div className="text-sm text-muted-foreground">{t('pending')}</div>
                                 </div>
                             )}
                             {statusCounts.approved > 0 && (
@@ -77,7 +77,7 @@ export function RewardsStatus({
                                     <div className="text-2xl font-bold text-green-600">
                                         {statusCounts.approved}
                                     </div>
-                                    <div className="text-sm text-muted-foreground">Approved</div>
+                                    <div className="text-sm text-muted-foreground">{t('approved')}</div>
                                 </div>
                             )}
                             {statusCounts.rejected > 0 && (
@@ -85,7 +85,7 @@ export function RewardsStatus({
                                     <div className="text-2xl font-bold text-red-600">
                                         {statusCounts.rejected}
                                     </div>
-                                    <div className="text-sm text-muted-foreground">Rejected</div>
+                                    <div className="text-sm text-muted-foreground">{t('rejected')}</div>
                                 </div>
                             )}
                         </div>

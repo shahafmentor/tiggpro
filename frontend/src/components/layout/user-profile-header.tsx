@@ -14,10 +14,12 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { signOut } from 'next-auth/react'
 import { useLocalizedRouter } from '@/hooks/use-localized-router'
+import { useCommonTranslations } from '@/hooks/use-translations'
 
 export function UserProfileHeader() {
   const { data: session } = useSession()
   const router = useLocalizedRouter()
+  const t = useCommonTranslations()
 
   if (!session?.user) {
     return null
@@ -41,7 +43,7 @@ export function UserProfileHeader() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="w-full justify-start gap-3 h-auto p-2 rtl:justify-start">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={user.image || undefined} alt={user.name || 'User'} />
+            <AvatarImage src={user.image || undefined} alt={user.name || t('user')} />
             <AvatarFallback className="bg-primary text-primary-foreground">
               {initials}
             </AvatarFallback>
@@ -71,16 +73,16 @@ export function UserProfileHeader() {
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>
           <User className="mr-2 h-4 w-4 rtl:mr-0 rtl:ml-2" />
-          <span>Profile</span>
+          <span>{t('profile')}</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>
           <Settings className="mr-2 h-4 w-4 rtl:mr-0 rtl:ml-2" />
-          <span>Settings</span>
+          <span>{t('settings')}</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
           <LogOut className="mr-2 h-4 w-4 rtl:mr-0 rtl:ml-2" />
-          <span>Sign out</span>
+          <span>{t('signOut')}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
