@@ -55,7 +55,7 @@ export function RoleChangeDialog({
 
     const updateRoleMutation = useMutation({
         mutationFn: (data: RoleChangeForm) =>
-            tenantsApi.updateMemberRole(tenantId, member.userId, data),
+            tenantsApi.updateMemberRole(tenantId, member.userId, { role: data.role as TenantMemberRole }),
         onSuccess: (response) => {
             if (response.success) {
                 toast.success('Member role updated successfully!')
