@@ -138,7 +138,9 @@
     "minutes": "דקות",
     "pending": "ממתין",
     "approved": "אושר",
-    "rejected": "נדחה"
+    "rejected": "נדחה",
+    "available": "זמין",
+    "totalEarned": " שסך נקודות שהזכית"
   }
   ,
   "pages": {
@@ -172,7 +174,8 @@
       },
       "actions": {
         "review": "בדיקה",
-        "reject": "דחה"
+        "reject": "דחה",
+        "approve": "אשר"
       },
       "types": {
         "gaming_time": "זמן משחק",
@@ -201,7 +204,15 @@
       "pendingOnly": "רק ממתינים",
       "approvedOnly": "רק מאושרים",
       "rejectedOnly": "רק נדחים",
-      "requestAgain": "בקש שוב"
+      "requestAgain": "בקש שוב",
+      "toasts": {
+        "rewardRequested": "בקשת פרס נשלחה בהצלחה!",
+        "rewardRejected": "בקשת פרס נדחתה בהצלחה!",
+        "rewardApproved": "בקשת פרס אושרה בהצלחה!",
+        "rewardRequestFailed": "נכשל בבקשת פרס",
+        "rewardRejectFailed": "נכשל בדחיית בקשת פרס",
+        "rewardApproveFailed": "נכשל באישור בקשת פרס"
+      }
     },
     "settings": {
       "title": "הגדרות",

@@ -138,7 +138,9 @@
     "minutes": "minutes",
     "pending": "pending",
     "approved": "approved",
-    "rejected": "rejected"
+    "rejected": "rejected",
+    "available": "available",
+    "totalEarned": "Total Earned"
   }
   ,
   "pages": {
@@ -172,7 +174,8 @@
       },
       "actions": {
         "review": "Review",
-        "reject": "Reject"
+        "reject": "Reject",
+        "approve": "Approve"
       },
       "types": {
         "gaming_time": "Gaming Time",
@@ -201,7 +204,15 @@
       "pendingOnly": "Pending Only",
       "approvedOnly": "Approved Only",
       "rejectedOnly": "Rejected Only",
-      "requestAgain": "Request Again"
+      "requestAgain": "Request Again",
+      "toasts": {
+        "rewardRequested": "Reward requested successfully!",
+        "rewardRejected": "Reward rejected successfully!",
+        "rewardApproved": "Reward approved successfully!",
+        "rewardRequestFailed": "Failed to request reward",
+        "rewardRejectFailed": "Failed to reject reward request",
+        "rewardApproveFailed": "Failed to approve reward"
+      }
     },
     "settings": {
       "title": "Settings",

@@ -39,7 +39,7 @@ export function Providers({ children, dictionary, locale }: ProvidersProps) {
           <ThemeProvider>
             <TenantProvider>
               {children}
-              <Toaster position="top-right" />
+              <Toaster position="top-center" />
               <ReactQueryDevtools initialIsOpen={false} />
             </TenantProvider>
           </ThemeProvider>

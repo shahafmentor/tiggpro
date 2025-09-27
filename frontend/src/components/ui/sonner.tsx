@@ -10,13 +10,26 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
-      style={
-        {
-          "--normal-bg": "var(--popover)",
-          "--normal-text": "var(--popover-foreground)",
-          "--normal-border": "var(--border)",
-        } as React.CSSProperties
-      }
+      expand={true}
+      richColors={true}
+      closeButton={true}
+      style={{
+        "--normal-bg": "hsl(var(--card))",
+        "--normal-border": "hsl(var(--border))",
+        "--normal-text": "hsl(var(--card-foreground))",
+        "--success-bg": "hsl(var(--chore-completed))",
+        "--success-border": "hsl(var(--chore-completed))",
+        "--success-text": "hsl(var(--primary-foreground))",
+        "--error-bg": "hsl(var(--destructive))",
+        "--error-border": "hsl(var(--destructive))",
+        "--error-text": "hsl(var(--destructive-foreground))",
+        "--warning-bg": "hsl(var(--chore-pending))",
+        "--warning-border": "hsl(var(--chore-pending))",
+        "--warning-text": "hsl(var(--primary-foreground))",
+        "--info-bg": "hsl(var(--primary))",
+        "--info-border": "hsl(var(--primary))",
+        "--info-text": "hsl(var(--primary-foreground))",
+      } as React.CSSProperties}
       {...props}
     />
   )

@@ -13,7 +13,6 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { SubmitAssignmentModal } from '@/components/chores/submit-assignment-modal'
 import { RewardsStatus } from '@/components/dashboard/rewards-status'
@@ -27,7 +26,6 @@ import { assignmentsApi, type Assignment, type Submission } from '@/lib/api/assi
 import { TenantMemberRole } from '@tiggpro/shared'
 import { useLocalizedRouter } from '@/hooks/use-localized-router'
 import { useDashboardTranslations } from '@/hooks/use-translations'
-// import type { LeaderboardEntry } from '@/lib/api/gamification'
 
 export default function DashboardPage() {
   const { data: session } = useSession()
@@ -181,13 +179,13 @@ export default function DashboardPage() {
                 <div className="text-2xl font-bold text-blue-600">
                   {(userStatsResponse as any).data?.availablePoints || 0}
                 </div>
-                <div className="text-sm text-muted-foreground">Available</div>
+                <div className="text-sm text-muted-foreground">{t('available')}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600">
                   {(userStatsResponse as any).data?.totalPoints || 0}
                 </div>
-                <div className="text-sm text-muted-foreground">Total Earned</div>
+                <div className="text-sm text-muted-foreground">{t('totalEarned')}</div>
               </div>
             </div>
           </CardContent>

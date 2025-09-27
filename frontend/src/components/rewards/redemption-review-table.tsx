@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowUpDown, ArrowUp, ArrowDown, Eye, RefreshCcw, Filter } from 'lucide-react'
+import { ArrowUpDown, ArrowUp, ArrowDown, Eye, RefreshCcw, Filter, X, Check } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -35,6 +35,7 @@ interface RedemptionReviewTableProps {
     isChild?: boolean
     onReview?: (redemption: Redemption) => void
     onReject?: (redemption: Redemption) => void
+    onApprove?: (redemption: Redemption) => void
     onRequestAgain?: (redemption: Redemption) => void
     emptyStateIcon?: React.ReactNode
     emptyStateTitle?: string
@@ -48,6 +49,7 @@ export function RedemptionReviewTable({
     isChild = false,
     onReview,
     onReject,
+    onApprove,
     onRequestAgain,
     emptyStateIcon,
     emptyStateTitle,
@@ -347,14 +349,26 @@ export function RedemptionReviewTable({
                                                     {onReject && (
                                                         <Button
                                                             size="sm"
-                                                            variant="outline"
+                                                            variant="destructive"
                                                             onClick={() => onReject(redemption)}
                                                             className="min-w-[80px]"
                                                         >
                                                             {p('rewards.actions.reject')}
+                                                            <X className="h-3 w-3 ml-1" />
                                                         </Button>
                                                     )}
                                                 </>
+                                            )}
+                                            {!isChild && redemption.status === 'pending' && onApprove && (
+                                                <Button
+                                                    size="sm"
+                                                    variant="success"
+                                                    onClick={() => onApprove(redemption)}
+                                                    className="min-w-[80px]"
+                                                >
+                                                    {p('rewards.actions.approve')}
+                                                    <Check className="h-3 w-3 ml-1" />
+                                                </Button>
                                             )}
                                             {isChild && redemption.status === 'rejected' && onRequestAgain && (
                                                 <Button

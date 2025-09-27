@@ -54,7 +54,13 @@ export default function RewardsPage() {
       if (!tenantId) throw new Error('No tenant')
       return rewardsApi.approveRedemption(tenantId, id)
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['rewards-redemptions', tenantId] })
+    onSuccess: () => {
+      toast.success(p('rewards.toasts.rewardApproved'))
+      queryClient.invalidateQueries({ queryKey: ['rewards-redemptions', tenantId] })
+    },
+    onError: () => {
+      toast.error(p('rewards.toasts.rewardApproveFailed'))
+    }
   })
 
   const rejectMutation = useMutation({
@@ -63,11 +69,11 @@ export default function RewardsPage() {
       return rewardsApi.rejectRedemption(tenantId, id)
     },
     onSuccess: () => {
-      toast.success('Reward request rejected successfully!')
+      toast.success(p('rewards.toasts.rewardRejected'))
       queryClient.invalidateQueries({ queryKey: ['rewards-redemptions', tenantId] })
     },
     onError: () => {
-      toast.error('Failed to reject reward request')
+      toast.error(p('rewards.toasts.rewardRejectFailed'))
     }
   })
 
@@ -160,13 +166,13 @@ export default function RewardsPage() {
                 <div className="text-2xl font-bold text-blue-600">
                   {(userStatsResponse as any).data?.availablePoints || 0}
                 </div>
-                <div className="text-sm text-muted-foreground">Available</div>
+                <div className="text-sm text-muted-foreground">{t('available')}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600">
                   {(userStatsResponse as any).data?.totalPoints || 0}
                 </div>
-                <div className="text-sm text-muted-foreground">Total Earned</div>
+                <div className="text-sm text-muted-foreground">{t('totalEarned')}</div>
               </div>
             </div>
           </CardContent>
@@ -181,6 +187,7 @@ export default function RewardsPage() {
           isChild={isChild}
           onReview={(redemption) => setReviewing(redemption)}
           onReject={(redemption) => rejectMutation.mutate(redemption.id)}
+          onApprove={(redemption) => approveMutation.mutate(redemption.id)}
           onRequestAgain={(redemption) => setRequestAgain(redemption)}
           emptyStateIcon={<Gift className="h-12 w-12 text-muted-foreground" />}
           emptyStateTitle={isChild ? p('rewards.noRequestsChild') : p('rewards.noRequests')}
