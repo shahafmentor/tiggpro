@@ -87,7 +87,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               </div>
               <span className="font-bold text-xl text-foreground">{brandT('productName')}</span>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <LanguageSelector variant="compact" />
+            </div>
           </div>
 
           {/* User Profile */}
@@ -120,9 +123,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
           )}
 
-          <div className="px-4 pb-4 border-t border-border pt-4 space-y-2">
-            <LanguageSelector className="w-full" />
-          </div>
         </div>
       </div>
 
@@ -162,6 +162,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             "flex items-center gap-2"
           )}>
             <TenantSelector />
+            <ThemeToggle variant="compact" />
             <LanguageSelector variant="compact" />
           </div>
         </div>
