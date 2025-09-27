@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/ui/semantic-badges'
 import { TenantMemberRole } from '@tiggpro/shared'
-import { usePagesTranslations, useDashboardTranslations } from '@/hooks/use-translations'
+import { usePagesTranslations, useDashboardTranslations, useCommonTranslations } from '@/hooks/use-translations'
 import { Gift, Plus, ArrowUpDown, ArrowUp, ArrowDown, Eye, RefreshCcw, Filter } from 'lucide-react'
 import { RewardReviewModal } from '@/components/rewards/reward-review-modal'
 import { RewardRedemptionModal } from '@/components/gamification/reward-redemption-modal'
@@ -31,6 +31,7 @@ export default function RewardsPage() {
   const isChild = currentTenant?.role === TenantMemberRole.CHILD
   const p = usePagesTranslations()
   const t = useDashboardTranslations()
+  const c = useCommonTranslations()
   const { data: session } = useSession()
   const router = useLocalizedRouter()
 
@@ -273,7 +274,7 @@ export default function RewardsPage() {
                       <div className="flex items-center gap-3">
                         <Badge variant="secondary">{p(`rewards.types.${redemption.type}` as any)}</Badge>
                         <div>
-                          <p className="font-medium">{redemption.notes || 'No notes'}</p>
+                          <p className="font-medium">{redemption.notes || c('noNotes')}</p>
                           <p className="text-sm text-muted-foreground">
                             {new Date(redemption.requestedAt).toLocaleString()}
                           </p>

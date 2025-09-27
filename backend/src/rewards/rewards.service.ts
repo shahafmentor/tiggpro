@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RewardRedemption, UserPoints } from '@/entities';
-import { TenantMemberRole, type ApiResponse, RewardType } from '@tiggpro/shared';
+import { TenantMemberRole, type ApiResponse, RewardType, RedemptionStatus } from '@tiggpro/shared';
 import { TenantsService } from '@/tenants/tenants.service';
 import { RewardSettingsService } from './settings.service';
 
@@ -115,7 +115,7 @@ export class RewardsService {
     userPoints.spentPoints += pointCost;
 
     // Update redemption status
-    redemption.status = 'approved' as any;
+    redemption.status = RedemptionStatus.APPROVED;
     redemption.decidedBy = reviewerId;
     redemption.decidedAt = new Date();
 
@@ -144,7 +144,7 @@ export class RewardsService {
     const redemption = await this.redemptionRepo.findOne({ where: { id: redemptionId, tenantId } });
     if (!redemption) throw new NotFoundException('Redemption not found');
 
-    redemption.status = 'rejected' as any;
+    redemption.status = RedemptionStatus.REJECTED;
     redemption.decidedBy = reviewerId;
     redemption.decidedAt = new Date();
     // Optionally store rejection reason in notes (append)

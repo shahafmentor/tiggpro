@@ -4,21 +4,13 @@ import { Gift, AlertCircle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { StatusBadge, CountBadge } from '@/components/ui/semantic-badges'
+import { CountBadge } from '@/components/ui/semantic-badges'
 import { useDashboardTranslations } from '@/hooks/use-translations'
 import { useLocalizedRouter } from '@/hooks/use-localized-router'
-
-interface Reward {
-    id: string
-    type: string
-    status: 'pending' | 'approved' | 'rejected'
-    amount?: number
-    notes?: string
-    requestedAt?: string
-}
+import { RewardRedemption, RedemptionStatus } from '@tiggpro/shared'
 
 interface RewardsStatusProps {
-    rewards: Reward[]
+    rewards: RewardRedemption[]
     isLoading?: boolean
     error?: string | null
 }
@@ -33,9 +25,9 @@ export function RewardsStatus({
 
     // Calculate status counts
     const statusCounts = {
-        pending: rewards.filter(r => r.status === 'pending').length,
-        approved: rewards.filter(r => r.status === 'approved').length,
-        rejected: rewards.filter(r => r.status === 'rejected').length,
+        pending: rewards.filter(r => r.status === RedemptionStatus.PENDING).length,
+        approved: rewards.filter(r => r.status === RedemptionStatus.APPROVED).length,
+        rejected: rewards.filter(r => r.status === RedemptionStatus.REJECTED).length,
     }
 
     const totalRewards = rewards.length
@@ -74,7 +66,7 @@ export function RewardsStatus({
                         <div className="grid grid-cols-3 gap-4">
                             {statusCounts.pending > 0 && (
                                 <div className="text-center">
-                                    <div className="text-2xl font-bold text-orange-600">
+                                    <div className="text-2xl font-bold text-yellow-600">
                                         {statusCounts.pending}
                                     </div>
                                     <div className="text-sm text-muted-foreground">Pending</div>

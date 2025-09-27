@@ -81,7 +81,8 @@
     "emailAddress": "Email Address",
     "emailInvitationHint": "The person will receive an invitation via email",
     "role": "Role",
-    "personalMessage": "Personal Message (Optional)"
+    "personalMessage": "Personal Message (Optional)",
+    "noNotes": "No notes"
   },
   "language": {
     "selectLanguage": "Select Language"

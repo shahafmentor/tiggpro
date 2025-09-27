@@ -51,14 +51,14 @@ export default function DashboardPage() {
     enabled: !!currentTenant && !!session,
   })
 
-  // My Rewards (recent)
+  // My Rewards (all redemptions for the user)
   const { data: myRewardsResponse } = useRewardsQuery({
     queryKey: ['rewards-redemptions', currentTenant?.tenant?.id],
     queryFn: () => currentTenant ? rewardsApi.listRedemptions(currentTenant.tenant.id) : Promise.resolve({ success: false } as any),
     enabled: !!currentTenant && !!session,
     refetchInterval: 30000,
   })
-  const myRewards = (myRewardsResponse?.success ? myRewardsResponse.data : [])?.slice(0, 3) || []
+  const myRewards = (myRewardsResponse?.success ? myRewardsResponse.data : []) || []
   const router = useLocalizedRouter()
   const t = useDashboardTranslations()
 

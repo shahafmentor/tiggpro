@@ -81,7 +81,8 @@
     "emailAddress": "כתובת אימייל",
     "emailInvitationHint": "האדם יקבל הזמנה באמצעות אימייל",
     "role": "תפקיד",
-    "personalMessage": "הודעה אישית (אופציונלי)"
+    "personalMessage": "הודעה אישית (אופציונלי)",
+    "noNotes": "אין הערות"
   },
   "language": {
     "selectLanguage": "בחר שפה"
