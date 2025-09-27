@@ -191,7 +191,6 @@ export default function ChoresPage() {
     }
   }
 
-  // MVP: Simplified filtering - just show all chores for the user
   const filteredChores = displayChores
 
   return (

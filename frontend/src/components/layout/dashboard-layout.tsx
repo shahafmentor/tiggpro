@@ -2,7 +2,6 @@
 
 import { ReactNode } from 'react'
 import { useSession } from 'next-auth/react'
-import { usePathname } from 'next/navigation'
 import {
   Plus
 } from 'lucide-react'
@@ -19,7 +18,6 @@ import { useTenant } from '@/lib/contexts/tenant-context'
 import { TenantMemberRole } from '@tiggpro/shared'
 import { useChoresTranslations, useBrandTranslations } from '@/hooks/use-translations'
 import { useLocalizedRouter } from '@/hooks/use-localized-router'
-import { useLocale } from '@/hooks/use-locale'
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -29,9 +27,7 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { data: session, status } = useSession()
   const router = useLocalizedRouter()
-  const pathname = usePathname()
   const { currentTenant } = useTenant()
-  const { direction } = useLocale()
   const choresT = useChoresTranslations()
   const brandT = useBrandTranslations()
 
@@ -153,8 +149,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           )}>
             <TenantSelector />
             <LanguageSelector variant="compact" />
-            {/* MVP: Comment out theme switcher - not essential for core flow */}
-            {/* <ThemeSwitcher /> */}
           </div>
         </div>
       </div>
