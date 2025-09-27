@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { customAlphabet } from 'nanoid';
 import { Tenant, TenantMember, User } from '@/entities';
-import { CreateTenantDto, InviteMemberDto, JoinTenantDto } from './dto';
+import { CreateTenantDto, InviteMemberDto, JoinTenantDto, UpdateMemberRoleDto } from './dto';
 import { TenantMemberRole } from '@tiggpro/shared';
 
 @Injectable()
@@ -175,6 +175,30 @@ export class TenantsService {
     // Soft delete by setting isActive to false
     membership.isActive = false;
     await this.tenantMemberRepository.save(membership);
+  }
+
+  async updateMemberRole(
+    tenantId: string,
+    userId: string,
+    updateMemberRoleDto: UpdateMemberRoleDto,
+  ): Promise<TenantMember> {
+    // Verify tenant exists
+    await this.getTenantById(tenantId);
+
+    // Find the membership
+    const membership = await this.tenantMemberRepository.findOne({
+      where: { tenantId, userId, isActive: true },
+    });
+
+    if (!membership) {
+      throw new NotFoundException('Membership not found');
+    }
+
+    // Update the role
+    membership.role = updateMemberRoleDto.role;
+    const updatedMembership = await this.tenantMemberRepository.save(membership);
+
+    return updatedMembership;
   }
 
   private async generateUniqueTenantCode(): Promise<string> {

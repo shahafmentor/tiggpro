@@ -99,7 +99,7 @@ export default function FamilyPage() {
     },
   })
 
-  const tenants = tenantsResponse?.success ? tenantsResponse.data ?? []: []
+  const tenants = tenantsResponse?.success ? tenantsResponse.data ?? [] : []
   const members = membersResponse?.success ? membersResponse.data ?? [] : []
 
   const handleCopyTenantCode = async (code: string) => {
@@ -138,7 +138,7 @@ export default function FamilyPage() {
 
   const isAdmin = selectedTenant?.role === TenantMemberRole.ADMIN
   const canManageMembers = selectedTenant?.role === TenantMemberRole.ADMIN ||
-                           selectedTenant?.role === TenantMemberRole.PARENT
+    selectedTenant?.role === TenantMemberRole.PARENT
 
   return (
     <div className="space-y-6">
@@ -192,10 +192,10 @@ export default function FamilyPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Family List */}
         <Card className="lg:col-span-1">
-              <CardHeader>
+          <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-                  {p('family.myFamilies')}
+              {p('family.myFamilies')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -299,7 +299,7 @@ export default function FamilyPage() {
 
               {/* Members List */}
               <Card>
-                  <CardHeader>
+                <CardHeader>
                   <CardTitle>{p('family.familyMembers')}</CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -328,6 +328,7 @@ export default function FamilyPage() {
                           key={member.id}
                           member={member}
                           isAdmin={isAdmin}
+                          tenantId={selectedTenant.tenant.id}
                           actions={isAdmin && member.role !== TenantMemberRole.ADMIN ? (
                             <AlertDialog>
                               <AlertDialogTrigger asChild>

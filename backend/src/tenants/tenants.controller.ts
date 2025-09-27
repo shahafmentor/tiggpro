@@ -9,6 +9,7 @@ import {
   HttpCode,
   HttpStatus,
   Delete,
+  Patch,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -18,7 +19,7 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { TenantsService } from './tenants.service';
-import { CreateTenantDto, InviteMemberDto, JoinTenantDto } from './dto';
+import { CreateTenantDto, InviteMemberDto, JoinTenantDto, UpdateMemberRoleDto } from './dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { TenantMembershipGuard } from '@/auth/guards/tenant-membership.guard';
 import { RolesGuard } from '@/auth/guards/roles.guard';
@@ -202,6 +203,47 @@ export class TenantsController {
         success: false,
         error:
           error instanceof Error ? error.message : 'Failed to remove member',
+      };
+    }
+  }
+
+  @Patch(':tenantId/members/:userId/role')
+  @UseGuards(TenantMembershipGuard, RolesGuard)
+  @Roles(TenantMemberRole.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update member role' })
+  @ApiParam({ name: 'tenantId', description: 'Tenant ID' })
+  @ApiParam({ name: 'userId', description: 'User ID to update role for' })
+  @ApiDoc({ status: 200, description: 'Member role updated successfully' })
+  @ApiDoc({ status: 403, description: 'Forbidden - only admins can update roles' })
+  @ApiDoc({ status: 404, description: 'Member not found' })
+  async updateMemberRole(
+    @Param('tenantId') tenantId: string,
+    @Param('userId') userId: string,
+    @Body() updateMemberRoleDto: UpdateMemberRoleDto,
+  ): Promise<ApiResponse> {
+    try {
+      const updatedMembership = await this.tenantsService.updateMemberRole(
+        tenantId,
+        userId,
+        updateMemberRoleDto,
+      );
+
+      return {
+        success: true,
+        data: {
+          id: updatedMembership.id,
+          userId: updatedMembership.userId,
+          role: updatedMembership.role,
+          joinedAt: updatedMembership.joinedAt,
+        },
+        message: 'Member role updated successfully',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : 'Failed to update member role',
       };
     }
   }

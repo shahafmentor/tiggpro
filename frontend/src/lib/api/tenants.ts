@@ -20,6 +20,10 @@ interface InviteMemberRequest {
   message?: string
 }
 
+interface UpdateMemberRoleRequest {
+  role: TenantMemberRole
+}
+
 interface TenantMember {
   id: string
   userId: string
@@ -78,6 +82,11 @@ export const tenantsApi = {
     return api.delete(`/tenants/${tenantId}/members/${userId}`)
   },
 
+  // Update member role (only by admin)
+  async updateMemberRole(tenantId: string, userId: string, request: UpdateMemberRoleRequest): Promise<ApiResponse> {
+    return api.patch(`/tenants/${tenantId}/members/${userId}/role`, request)
+  },
+
   // Delete a tenant (only by admin)
   async deleteTenant(tenantId: string): Promise<ApiResponse> {
     return api.delete(`/tenants/${tenantId}/delete`)
@@ -88,6 +97,7 @@ export type {
   CreateTenantRequest,
   JoinTenantRequest,
   InviteMemberRequest,
+  UpdateMemberRoleRequest,
   TenantMember,
   UserTenant,
   ApiResponse
@@ -98,6 +108,13 @@ export const useRemoveMember = () => {
   return useMutation({
     mutationFn: ({ tenantId, userId }: { tenantId: string; userId: string }) =>
       tenantsApi.removeMember(tenantId, userId),
+  })
+}
+
+export const useUpdateMemberRole = () => {
+  return useMutation({
+    mutationFn: ({ tenantId, userId, role }: { tenantId: string; userId: string; role: TenantMemberRole }) =>
+      tenantsApi.updateMemberRole(tenantId, userId, { role }),
   })
 }
 

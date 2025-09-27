@@ -132,6 +132,17 @@ export const api = {
   },
 
   /**
+   * Make a PATCH request
+   */
+  patch<T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<ApiResponse<T>> {
+    return makeAuthenticatedRequest<T>(endpoint, {
+      ...options,
+      method: 'PATCH',
+      body: data ? JSON.stringify(data) : undefined,
+    })
+  },
+
+  /**
    * Make a DELETE request
    */
   delete<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
