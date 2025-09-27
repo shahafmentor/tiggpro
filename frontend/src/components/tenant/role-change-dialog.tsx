@@ -22,7 +22,7 @@ import { useRolesTranslations } from '@/hooks/use-translations'
 import { toast } from 'sonner'
 
 const roleChangeSchema = z.object({
-    role: z.nativeEnum(TenantMemberRole),
+    role: z.enum(Object.values(TenantMemberRole) as [string, ...string[]]),
 })
 
 type RoleChangeForm = z.infer<typeof roleChangeSchema>
