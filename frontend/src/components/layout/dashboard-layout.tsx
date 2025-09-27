@@ -14,6 +14,7 @@ import { LanguageSelector } from '@/components/ui/language-selector'
 import { DashboardNavigation } from '@/components/layout/dashboard-navigation'
 import { useQuery } from '@tanstack/react-query'
 import { assignmentsApi } from '@/lib/api/assignments'
+import { rewardsApi } from '@/lib/api/rewards'
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { TenantMemberRole } from '@tiggpro/shared'
 import { useChoresTranslations, useBrandTranslations } from '@/hooks/use-translations'
@@ -45,6 +46,17 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const pendingCount = pendingSubmissionsResponse?.success ?
     (pendingSubmissionsResponse.data || []).length : 0
+
+  // Fetch pending redemptions count for rewards badge
+  const { data: pendingRedemptionsResponse } = useQuery({
+    queryKey: ['pending-redemptions-count', currentTenant?.tenant.id],
+    queryFn: () => currentTenant ? rewardsApi.getPendingRedemptions(currentTenant.tenant.id) : null,
+    enabled: !!currentTenant && !!session && canReview,
+    refetchInterval: 30000, // Refetch every 30 seconds
+  })
+
+  const pendingRewardsCount = pendingRedemptionsResponse?.success ?
+    (pendingRedemptionsResponse.data || []).length : 0
 
   if (status === 'loading') {
     return (
@@ -91,6 +103,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <DashboardNavigation
             userRole={userRole}
             pendingCount={pendingCount}
+            pendingRewardsCount={pendingRewardsCount}
           />
 
           {/* Quick Actions */}
@@ -119,6 +132,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <DashboardNavigation
             userRole={userRole}
             pendingCount={pendingCount}
+            pendingRewardsCount={pendingRewardsCount}
             isMobile={true}
           />
           {userRole !== TenantMemberRole.CHILD && (

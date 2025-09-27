@@ -8,7 +8,8 @@ import {
   AlertCircle,
   Eye,
   Filter,
-  CheckSquare
+  CheckSquare,
+  Gift
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -23,7 +24,7 @@ import { useQuery } from '@tanstack/react-query'
 import { ChoreDetailModal } from '@/components/chores/chore-detail-modal'
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { assignmentsApi, type Assignment, type Submission } from '@/lib/api/assignments'
-import { TenantMemberRole } from '@tiggpro/shared'
+import { TenantMemberRole, type RewardRedemption } from '@tiggpro/shared'
 import { useLocalizedRouter } from '@/hooks/use-localized-router'
 import { useDashboardTranslations } from '@/hooks/use-translations'
 
@@ -105,6 +106,17 @@ export default function DashboardPage() {
   const pendingSubmissions: Submission[] = pendingSubmissionsResponse?.success ?
     (pendingSubmissionsResponse.data || []) : []
 
+  // Fetch pending redemptions for review (only for parents/admins)
+  const { data: pendingRedemptionsResponse } = useQuery({
+    queryKey: ['pending-redemptions-dashboard', currentTenant?.tenant.id],
+    queryFn: () => currentTenant ? rewardsApi.getPendingRedemptions(currentTenant.tenant.id) : null,
+    enabled: !!currentTenant && !!session && canReview,
+    refetchInterval: 30000, // Refetch every 30 seconds
+  })
+
+  const pendingRedemptions: RewardRedemption[] = pendingRedemptionsResponse?.success ?
+    (pendingRedemptionsResponse.data || []) : []
+
   // Calculate assignment stats (use all assignments for stats)
   const assignmentStats = {
     total: allAssignments.length,
@@ -156,6 +168,37 @@ export default function DashboardPage() {
                 >
                   <Eye className="h-4 w-4 mr-2" />
                   {t('reviewSubmissions')}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Pending Rewards Section - Only for Parents/Admins */}
+      {canReview && pendingRedemptions.length > 0 && (
+        <Card className="border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-purple-800 dark:text-purple-200">
+              <Gift className="h-5 w-5" />
+              {t('pendingRewards')}
+              <Badge variant="destructive" className="ml-auto">
+                {pendingRedemptions.length}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <p className="text-sm text-purple-700 dark:text-purple-300">
+                {t('youHaveRewards').replace('{count}', String(pendingRedemptions.length))}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => router.push('/dashboard/rewards')}
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  {t('reviewRewards')}
                 </Button>
               </div>
             </div>

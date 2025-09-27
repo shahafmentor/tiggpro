@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RewardRedemption, UserPoints } from '@/entities';
@@ -81,6 +81,27 @@ export class RewardsService {
       order: { requestedAt: 'DESC' }
     });
     return { success: true, data: list };
+  }
+
+  async getPendingRedemptions(tenantId: string, userId: string): Promise<ApiResponse> {
+    // Only parents/admins can see pending redemptions
+    const membership = await this.tenantsService.getMembership(tenantId, userId);
+    const isReviewer = [TenantMemberRole.ADMIN, TenantMemberRole.PARENT].includes(membership.role);
+
+    if (!isReviewer) {
+      throw new ForbiddenException('Only parents and admins can view pending redemptions');
+    }
+
+    const pendingRedemptions = await this.redemptionRepo.find({
+      where: {
+        tenantId,
+        status: RedemptionStatus.PENDING
+      },
+      relations: ['user'], // Include user data to display requester information
+      order: { requestedAt: 'DESC' }
+    });
+
+    return { success: true, data: pendingRedemptions };
   }
 
   async approveRedemption(

@@ -37,6 +37,15 @@ export class RewardsController {
     return this.rewardsService.listRedemptions(tenantId, req.user.id);
   }
 
+  @Get('redemptions/pending')
+  @ApiOperation({ summary: 'Get pending reward redemptions for review' })
+  async getPendingRedemptions(
+    @Param('tenantId') tenantId: string,
+    @Request() req: { user: { id: string } },
+  ): Promise<ApiResponse> {
+    return this.rewardsService.getPendingRedemptions(tenantId, req.user.id);
+  }
+
   @Put('redemptions/:id/approve')
   @ApiOperation({ summary: 'Approve a reward redemption' })
   async approveRedemption(

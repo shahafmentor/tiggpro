@@ -5,7 +5,8 @@ import {
   Home,
   CheckSquare,
   Users,
-  Eye
+  Eye,
+  Gift
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -26,10 +27,11 @@ interface NavItem {
 interface DashboardNavigationProps {
   userRole: string
   pendingCount?: number
+  pendingRewardsCount?: number
   isMobile?: boolean
 }
 
-export function DashboardNavigation({ userRole, pendingCount = 0, isMobile = false }: DashboardNavigationProps) {
+export function DashboardNavigation({ userRole, pendingCount = 0, pendingRewardsCount = 0, isMobile = false }: DashboardNavigationProps) {
   const router = useLocalizedRouter()
   const pathname = usePathname()
   const { locale } = useLocale()
@@ -75,8 +77,9 @@ export function DashboardNavigation({ userRole, pendingCount = 0, isMobile = fal
     {
       href: '/dashboard/rewards',
       label: navT('rewards'),
-      icon: Eye,
-      // visible to all roles
+      icon: Gift,
+      badge: pendingRewardsCount > 0 ? pendingRewardsCount : undefined,
+      // visible to all roles, but badge only shows for parents/admins
     },
     {
       href: '/dashboard/family',

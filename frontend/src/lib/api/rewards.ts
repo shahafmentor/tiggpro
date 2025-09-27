@@ -37,6 +37,10 @@ export const rewardsApi = {
     return api.get(`/tenants/${tenantId}/rewards/redemptions`)
   },
 
+  async getPendingRedemptions(tenantId: string): Promise<ApiResponse<RewardRedemption[]>> {
+    return api.get(`/tenants/${tenantId}/rewards/redemptions/pending`)
+  },
+
   async approveRedemption(tenantId: string, redemptionId: string): Promise<ApiResponse<RewardRedemption>> {
     return api.put(`/tenants/${tenantId}/rewards/redemptions/${redemptionId}/approve`, {})
   },
