@@ -17,11 +17,13 @@ import { RoleBadge } from '@/components/ui/semantic-badges'
 import { tenantsApi } from '@/lib/api/tenants'
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { usePagesTranslations } from '@/hooks/use-translations'
+import { useLocalizedRouter } from '@/hooks/use-localized-router'
 
 export function TenantSelector() {
   const { currentTenant, setCurrentTenant } = useTenant()
   const { data: session, status } = useSession()
   const pageT = usePagesTranslations()
+  const router = useLocalizedRouter()
 
   const { data: tenantsResponse, isLoading } = useQuery({
     queryKey: ['tenants', 'my'],
@@ -53,7 +55,7 @@ export function TenantSelector() {
         variant="outline"
         className="gap-2"
         size="sm"
-        onClick={() => window.location.href = '/dashboard/family'}
+        onClick={() => router.push('/dashboard/family')}
       >
         <Plus className="h-4 w-4" />
         <span className="hidden sm:inline">{pageT('family.createFamily')}</span>
@@ -107,7 +109,10 @@ export function TenantSelector() {
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-primary">
+        <DropdownMenuItem
+          className="text-primary"
+          onClick={() => router.push('/dashboard/family')}
+        >
           <Plus className="h-4 w-4 mr-2" />
           {pageT('family.manageFamilies')}
         </DropdownMenuItem>
