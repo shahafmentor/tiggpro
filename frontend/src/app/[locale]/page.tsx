@@ -2,6 +2,7 @@
 
 import { AuthButton } from '@/components/auth/auth-button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { LanguageSelector } from '@/components/ui/language-selector';
 import { LandingPageContent } from '@/components/landing/landing-page-content';
 import { useBrandTranslations } from '@/hooks/use-translations';
 
@@ -16,6 +17,7 @@ export default function Home() {
             🎮 {brandT('productName')}
           </h1>
           <div className="flex items-center gap-4">
+            <LanguageSelector variant="compact" />
             <ThemeToggle />
             <AuthButton />
           </div>

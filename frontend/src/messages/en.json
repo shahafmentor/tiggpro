@@ -433,5 +433,56 @@
         "special_experience": "Special Experience"
       }
     }
+  },
+  "landing": {
+    "welcomeBack": "Welcome back, {name}! 👋",
+    "redirectingMessage": "Redirecting you to your dashboard...",
+    "goToDashboard": "Go to Dashboard",
+    "mainHeading": "Make Chores Fun with",
+    "gamificationHighlight": "Gamification",
+    "description": "Transform household chores into exciting games. Kids earn gaming time by completing tasks, while parents manage family activities with ease.",
+    "demo": {
+      "chores": {
+        "cleanRoom": {
+          "title": "🧹 Clean Room",
+          "description": "Organize bedroom and make the bed"
+        },
+        "washDishes": {
+          "title": "🍽️ Wash Dishes",
+          "description": "Clean all dishes and put them away"
+        },
+        "walkDog": {
+          "title": "🐕 Walk Dog",
+          "description": "Take Max for a 15-minute walk"
+        }
+      },
+      "statuses": {
+        "pending": "Pending",
+        "completed": "Completed",
+        "overdue": "Overdue"
+      },
+      "points": {
+        "available": "{points} pts",
+        "earned": "+{points} pts"
+      },
+      "progress": {
+        "title": "📊 Weekly Progress",
+        "levelProgress": "Level Progress",
+        "pointsProgress": "{current}/{total} pts",
+        "stats": {
+          "totalPoints": "Total Points",
+          "completed": "Completed",
+          "achievements": "Achievements",
+          "gamingTime": "Gaming Time"
+        },
+        "values": {
+          "totalPoints": "127",
+          "completed": "8",
+          "achievements": "3",
+          "gamingTime": "45min"
+        }
+      }
+    },
+    "themeDemo": "🎨 **Theme System Demo:** Try switching between light/dark themes and parent/kid modes using the controls above!"
   }
 }

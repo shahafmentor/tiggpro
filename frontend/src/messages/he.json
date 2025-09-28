@@ -433,5 +433,56 @@
         "special_experience": "חווייה מיוחדת"
       }
     }
+  },
+  "landing": {
+    "welcomeBack": "ברוך השב, {name}! 👋",
+    "redirectingMessage": "מפנה אותך ללוח הבקרה...",
+    "goToDashboard": "עבור ללוח הבקרה",
+    "mainHeading": "הפוך מטלות לכיף עם",
+    "gamificationHighlight": "גיימיפיקציה",
+    "description": "הפוך מטלות בית למשחקים מרגשים. ילדים זוכים בזמן משחק על ידי השלמת משימות, בעוד הורים מנהלים פעילויות משפחתיות בקלות.",
+    "demo": {
+      "chores": {
+        "cleanRoom": {
+          "title": "🧹 נקה חדר",
+          "description": "סדר את החדר ותכין את המיטה"
+        },
+        "washDishes": {
+          "title": "🍽️ שטף כלים",
+          "description": "נקה את כל הכלים והחזר למקום"
+        },
+        "walkDog": {
+          "title": "🐕 טיול עם הכלב",
+          "description": "קח את מקס לטיול של 15 דקות"
+        }
+      },
+      "statuses": {
+        "pending": "ממתין",
+        "completed": "הושלם",
+        "overdue": "באיחור"
+      },
+      "points": {
+        "available": "{points} נק'",
+        "earned": "+{points} נק'"
+      },
+      "progress": {
+        "title": "📊 התקדמות שבועית",
+        "levelProgress": "התקדמות רמה",
+        "pointsProgress": "{current}/{total} נק'",
+        "stats": {
+          "totalPoints": "סך נקודות",
+          "completed": "הושלמו",
+          "achievements": "הישגים",
+          "gamingTime": "זמן משחק"
+        },
+        "values": {
+          "totalPoints": "127",
+          "completed": "8",
+          "achievements": "3",
+          "gamingTime": "45דק'"
+        }
+      }
+    },
+    "themeDemo": "🎨 **הדגמת מערכת עיצוב:** נסה לעבור בין ערכות נושא בהירות/כהות ומצבי הורה/ילד באמצעות הבקרות למעלה!"
   }
 }

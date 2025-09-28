@@ -62,3 +62,9 @@ export function useRealtimeTranslations() {
 
   return (key: string, params?: Record<string, any>) => t(dictionary, `realtime.${key}`, params)
 }
+
+export function useLandingTranslations() {
+  const { dictionary } = useDictionary()
+
+  return (key: string, params?: Record<string, any>) => t(dictionary, `landing.${key}`, params)
+}
