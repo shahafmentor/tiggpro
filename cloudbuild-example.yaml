@@ -1,0 +1,183 @@
+# Cloud Build configuration for Tiggpro
+# This is an example of how you would implement the same pipeline using Cloud Build
+# NOT RECOMMENDED for this project - GitHub Actions is better
+
+steps:
+  # Step 1: Install dependencies and run tests
+  - name: 'node:22-alpine'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        npm ci
+        npm run lint
+        npm run type-check
+        cd backend && npm run test
+        cd backend && npm run test:e2e
+        npm run build
+
+  # Step 2: Build shared package
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--target=shared-builder'
+      - '-t'
+      - 'shared-build:${SHORT_SHA}'
+      - '-f'
+      - 'backend/Dockerfile'
+      - '.'
+    id: 'build-shared'
+
+  # Step 3: Build backend image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--target=runner'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/backend:${SHORT_SHA}'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/backend:latest'
+      - '-f'
+      - 'backend/Dockerfile'
+      - '.'
+    id: 'build-backend'
+
+  # Step 4: Push backend image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/backend:${SHORT_SHA}'
+    id: 'push-backend'
+
+  # Step 5: Deploy backend to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - '${_BACKEND_SERVICE}'
+      - '--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/backend:${SHORT_SHA}'
+      - '--region=${_REGION}'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--port=3001'
+      - '--memory=1Gi'
+      - '--cpu=1'
+      - '--max-instances=10'
+      - '--min-instances=0'
+      - '--concurrency=80'
+      - '--timeout=300'
+      - '--set-env-vars=NODE_ENV=production,PORT=3001'
+      - '--set-secrets=DATABASE_URL=database-url:latest,REDIS_URL=redis-url:latest,JWT_SECRET=jwt-secret:latest,JWT_REFRESH_SECRET=jwt-refresh-secret:latest'
+      - '--tag=version-${SHORT_SHA}'
+    id: 'deploy-backend'
+
+  # Step 6: Get backend URL
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        BACKEND_URL=$(gcloud run services describe ${_BACKEND_SERVICE} \
+          --region ${_REGION} \
+          --format 'value(status.url)')
+        echo "BACKEND_URL=$BACKEND_URL" > /workspace/backend_url.env
+    id: 'get-backend-url'
+
+  # Step 7: Build frontend image with backend URL
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        source /workspace/backend_url.env
+        docker build \
+          --target=runner \
+          -t ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/frontend:${SHORT_SHA} \
+          -t ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/frontend:latest \
+          --build-arg NEXT_PUBLIC_API_URL=$BACKEND_URL \
+          -f frontend/Dockerfile \
+          .
+    id: 'build-frontend'
+
+  # Step 8: Push frontend image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/frontend:${SHORT_SHA}'
+    id: 'push-frontend'
+
+  # Step 9: Deploy frontend to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        source /workspace/backend_url.env
+        gcloud run deploy ${_FRONTEND_SERVICE} \
+          --image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/frontend:${SHORT_SHA} \
+          --region=${_REGION} \
+          --platform=managed \
+          --allow-unauthenticated \
+          --port=3000 \
+          --memory=512Mi \
+          --cpu=1 \
+          --max-instances=10 \
+          --min-instances=0 \
+          --concurrency=100 \
+          --timeout=300 \
+          --set-env-vars=NODE_ENV=production,PORT=3000,NEXT_PUBLIC_API_URL=$BACKEND_URL,INTERNAL_API_URL=$BACKEND_URL \
+          --set-secrets=NEXTAUTH_SECRET=nextauth-secret:latest \
+          --tag=version-${SHORT_SHA}
+    id: 'deploy-frontend'
+
+  # Step 10: Health checks
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        source /workspace/backend_url.env
+        FRONTEND_URL=$(gcloud run services describe ${_FRONTEND_SERVICE} \
+          --region ${_REGION} \
+          --format 'value(status.url)')
+
+        echo "Checking backend health..."
+        curl -f --retry 3 --retry-delay 10 $BACKEND_URL/health || exit 1
+
+        echo "Checking frontend health..."
+        curl -f --retry 3 --retry-delay 10 $FRONTEND_URL/api/health || exit 1
+
+        echo "Deployment successful!"
+        echo "Frontend: $FRONTEND_URL"
+        echo "Backend: $BACKEND_URL"
+    id: 'health-checks'
+
+# Build options
+options:
+  machineType: 'E2_HIGHCPU_8'
+  diskSizeGb: '100'
+  logging: CLOUD_LOGGING_ONLY
+
+# Substitutions (variables)
+substitutions:
+  _REGION: 'us-central1'
+  _ARTIFACT_REGISTRY_REPO: 'tiggpro'
+  _FRONTEND_SERVICE: 'tiggpro-frontend'
+  _BACKEND_SERVICE: 'tiggpro-backend'
+
+# Build timeout
+timeout: '1800s' # 30 minutes
+
+# Images to be pushed to registry
+images:
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/backend:${SHORT_SHA}'
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/frontend:${SHORT_SHA}'
+
+# Build triggers configuration (would be set up separately)
+# trigger:
+#   github:
+#     owner: 'your-github-username'
+#     name: 'tiggpro'
+#     push:
+#       branch: '^main$'

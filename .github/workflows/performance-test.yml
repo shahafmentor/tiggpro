@@ -1,0 +1,99 @@
+name: Performance Testing
+
+on:
+  workflow_run:
+    workflows: ["Deploy to Google Cloud Run (Optimized)"]
+    types:
+      - completed
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: us-central1
+  FRONTEND_SERVICE: tiggpro-frontend
+  BACKEND_SERVICE: tiggpro-backend
+
+jobs:
+  performance-test:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Get service URLs
+        id: urls
+        run: |
+          FRONTEND_URL=$(gcloud run services describe ${{ env.FRONTEND_SERVICE }} \
+            --region ${{ env.REGION }} \
+            --format 'value(status.url)')
+          BACKEND_URL=$(gcloud run services describe ${{ env.BACKEND_SERVICE }} \
+            --region ${{ env.REGION }} \
+            --format 'value(status.url)')
+          echo "frontend_url=${FRONTEND_URL}" >> $GITHUB_OUTPUT
+          echo "backend_url=${BACKEND_URL}" >> $GITHUB_OUTPUT
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install performance testing tools
+        run: |
+          npm install -g lighthouse artillery
+
+      - name: Run Lighthouse performance audit
+        run: |
+          lighthouse ${{ steps.urls.outputs.frontend_url }} \
+            --chrome-flags="--headless --no-sandbox" \
+            --output json \
+            --output-path lighthouse-report.json
+
+      - name: Generate performance summary
+        run: |
+          PERFORMANCE_SCORE=$(cat lighthouse-report.json | jq '.categories.performance.score * 100')
+          ACCESSIBILITY_SCORE=$(cat lighthouse-report.json | jq '.categories.accessibility.score * 100')
+
+          echo "## Performance Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Score |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Performance | ${PERFORMANCE_SCORE}% |" >> $GITHUB_STEP_SUMMARY
+          echo "| Accessibility | ${ACCESSIBILITY_SCORE}% |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload Lighthouse report
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report
+          path: lighthouse-report.json
+
+      - name: Comment performance results on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('lighthouse-report.json', 'utf8'));
+            const performance = Math.round(report.categories.performance.score * 100);
+            const accessibility = Math.round(report.categories.accessibility.score * 100);
+
+            const comment = `## 🚀 Performance Test Results
+
+            | Metric | Score | Status |
+            |--------|-------|--------|
+            | Performance | ${performance}% | ${performance >= 90 ? '✅' : performance >= 70 ? '⚠️' : '❌'} |
+            | Accessibility | ${accessibility}% | ${accessibility >= 95 ? '✅' : accessibility >= 85 ? '⚠️' : '❌'} |
+
+            View full report in the workflow artifacts.`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
