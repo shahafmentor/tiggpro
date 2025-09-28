@@ -17,20 +17,81 @@ services:
       timeout: 5s
       retries: 5
 
-  redis:
-    image: redis:7-alpine
+  # Redis is not yet in use, uncomment when needed
+  # redis:
+  #   image: redis:7-alpine
+  #   restart: unless-stopped
+  #   ports:
+  #     - '6379:6379'
+  #   command: redis-server --appendonly yes
+  #   volumes:
+  #     - redis_data:/data
+  #   healthcheck:
+  #     test: ['CMD', 'redis-cli', 'ping']
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: development
     restart: unless-stopped
     ports:
-      - '6379:6379'
-    command: redis-server --appendonly yes
+      - '3001:3001'
     volumes:
-      - redis_data:/data
+      - ./backend/src:/app/backend/src
+      - ./shared:/app/shared
+      - /app/backend/node_modules
+      - /app/shared/node_modules
+    environment:
+      - NODE_ENV=development
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=tiggpro_dev
+      - DATABASE_USER=tiggpro_user
+      - DATABASE_PASSWORD=tiggpro_password
+      - JWT_SECRET=dev-secret-key-change-in-production
+      - FRONTEND_URL=http://frontend:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
     healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ['CMD', 'curl', '-f', 'http://localhost:3001/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      target: development
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./frontend/src:/app/frontend/src
+      - ./frontend/public:/app/frontend/public
+      - ./shared:/app/shared
+      - /app/frontend/node_modules
+      - /app/shared/node_modules
+    env_file:
+      - ./frontend/.env.local
+    environment:
+      - NODE_ENV=development
+      - INTERNAL_API_URL=http://backend:3001
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000']
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 volumes:
   postgres_data:
-  redis_data:
+  # redis_data:  # Uncomment when Redis is enabled
