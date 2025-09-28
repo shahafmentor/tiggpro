@@ -482,7 +482,6 @@
           "gamingTime": "45min"
         }
       }
-    },
-    "themeDemo": "🎨 **Theme System Demo:** Try switching between light/dark themes and parent/kid modes using the controls above!"
+    }
   }
 }

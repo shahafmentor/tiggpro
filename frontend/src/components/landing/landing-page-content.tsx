@@ -160,12 +160,6 @@ export function LandingPageContent() {
             </CardContent>
           </Card>
         </div>
-
-        <div className="mt-12 p-6 bg-muted rounded-lg">
-          <p className="text-responsive-base text-muted-foreground">
-            {t('themeDemo')}
-          </p>
-        </div>
       </div>
     </main>
   )
