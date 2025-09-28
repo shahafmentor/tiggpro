@@ -139,7 +139,11 @@ export const useRealtimeStore = create<RealtimeState>()(
       try {
         const session = await getSession()
         if (!session?.accessToken) {
-          throw new Error('No access token available')
+          set({
+            isConnecting: false,
+            error: 'Authentication required - please sign in to enable real-time updates'
+          })
+          return
         }
 
         const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'

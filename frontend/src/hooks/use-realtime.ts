@@ -14,6 +14,7 @@ import { useTenant } from '@/lib/contexts/tenant-context'
 import { useRealtimeTranslations } from '@/hooks/use-translations'
 
 export function useRealtimeConnection() {
+  const { data: session, status } = useSession()
   const isConnected = useRealtimeStore(state => state.isConnected)
   const isConnecting = useRealtimeStore(state => state.isConnecting)
   const error = useRealtimeStore(state => state.error)
@@ -21,9 +22,16 @@ export function useRealtimeConnection() {
   const disconnect = useRealtimeStore(state => state.disconnect)
 
   useEffect(() => {
-    connect()
+    // Only connect if user is authenticated and has an access token
+    if (status === 'authenticated' && session?.accessToken) {
+      connect()
+    } else if (status === 'unauthenticated') {
+      // Disconnect if user becomes unauthenticated
+      disconnect()
+    }
+
     return () => disconnect()
-  }, [connect, disconnect])
+  }, [connect, disconnect, status, session?.accessToken])
 
   return { isConnected, isConnecting, error }
 }
