@@ -177,8 +177,6 @@ jobs:
           file: frontend/Dockerfile
           target: runner
           push: true
-          build-args: |
-            NEXT_PUBLIC_API_URL=${{ steps.backend-url.outputs.backend_url }}
           tags: |
             ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/frontend:${{ needs.test-and-build.outputs.version }}
             ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/frontend:latest
