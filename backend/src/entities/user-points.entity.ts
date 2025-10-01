@@ -7,6 +7,8 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm';
+import type { User } from './user.entity';
+import type { Tenant } from './tenant.entity';
 
 @Entity('user_points')
 @Index(['userId', 'tenantId'], { unique: true }) // One points record per user per tenant
@@ -44,9 +46,9 @@ export class UserPoints {
   // Relations
   @ManyToOne('User')
   @JoinColumn({ name: 'user_id' })
-  user: any;
+  user?: User;
 
   @ManyToOne('Tenant')
   @JoinColumn({ name: 'tenant_id' })
-  tenant: any;
+  tenant?: Tenant;
 }

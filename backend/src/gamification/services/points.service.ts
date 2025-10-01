@@ -69,7 +69,6 @@ export class PointsService {
     return updatedUserPoints;
   }
 
-
   async getUserStats(
     userId: string,
     tenantId: string,

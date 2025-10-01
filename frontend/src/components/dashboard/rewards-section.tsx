@@ -41,7 +41,7 @@ export function RewardsSection({
     return pagesT(`rewards.types.${type}`)
   }
 
-  const getRewardIcon = (type: string) => {
+  const getRewardIcon = () => {
     // You can customize icons based on reward type
     return <Gift className="h-5 w-5" />
   }
@@ -112,7 +112,7 @@ export function RewardsSection({
               >
                 <div className="flex-shrink-0">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${getRewardStatusColor(reward.status)}`}>
-                    {getRewardIcon(reward.type)}
+                    {getRewardIcon()}
                   </div>
                 </div>
                 <div className="flex-1 space-y-1">

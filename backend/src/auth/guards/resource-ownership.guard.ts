@@ -6,7 +6,7 @@ import {
   SetMetadata,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { DataSource } from 'typeorm';
+import { DataSource, type Repository } from 'typeorm';
 
 export interface ResourceOwnershipConfig {
   entity: string;
@@ -32,8 +32,11 @@ export class ResourceOwnershipGuard implements CanActivate {
       return true; // No ownership check required
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const request = context.switchToHttp().getRequest();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const user = request.user;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const resourceId = request.params[ownershipConfig.paramName || 'id'];
 
     if (!user || !resourceId) {
@@ -42,9 +45,11 @@ export class ResourceOwnershipGuard implements CanActivate {
 
     try {
       // Get the repository for the specified entity
-      const repository = this.dataSource.getRepository(ownershipConfig.entity);
+      const repository: Repository<Record<string, unknown>> =
+        this.dataSource.getRepository(ownershipConfig.entity);
 
       // Query the resource to check ownership
+
       const resource = await repository.findOne({
         where: { id: resourceId },
       });
@@ -54,8 +59,9 @@ export class ResourceOwnershipGuard implements CanActivate {
       }
 
       // Check if the user owns the resource
-      const ownerUserId = resource[ownershipConfig.userIdField];
+      const ownerUserId = resource[ownershipConfig.userIdField] as string;
 
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (ownerUserId !== user.id) {
         throw new ForbiddenException(
           'You do not have permission to access this resource',

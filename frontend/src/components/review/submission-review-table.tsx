@@ -12,7 +12,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { EmptyState } from '@/components/ui/empty-state'
 import { Skeleton } from '@/components/ui/skeleton'
 import { usePagesTranslations } from '@/hooks/use-translations'
-import { ReviewStatus } from '@tiggpro/shared'
 import type { Submission } from '@/lib/api/assignments'
 
 interface SubmissionReviewTableProps {
@@ -261,7 +260,7 @@ export function SubmissionReviewTable({
                                         </span>
                                     </TableCell>
                                     <TableCell>
-                                        <StatusBadge status={submission.reviewStatus as any} />
+                                        <StatusBadge status={submission.reviewStatus} />
                                     </TableCell>
                                     <TableCell>
                                         <span className="text-sm text-muted-foreground">

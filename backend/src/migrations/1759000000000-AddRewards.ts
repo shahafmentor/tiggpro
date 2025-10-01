@@ -93,5 +93,3 @@ export class AddRewards1759000000000 implements MigrationInterface {
     await queryRunner.query(`DROP TYPE "public"."reward_type_enum"`);
   }
 }
-
-

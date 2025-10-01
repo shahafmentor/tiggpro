@@ -42,5 +42,3 @@ export class RewardSettings {
   @JoinColumn({ name: 'tenant_id' })
   tenant: any;
 }
-
-

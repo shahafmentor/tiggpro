@@ -88,7 +88,11 @@ export class RealtimeEventsService {
 
   constructor(private readonly webSocketGateway: WebSocketGateway) {}
 
-  emitChoreAssigned(tenantId: string, event: ChoreAssignedEvent, excludeUserId?: string) {
+  emitChoreAssigned(
+    tenantId: string,
+    event: ChoreAssignedEvent,
+    excludeUserId?: string,
+  ) {
     this.webSocketGateway.emitToTenant({
       type: 'chore_assigned',
       tenantId,
@@ -138,7 +142,11 @@ export class RealtimeEventsService {
     );
   }
 
-  emitRewardRequested(tenantId: string, event: RewardRequestedEvent, excludeUserId?: string) {
+  emitRewardRequested(
+    tenantId: string,
+    event: RewardRequestedEvent,
+    excludeUserId?: string,
+  ) {
     this.webSocketGateway.emitToTenant({
       type: 'reward_requested',
       tenantId,
@@ -152,7 +160,11 @@ export class RealtimeEventsService {
     );
   }
 
-  emitRewardReviewed(tenantId: string, event: RewardReviewedEvent, excludeUserId?: string) {
+  emitRewardReviewed(
+    tenantId: string,
+    event: RewardReviewedEvent,
+    excludeUserId?: string,
+  ) {
     this.webSocketGateway.emitToTenant({
       type: 'reward_reviewed',
       tenantId,
@@ -169,7 +181,7 @@ export class RealtimeEventsService {
   emitGenericEvent(
     tenantId: string,
     eventType: string,
-    data: any,
+    data: Record<string, unknown>,
     excludeUserId?: string,
   ) {
     this.webSocketGateway.emitToTenant({
@@ -180,6 +192,8 @@ export class RealtimeEventsService {
       excludeUserId,
     });
 
-    this.logger.log(`Generic event emitted: ${eventType} in tenant ${tenantId}`);
+    this.logger.log(
+      `Generic event emitted: ${eventType} in tenant ${tenantId}`,
+    );
   }
 }

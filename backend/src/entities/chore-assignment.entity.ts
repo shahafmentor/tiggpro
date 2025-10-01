@@ -9,6 +9,9 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Priority, AssignmentStatus } from '@tiggpro/shared';
+import type { Chore } from './chore.entity';
+import type { User } from './user.entity';
+import type { ChoreSubmission } from './chore-submission.entity';
 
 @Entity('chore_assignments')
 export class ChoreAssignment {
@@ -50,16 +53,16 @@ export class ChoreAssignment {
   // Relations
   @ManyToOne('Chore', 'assignments')
   @JoinColumn({ name: 'chore_id' })
-  chore: any;
+  chore?: Chore;
 
   @ManyToOne('User')
   @JoinColumn({ name: 'assigned_to' })
-  assignee: any;
+  assignee?: User;
 
   @ManyToOne('User')
   @JoinColumn({ name: 'assigned_by' })
-  assigner: any;
+  assigner?: User;
 
   @OneToMany('ChoreSubmission', 'assignment')
-  submissions: any[];
+  submissions?: ChoreSubmission[];
 }

@@ -54,10 +54,16 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       }
 
       if (typeof response === 'object' && response !== null) {
-        const errorObj = response as any;
+        const errorObj = response as {
+          message?: string | string[];
+          error?: string;
+        };
+        const errorMessage = Array.isArray(errorObj.message)
+          ? errorObj.message.join(', ')
+          : errorObj.message || errorObj.error || 'Unknown error';
         return {
           status,
-          message: errorObj.message || errorObj.error || 'Unknown error',
+          message: errorMessage,
           error:
             process.env.NODE_ENV === 'development'
               ? exception.stack

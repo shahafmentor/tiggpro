@@ -57,14 +57,17 @@ export class AssignmentsController {
           priority: assignment.priority,
           status: assignment.status,
           createdAt: assignment.createdAt,
-          chore: {
-            id: assignment.chore.id,
-            title: assignment.chore.title,
-            description: assignment.chore.description,
-            pointsReward: assignment.chore.pointsReward,
-            difficultyLevel: assignment.chore.difficultyLevel,
-            estimatedDurationMinutes: assignment.chore.estimatedDurationMinutes,
-          },
+          chore: assignment.chore
+            ? {
+                id: assignment.chore.id,
+                title: assignment.chore.title,
+                description: assignment.chore.description,
+                pointsReward: assignment.chore.pointsReward,
+                difficultyLevel: assignment.chore.difficultyLevel,
+                estimatedDurationMinutes:
+                  assignment.chore.estimatedDurationMinutes,
+              }
+            : undefined,
         })),
         message: 'Assignments retrieved successfully',
       };
@@ -225,28 +228,36 @@ export class AssignmentsController {
           submittedAt: submission.submittedAt,
           submittedBy: submission.submittedBy,
           reviewStatus: submission.reviewStatus,
-          assignment: {
-            id: submission.assignment.id,
-            dueDate: submission.assignment.dueDate,
-            priority: submission.assignment.priority,
-            assignedTo: {
-              id: submission.assignment.assignee?.id,
-              email: submission.assignment.assignee?.email,
-              displayName: submission.assignment.assignee?.displayName,
-              avatarUrl: submission.assignment.assignee?.avatarUrl,
-            },
-            assignedBy: {
-              id: submission.assignment.assigner?.id,
-              email: submission.assignment.assigner?.email,
-              displayName: submission.assignment.assigner?.displayName,
-              avatarUrl: submission.assignment.assigner?.avatarUrl,
-            },
-            chore: {
-              id: submission.assignment.chore.id,
-              title: submission.assignment.chore.title,
-              pointsReward: submission.assignment.chore.pointsReward,
-            },
-          },
+          assignment: submission.assignment
+            ? {
+                id: submission.assignment.id,
+                dueDate: submission.assignment.dueDate,
+                priority: submission.assignment.priority,
+                assignedTo: submission.assignment.assignee
+                  ? {
+                      id: submission.assignment.assignee.id,
+                      email: submission.assignment.assignee.email,
+                      displayName: submission.assignment.assignee.displayName,
+                      avatarUrl: submission.assignment.assignee.avatarUrl,
+                    }
+                  : undefined,
+                assignedBy: submission.assignment.assigner
+                  ? {
+                      id: submission.assignment.assigner.id,
+                      email: submission.assignment.assigner.email,
+                      displayName: submission.assignment.assigner.displayName,
+                      avatarUrl: submission.assignment.assigner.avatarUrl,
+                    }
+                  : undefined,
+                chore: submission.assignment.chore
+                  ? {
+                      id: submission.assignment.chore.id,
+                      title: submission.assignment.chore.title,
+                      pointsReward: submission.assignment.chore.pointsReward,
+                    }
+                  : undefined,
+              }
+            : undefined,
         })),
         message: 'Pending submissions retrieved successfully',
       };

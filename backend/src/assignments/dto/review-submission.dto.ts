@@ -40,5 +40,4 @@ export class ReviewSubmissionDto {
   @Min(0, { message: 'Points awarded cannot be negative' })
   @Max(1000, { message: 'Points awarded must not exceed 1000' })
   pointsAwarded?: number;
-
 }

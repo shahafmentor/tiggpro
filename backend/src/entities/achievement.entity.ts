@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { RequirementType } from '@tiggpro/shared';
+import type { UserAchievement } from './user-achievement.entity';
 
 @Entity('achievements')
 export class Achievement {
@@ -33,5 +34,5 @@ export class Achievement {
 
   // Relations
   @OneToMany('UserAchievement', 'achievement')
-  userAchievements: any[];
+  userAchievements?: UserAchievement[];
 }

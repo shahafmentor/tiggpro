@@ -280,6 +280,7 @@ export function useRealtimeEvent<T>(
     )
 
     return unsubscribe
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventType, callback, ...deps])
 }
 

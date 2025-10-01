@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { RoleBadge } from '@/components/ui/role-badge'
 import { Button } from '@/components/ui/button'
-import { Users, Settings } from 'lucide-react'
+import { Settings } from 'lucide-react'
 import type { TenantMember } from '@/lib/api/tenants'
 import { TenantMemberRole } from '@tiggpro/shared'
 import { RoleChangeDialog } from './role-change-dialog'
@@ -13,11 +13,10 @@ interface MemberRowProps {
   member: TenantMember
   isAdmin: boolean
   tenantId: string
-  onRemove?: () => void
   actions?: React.ReactNode
 }
 
-export function MemberRow({ member, isAdmin, tenantId, onRemove, actions }: MemberRowProps) {
+export function MemberRow({ member, isAdmin, tenantId, actions }: MemberRowProps) {
   const [isRoleChangeOpen, setIsRoleChangeOpen] = useState(false)
 
   // Only allow admins to change roles, and don't allow changing admin role

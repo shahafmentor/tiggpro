@@ -1,14 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  UseGuards,
-  Request,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, Request } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -21,8 +11,6 @@ import { AchievementsService } from './services/achievements.service';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { TenantMembershipGuard } from '@/auth/guards/tenant-membership.guard';
 import type { ApiResponse as ApiResponseType } from '@tiggpro/shared';
-
-
 
 @ApiTags('gamification')
 @ApiBearerAuth()
@@ -88,7 +76,6 @@ export class GamificationController {
   @Get('leaderboard')
   async getTenantLeaderboard(
     @Param('tenantId') tenantId: string,
-    @Request() req: { user: { id: string } },
   ): Promise<ApiResponseType> {
     try {
       const leaderboard =
@@ -184,5 +171,4 @@ export class GamificationController {
       };
     }
   }
-
 }

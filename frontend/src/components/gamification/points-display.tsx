@@ -7,7 +7,6 @@ import { Progress } from '@/components/ui/progress'
 import { StatCard } from './stat-card'
 import {
   Star,
-  Clock,
   Flame,
   Zap
 } from 'lucide-react'

@@ -62,6 +62,7 @@ export function SubmissionCard({ submission, onReview }: SubmissionCardProps) {
             <div className="flex gap-1">
               {submission.mediaUrls.slice(0, 3).map((url, index) => (
                 <div key={index} className="w-12 h-12 bg-muted rounded border overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={url}
                     alt={`${pageT('review.submissionPhoto')} ${index + 1}`}

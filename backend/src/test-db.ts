@@ -17,12 +17,21 @@ async function testDatabaseConnection() {
       console.log('✅ Database connection established');
 
       // Test a simple query
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const result = await dataSource.query('SELECT NOW() as current_time');
-      console.log('✅ Database query successful:', result[0]);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (result && result.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        console.log('✅ Database query successful:', result[0]);
+      }
 
       // Check if our tables would be created (dry run)
-      console.log('📊 Database name:', (dataSource.options as any).database);
-      console.log('🏠 Database host:', (dataSource.options as any).host);
+      const options = dataSource.options as {
+        database?: string;
+        host?: string;
+      };
+      console.log('📊 Database name:', options.database);
+      console.log('🏠 Database host:', options.host);
       console.log('📋 Entities loaded:', dataSource.entityMetadatas.length);
 
       // List loaded entities
@@ -37,13 +46,15 @@ async function testDatabaseConnection() {
     await app.close();
     console.log('✅ Test completed successfully');
   } catch (error) {
-    console.error('❌ Test failed:', error.message);
-    console.error('Error details:', error);
+    if (error instanceof Error) {
+      console.error('❌ Test failed:', error.message);
+      console.error('Error details:', error);
+    }
     process.exit(1);
   }
 }
 
 // Only run if this file is executed directly
 if (require.main === module) {
-  testDatabaseConnection();
+  void testDatabaseConnection();
 }

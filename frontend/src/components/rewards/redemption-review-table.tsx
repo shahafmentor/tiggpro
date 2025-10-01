@@ -285,7 +285,7 @@ export function RedemptionReviewTable({
                                 <TableRow key={redemption.id}>
                                     <TableCell>
                                         <div className="flex flex-col gap-1">
-                                            <Badge variant="secondary">{p(`rewards.types.${redemption.type}` as any)}</Badge>
+                                            <Badge variant="secondary">{p(`rewards.types.${redemption.type}`)}</Badge>
                                             {redemption.notes && (
                                                 <span className="text-xs text-muted-foreground truncate max-w-[200px]">
                                                     {redemption.notes}
@@ -327,7 +327,7 @@ export function RedemptionReviewTable({
                                         )}
                                     </TableCell>
                                     <TableCell>
-                                        <StatusBadge status={redemption.status as any} />
+                                        <StatusBadge status={redemption.status} />
                                     </TableCell>
                                     <TableCell>
                                         <span className="text-sm text-muted-foreground">

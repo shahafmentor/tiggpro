@@ -2,14 +2,13 @@ import {
   WebSocketGateway as WSGateway,
   WebSocketServer,
   SubscribeMessage,
-  MessageBody,
   ConnectedSocket,
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Injectable, Logger, UseGuards } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -25,7 +24,7 @@ interface AuthenticatedSocket extends Socket {
 interface RealTimeEvent {
   type: string;
   tenantId: string;
-  data: any;
+  data: Record<string, unknown> | unknown;
   timestamp: string;
   excludeUserId?: string;
 }
@@ -36,7 +35,7 @@ interface RealTimeEvent {
     origin: [
       process.env.FRONTEND_URL || 'http://localhost:3000',
       'http://frontend:3000', // Docker internal
-      'http://localhost:3000'  // Local development
+      'http://localhost:3000', // Local development
     ],
     credentials: true,
   },
@@ -59,7 +58,7 @@ export class WebSocketGateway
     private readonly userRepository: Repository<User>,
   ) {}
 
-  afterInit(server: Server) {
+  afterInit() {
     this.logger.log('WebSocket Gateway initialized');
   }
 
@@ -137,11 +136,14 @@ export class WebSocketGateway
     if (event.excludeUserId) {
       const userSockets = this.userSocketMap.get(event.excludeUserId);
       if (userSockets) {
-        this.server.to(room).except([...userSockets]).emit('realtime:event', {
-          type: event.type,
-          data: event.data,
-          timestamp: event.timestamp,
-        });
+        this.server
+          .to(room)
+          .except([...userSockets])
+          .emit('realtime:event', {
+            type: event.type,
+            data: event.data,
+            timestamp: event.timestamp,
+          });
       } else {
         this.server.to(room).emit('realtime:event', {
           type: event.type,
@@ -164,7 +166,10 @@ export class WebSocketGateway
     );
   }
 
-  emitToUser(userId: string, event: { type: string; data: any }) {
+  emitToUser(
+    userId: string,
+    event: { type: string; data: Record<string, unknown> },
+  ) {
     const userSockets = this.userSocketMap.get(userId);
     if (userSockets) {
       for (const socketId of userSockets) {
@@ -179,7 +184,9 @@ export class WebSocketGateway
   }
 
   private extractTokenFromHandshake(client: Socket): string | null {
-    const token = client.handshake.auth?.token || client.handshake.headers?.authorization;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const token =
+      client.handshake.auth?.token || client.handshake.headers?.authorization;
 
     if (typeof token === 'string') {
       return token.startsWith('Bearer ') ? token.slice(7) : token;
@@ -188,11 +195,15 @@ export class WebSocketGateway
     return null;
   }
 
-  private async validateToken(token: string): Promise<any> {
+  private async validateToken(token: string): Promise<{ sub: string } | null> {
     try {
-      return await this.jwtService.verifyAsync(token);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const payload = await this.jwtService.verifyAsync(token);
+      return payload as { sub: string };
     } catch (error) {
-      this.logger.error('Token validation failed:', error.message);
+      if (error instanceof Error) {
+        this.logger.error('Token validation failed:', error.message);
+      }
       return null;
     }
   }

@@ -5,24 +5,18 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Plus,
   Users,
-  Crown,
   UserMinus,
   Copy,
   Check,
   UserPlus,
-  Shield,
-  Baby,
   Trash2
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { EmptyState } from '@/components/ui/empty-state'
-import { RoleBadge } from '@/components/ui/role-badge'
 import { PageHeader } from '@/components/layout/page-header'
 import { TenantListItem } from '@/components/tenant/tenant-list-item'
 import { MemberRow } from '@/components/tenant/member-row'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Dialog,
   DialogContent,
@@ -47,7 +41,6 @@ import { JoinTenantForm } from '@/components/tenant/join-tenant-form'
 import { InviteMemberForm } from '@/components/tenant/invite-member-form'
 import { tenantsApi, UserTenant } from '@/lib/api/tenants'
 import { TenantMemberRole } from '@tiggpro/shared'
-import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { usePagesTranslations } from '@/hooks/use-translations'
 
@@ -120,21 +113,6 @@ export default function FamilyPage() {
       userId
     })
   }
-
-  const getRoleIcon = (role: TenantMemberRole) => {
-    switch (role) {
-      case TenantMemberRole.ADMIN:
-        return <Crown className="h-4 w-4 text-yellow-500" />
-      case TenantMemberRole.PARENT:
-        return <Shield className="h-4 w-4 text-blue-500" />
-      case TenantMemberRole.CHILD:
-        return <Baby className="h-4 w-4 text-green-500" />
-      default:
-        return <Users className="h-4 w-4" />
-    }
-  }
-
-  // Role colors unified by RoleBadge component
 
   const isAdmin = selectedTenant?.role === TenantMemberRole.ADMIN
   const canManageMembers = selectedTenant?.role === TenantMemberRole.ADMIN ||

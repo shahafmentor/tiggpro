@@ -47,7 +47,6 @@ export class CreateChoreDto {
   @Max(1000, { message: 'Points reward must not exceed 1000' })
   pointsReward: number;
 
-
   @ApiProperty({
     description: 'Difficulty level of the chore',
     enum: DifficultyLevel,

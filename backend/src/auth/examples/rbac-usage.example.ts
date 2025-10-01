@@ -22,10 +22,7 @@ import type { ApiResponse } from '@tiggpro/shared';
 export class ChoreController {
   // 🟢 Any authenticated tenant member can view chores
   @Get()
-  async getChores(
-    @Param('tenantId') tenantId: string,
-    @Request() req: any,
-  ): Promise<ApiResponse> {
+  getChores(@Param('tenantId') tenantId: string): ApiResponse {
     // User is authenticated and verified as tenant member
     // req.user contains: { id, email, displayName, provider }
 
@@ -40,16 +37,13 @@ export class ChoreController {
   @Post()
   @UseGuards(RolesGuard)
   @Roles(TenantMemberRole.ADMIN, TenantMemberRole.PARENT)
-  async createChore(
-    @Param('tenantId') tenantId: string,
-    @Request() req: any,
-  ): Promise<ApiResponse> {
+  createChore(@Param('tenantId') tenantId: string): ApiResponse {
     // User is authenticated, tenant member, AND has ADMIN or PARENT role
 
     return {
       success: true,
       data: { message: 'Chore created' },
-      message: 'Chore created successfully',
+      message: `Chore created successfully for tenant ${tenantId}`,
     };
   }
 
@@ -57,16 +51,15 @@ export class ChoreController {
   @Post(':choreId/delete')
   @UseGuards(RolesGuard)
   @Roles(TenantMemberRole.ADMIN)
-  async deleteChore(
+  deleteChore(
     @Param('tenantId') tenantId: string,
     @Param('choreId') choreId: string,
-    @Request() req: any,
-  ): Promise<ApiResponse> {
+  ): ApiResponse {
     // User is authenticated, tenant member, AND has ADMIN role
 
     return {
       success: true,
-      message: 'Chore deleted successfully',
+      message: `Chore ${choreId} deleted successfully for tenant ${tenantId}`,
     };
   }
 }

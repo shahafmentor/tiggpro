@@ -39,14 +39,14 @@ export default function DashboardPage() {
   // User Stats (points balance)
   const { data: userStatsResponse } = useQuery({
     queryKey: ['user-stats', currentTenant?.tenant?.id],
-    queryFn: () => currentTenant ? gamificationApi.getUserStats(currentTenant.tenant.id) : Promise.resolve({ success: false } as any),
+    queryFn: () => currentTenant ? gamificationApi.getUserStats(currentTenant.tenant.id) : Promise.resolve(null),
     enabled: !!currentTenant && !!session,
   })
 
   // My Rewards (all redemptions for the user)
   const { data: myRewardsResponse } = useRewardsQuery({
     queryKey: ['rewards-redemptions', currentTenant?.tenant?.id],
-    queryFn: () => currentTenant ? rewardsApi.listRedemptions(currentTenant.tenant.id) : Promise.resolve({ success: false } as any),
+    queryFn: () => currentTenant ? rewardsApi.listRedemptions(currentTenant.tenant.id) : Promise.resolve(null),
     enabled: !!currentTenant && !!session,
     refetchInterval: 30000,
   })
@@ -117,21 +117,6 @@ export default function DashboardPage() {
 
   const pendingRedemptions: RewardRedemption[] = pendingRedemptionsResponse?.success ?
     (pendingRedemptionsResponse.data || []) : []
-
-  // Calculate assignment stats (use all assignments for stats)
-  const assignmentStats = {
-    total: allAssignments.length,
-    pending: allAssignments.filter(a => a.status === 'pending').length,
-    submitted: allAssignments.filter(a => a.status === 'submitted').length,
-    approved: allAssignments.filter(a => a.status === 'approved').length,
-    overdue: allAssignments.filter(a => {
-      const dueDate = new Date(a.dueDate)
-      const now = new Date()
-      return dueDate < now && a.status === 'pending'
-    }).length,
-  }
-
-
 
   return (
     <RealtimePageWrapper>
@@ -222,13 +207,13 @@ export default function DashboardPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-600">
-                    {(userStatsResponse as any).data?.availablePoints || 0}
+                    {userStatsResponse?.data?.availablePoints || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">{t('available')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">
-                    {(userStatsResponse as any).data?.totalPoints || 0}
+                    {userStatsResponse?.data?.totalPoints || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">{t('totalEarned')}</div>
                 </div>

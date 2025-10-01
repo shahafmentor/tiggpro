@@ -35,7 +35,7 @@ export class AuthController {
   async syncUser(@Body() syncUserDto: SyncUserDto): Promise<ApiResponseType> {
     try {
       const user = await this.authService.syncUser(syncUserDto);
-      const loginResponse = await this.authService.login(user);
+      const loginResponse = this.authService.login(user);
 
       return {
         success: true,
@@ -94,7 +94,9 @@ export class AuthController {
   @Get('validate')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  validateToken(@Request() req: { user: any }): ApiResponseType {
+  validateToken(
+    @Request() req: { user: { id: string; email: string } },
+  ): ApiResponseType {
     // If we reach here, the JWT is valid
     return {
       success: true,

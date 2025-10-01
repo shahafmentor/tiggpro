@@ -1,9 +1,8 @@
 import 'server-only';
 
 // Type for our dictionaries
-export type Dictionary = {
-  [key: string]: any;
-};
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Dictionary = Record<string, any>;
 
 const dictionaries = {
   en: () => import('../../messages/en.json').then((module) => module.default),

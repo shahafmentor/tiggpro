@@ -6,7 +6,6 @@ import { useSession } from 'next-auth/react'
 import {
   CheckSquare,
   Plus,
-  Star,
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -146,49 +145,6 @@ export default function ChoresPage() {
         <p className="text-lg mb-8 text-center max-w-md">{p('chores.noFamilySelectedDesc')}</p>
       </div>
     )
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'PENDING':
-        return 'bg-chore-pending'
-      case 'IN_PROGRESS':
-        return 'bg-chore-in-progress'
-      case 'SUBMITTED':
-        return 'bg-chore-submitted'
-      case 'APPROVED':
-      case 'COMPLETED':
-        return 'bg-chore-completed'
-      case 'REJECTED':
-      case 'OVERDUE':
-        return 'bg-chore-overdue'
-      default:
-        return 'bg-muted'
-    }
-  }
-
-  const getDifficultyIcon = (difficulty: ChoreWithAssignment['difficulty']) => {
-    switch (difficulty) {
-      case 'EASY':
-        return <Star className="h-4 w-4 text-green-500" />
-      case 'MEDIUM':
-        return (
-          <div className="flex gap-0.5">
-            <Star className="h-4 w-4 text-yellow-500" />
-            <Star className="h-4 w-4 text-yellow-500" />
-          </div>
-        )
-      case 'HARD':
-        return (
-          <div className="flex gap-0.5">
-            <Star className="h-4 w-4 text-red-500" />
-            <Star className="h-4 w-4 text-red-500" />
-            <Star className="h-4 w-4 text-red-500" />
-          </div>
-        )
-      default:
-        return null
-    }
   }
 
   const filteredChores = displayChores

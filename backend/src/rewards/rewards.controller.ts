@@ -1,11 +1,29 @@
-import { Controller, Get, Post, Put, Param, Body, UseGuards, Request } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Param,
+  Body,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { TenantMembershipGuard } from '@/auth/guards/tenant-membership.guard';
 import type { ApiResponse } from '@tiggpro/shared';
 import { RewardsService } from './rewards.service';
 import { RewardSettingsService } from './settings.service';
-import { CreateRedemptionDto, ApproveRedemptionDto, RejectRedemptionDto } from './rewards.dtos';
+import {
+  CreateRedemptionDto,
+  ApproveRedemptionDto,
+  RejectRedemptionDto,
+} from './rewards.dtos';
 
 @ApiTags('rewards')
 @ApiBearerAuth()
@@ -54,7 +72,12 @@ export class RewardsController {
     @Body() dto: ApproveRedemptionDto,
     @Request() req: { user: { id: string } },
   ): Promise<ApiResponse> {
-    return this.rewardsService.approveRedemption(tenantId, redemptionId, req.user.id, dto);
+    return this.rewardsService.approveRedemption(
+      tenantId,
+      redemptionId,
+      req.user.id,
+      dto,
+    );
   }
 
   @Put('redemptions/:id/reject')
@@ -65,14 +88,17 @@ export class RewardsController {
     @Body() dto: RejectRedemptionDto,
     @Request() req: { user: { id: string } },
   ): Promise<ApiResponse> {
-    return this.rewardsService.rejectRedemption(tenantId, redemptionId, req.user.id, dto);
+    return this.rewardsService.rejectRedemption(
+      tenantId,
+      redemptionId,
+      req.user.id,
+      dto,
+    );
   }
 
   @Get('settings')
   @ApiOperation({ summary: 'Get tenant reward settings' })
-  async getSettings(
-    @Param('tenantId') tenantId: string,
-  ): Promise<ApiResponse> {
+  async getSettings(@Param('tenantId') tenantId: string): Promise<ApiResponse> {
     return this.settingsService.getSettings(tenantId);
   }
 
@@ -80,7 +106,7 @@ export class RewardsController {
   @ApiOperation({ summary: 'Update tenant reward settings' })
   async updateSettings(
     @Param('tenantId') tenantId: string,
-    @Body() body: any,
+    @Body() body: Record<string, unknown>,
   ): Promise<ApiResponse> {
     return this.settingsService.updateSettings(tenantId, body);
   }
@@ -95,5 +121,3 @@ export class RewardsController {
     return this.rewardsService.getCostPreview(tenantId, req.user.id, body);
   }
 }
-
-

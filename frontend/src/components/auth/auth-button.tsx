@@ -3,6 +3,7 @@
 import { signIn, signOut, useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export function AuthButton() {
   const { data: session, status } = useSession();
@@ -33,7 +34,7 @@ export function AuthButton() {
           </span>
         </div>
         <Button asChild>
-          <a href="/dashboard">Go to Dashboard</a>
+          <Link href="/dashboard">Go to Dashboard</Link>
         </Button>
         <Button onClick={() => signOut()} variant="outline">
           Sign out

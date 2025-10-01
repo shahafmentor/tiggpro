@@ -186,6 +186,7 @@ export function SubmitAssignmentModal({
                   {mediaUrls.map((url, index) => (
                     <div key={index} className="relative">
                       <div className="aspect-video bg-muted rounded border overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={url}
                           alt={`Submission photo ${index + 1}`}

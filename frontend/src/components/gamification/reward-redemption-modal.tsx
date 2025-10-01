@@ -43,25 +43,25 @@ export function RewardRedemptionModal({ open, onOpenChange, initialType, initial
 
   const { data: settings } = useQuery({
     queryKey: ['rewards-settings', tenantId],
-    queryFn: () => tenantId ? rewardsApi.getSettings(tenantId) : Promise.resolve({ success: false } as any),
+    queryFn: () => tenantId ? rewardsApi.getSettings(tenantId) : Promise.resolve(null),
     enabled: !!tenantId && open,
   })
 
   const { data: userStats } = useQuery({
     queryKey: ['user-stats', tenantId],
-    queryFn: () => tenantId ? gamificationApi.getUserStats(tenantId) : Promise.resolve({ success: false } as any),
+    queryFn: () => tenantId ? gamificationApi.getUserStats(tenantId) : Promise.resolve(null),
     enabled: !!tenantId && open,
   })
 
   const { data: costPreview } = useQuery({
     queryKey: ['cost-preview', tenantId, activeTab, amount],
-    queryFn: () => tenantId && amount ? rewardsApi.getCostPreview(tenantId, { type: activeTab, amount }) : Promise.resolve({ success: false } as any),
+    queryFn: () => tenantId && amount ? rewardsApi.getCostPreview(tenantId, { type: activeTab, amount }) : Promise.resolve(null),
     enabled: !!tenantId && !!amount && open,
   })
 
-  const enabledTypes = (settings?.success && (settings as any).data?.enabledTypes) ? (settings as any).data.enabledTypes as RewardType[] : []
-  const availablePoints = (userStats?.success && (userStats as any).data?.availablePoints) ? (userStats as any).data.availablePoints : 0
-  const previewData = (costPreview?.success && (costPreview as any).data) ? (costPreview as any).data as CostPreviewResponse : null
+  const enabledTypes = (settings?.success && settings.data?.enabledTypes) ? settings.data.enabledTypes as RewardType[] : []
+  const availablePoints = (userStats?.success && userStats.data?.availablePoints) ? userStats.data.availablePoints : 0
+  const previewData = (costPreview?.success && costPreview.data) ? costPreview.data as CostPreviewResponse : null
 
   const requestMutation = useMutation({
     mutationFn: async () => {

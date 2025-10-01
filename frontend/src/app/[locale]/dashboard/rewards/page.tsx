@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/ui/semantic-badges'
 import { TenantMemberRole } from '@tiggpro/shared'
 import { usePagesTranslations, useDashboardTranslations, useCommonTranslations } from '@/hooks/use-translations'
-import { Gift, Plus, ArrowUpDown, ArrowUp, ArrowDown, Eye, RefreshCcw, Filter } from 'lucide-react'
+import { Gift, Plus, RefreshCcw } from 'lucide-react'
 import { RewardReviewModal } from '@/components/rewards/reward-review-modal'
 import { RewardRedemptionModal } from '@/components/gamification/reward-redemption-modal'
 import { PageHeader } from '@/components/layout/page-header'
@@ -18,7 +18,6 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { Skeleton } from '@/components/ui/skeleton'
 import { RedemptionReviewTable } from '@/components/rewards/redemption-review-table'
 import { useSession } from 'next-auth/react'
-import { useLocalizedRouter } from '@/hooks/use-localized-router'
 import { toast } from 'sonner'
 import { gamificationApi } from '@/lib/api/gamification'
 import { Star } from 'lucide-react'
@@ -34,11 +33,10 @@ export default function RewardsPage() {
   const t = useDashboardTranslations()
   const c = useCommonTranslations()
   const { data: session } = useSession()
-  const router = useLocalizedRouter()
 
   const { data: redemptions, isLoading } = useQuery({
     queryKey: ['rewards-redemptions', tenantId],
-    queryFn: () => tenantId ? rewardsApi.listRedemptions(tenantId) : Promise.resolve({ success: false } as any),
+    queryFn: () => tenantId ? rewardsApi.listRedemptions(tenantId) : Promise.resolve(null),
     enabled: !!tenantId && !!session,
     refetchInterval: 30000,
   })
@@ -46,7 +44,7 @@ export default function RewardsPage() {
   // User Stats (points balance) for children
   const { data: userStatsResponse } = useQuery({
     queryKey: ['user-stats', tenantId],
-    queryFn: () => tenantId ? gamificationApi.getUserStats(tenantId) : Promise.resolve({ success: false } as any),
+    queryFn: () => tenantId ? gamificationApi.getUserStats(tenantId) : Promise.resolve(null),
     enabled: !!tenantId && !!session && isChild,
   })
 
@@ -78,14 +76,14 @@ export default function RewardsPage() {
     }
   })
 
-  const [reviewing, setReviewing] = useState<any | null>(null)
-  const [requestAgain, setRequestAgain] = useState<any | null>(null)
+  const [reviewing, setReviewing] = useState<RewardRedemption | null>(null)
+  const [requestAgain, setRequestAgain] = useState<RewardRedemption | Record<string, never> | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>(isChild ? 'all' : 'pending')
 
   const allRedemptions = redemptions?.success ? (redemptions.data || []) : []
 
   // Filter redemptions for children based on status
-  const filteredRedemptions = isChild ? allRedemptions.filter((redemption: any) => {
+  const filteredRedemptions = isChild ? allRedemptions.filter((redemption) => {
     switch (statusFilter) {
       case 'all': return true
       case 'pending': return redemption.status === 'pending'
@@ -147,9 +145,9 @@ export default function RewardsPage() {
         <RewardRedemptionModal
           open={!!requestAgain}
           onOpenChange={(open) => !open && setRequestAgain(null)}
-          initialType={(requestAgain?.type as any) || undefined}
-          initialAmount={requestAgain?.amount}
-          initialNotes={requestAgain?.notes}
+          initialType={requestAgain && 'type' in requestAgain ? requestAgain.type : undefined}
+          initialAmount={requestAgain && 'amount' in requestAgain ? requestAgain.amount : undefined}
+          initialNotes={requestAgain && 'notes' in requestAgain ? requestAgain.notes : undefined}
           onSuccess={() => setRequestAgain(null)}
         />
 
@@ -166,13 +164,13 @@ export default function RewardsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-600">
-                    {(userStatsResponse as any).data?.availablePoints || 0}
+                    {userStatsResponse?.data?.availablePoints || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">{t('available')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">
-                    {(userStatsResponse as any).data?.totalPoints || 0}
+                    {userStatsResponse?.data?.totalPoints || 0}
                   </div>
                   <div className="text-sm text-muted-foreground">{t('totalEarned')}</div>
                 </div>
@@ -278,10 +276,10 @@ export default function RewardsPage() {
               <Card>
                 <CardContent>
                   <div className="space-y-4">
-                    {filteredRedemptions.map((redemption: any) => (
+                    {filteredRedemptions.map((redemption) => (
                       <div key={redemption.id} className="flex items-center justify-between p-4 border rounded-lg">
                         <div className="flex items-center gap-3">
-                          <Badge variant="secondary">{p(`rewards.types.${redemption.type}` as any)}</Badge>
+                          <Badge variant="secondary">{p(`rewards.types.${redemption.type}`)}</Badge>
                           <div>
                             <p className="font-medium">{redemption.notes || c('noNotes')}</p>
                             <p className="text-sm text-muted-foreground">
@@ -290,7 +288,7 @@ export default function RewardsPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <StatusBadge status={redemption.status as any} />
+                          <StatusBadge status={redemption.status} />
                           {redemption.status === 'rejected' && (
                             <Button
                               size="sm"

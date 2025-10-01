@@ -6,7 +6,6 @@ import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { CreateChoreForm } from '@/components/chores/create-chore-form'
 import { useTenant } from '@/lib/contexts/tenant-context'
-import { PageHeader } from '@/components/layout/page-header'
 import { useCommonTranslations, usePagesTranslations } from '@/hooks/use-translations'
 
 export default function NewChorePage() {

@@ -7,7 +7,10 @@ export class CreateRedemptionDto {
   @IsEnum(RewardType)
   type: RewardType;
 
-  @ApiProperty({ required: false, description: 'Minutes or monetary amount, when applicable' })
+  @ApiProperty({
+    required: false,
+    description: 'Minutes or monetary amount, when applicable',
+  })
   @IsOptional()
   @IsInt()
   @Min(1)
@@ -29,5 +32,3 @@ export class RejectRedemptionDto {
   @IsString()
   reason?: string;
 }
-
-

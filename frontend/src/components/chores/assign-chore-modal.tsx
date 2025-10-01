@@ -41,7 +41,7 @@ import { assignmentsApi, Assignment } from '@/lib/api/assignments'
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { toast } from 'sonner'
 import { User, Users, Calendar, Flag } from 'lucide-react'
-import { useChoresTranslations, useCommonTranslations, useModalsTranslations } from '@/hooks/use-translations'
+import { useCommonTranslations, useModalsTranslations } from '@/hooks/use-translations'
 
 const getAssignChoreSchema = (modalsT: (key: string) => string) => z.object({
   assignedTo: z.string().min(1, modalsT('assignChore.assignToPlaceholder')),
@@ -64,7 +64,6 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
   const { currentTenant } = useTenant()
   const { data: session } = useSession()
   const queryClient = useQueryClient()
-  const choresT = useChoresTranslations()
   const commonT = useCommonTranslations()
   const modalsT = useModalsTranslations()
 

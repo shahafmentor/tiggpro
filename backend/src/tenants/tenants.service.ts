@@ -8,7 +8,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { customAlphabet } from 'nanoid';
 import { Tenant, TenantMember, User } from '@/entities';
-import { CreateTenantDto, InviteMemberDto, JoinTenantDto, UpdateMemberRoleDto } from './dto';
+import {
+  CreateTenantDto,
+  InviteMemberDto,
+  JoinTenantDto,
+  UpdateMemberRoleDto,
+} from './dto';
 import { TenantMemberRole } from '@tiggpro/shared';
 
 @Injectable()
@@ -86,7 +91,7 @@ export class TenantsService {
     invitedById: string,
   ): Promise<void> {
     // Verify tenant exists
-    const tenant = await this.getTenantById(tenantId);
+    await this.getTenantById(tenantId);
 
     // Find user by email
     const user = await this.userRepository.findOne({
@@ -196,7 +201,8 @@ export class TenantsService {
 
     // Update the role
     membership.role = updateMemberRoleDto.role;
-    const updatedMembership = await this.tenantMemberRepository.save(membership);
+    const updatedMembership =
+      await this.tenantMemberRepository.save(membership);
 
     return updatedMembership;
   }
@@ -321,7 +327,10 @@ export class TenantsService {
     return membership;
   }
 
-  async verifyUserMembership(tenantId: string, userId: string): Promise<TenantMember> {
+  async verifyUserMembership(
+    tenantId: string,
+    userId: string,
+  ): Promise<TenantMember> {
     return this.getMembership(tenantId, userId);
   }
 

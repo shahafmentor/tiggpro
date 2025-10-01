@@ -28,7 +28,6 @@ export class Chore {
   @Column({ name: 'points_reward' })
   pointsReward: number;
 
-
   @Column({
     name: 'difficulty_level',
     type: 'enum',

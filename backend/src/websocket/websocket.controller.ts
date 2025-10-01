@@ -1,12 +1,9 @@
-import { Controller, Post, Param, UseGuards, Request } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
-import { TenantMembershipGuard } from '@/auth/guards/tenant-membership.guard';
+import { Controller, Post, Param, Request } from '@nestjs/common';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { RealtimeEventsService } from './realtime-events.service';
 import type { ApiResponse } from '@tiggpro/shared';
 
 @ApiTags('WebSocket Testing')
-@ApiBearerAuth()
 @Controller('tenants/:tenantId/test-realtime')
 // @UseGuards(JwtAuthGuard, TenantMembershipGuard) // Temporarily disabled for testing
 export class WebSocketController {
@@ -14,10 +11,11 @@ export class WebSocketController {
 
   @Post('chore-assigned')
   @ApiOperation({ summary: 'Test chore assigned event' })
-  async testChoreAssigned(
+  testChoreAssigned(
     @Param('tenantId') tenantId: string,
-    @Request() req: { user: { id: string; email: string; displayName: string } },
-  ): Promise<ApiResponse> {
+    @Request()
+    req: { user: { id: string; email: string; displayName: string } },
+  ): ApiResponse {
     this.realtimeEventsService.emitChoreAssigned(
       tenantId,
       {
@@ -49,10 +47,11 @@ export class WebSocketController {
 
   @Post('assignment-submitted')
   @ApiOperation({ summary: 'Test assignment submitted event' })
-  async testAssignmentSubmitted(
+  testAssignmentSubmitted(
     @Param('tenantId') tenantId: string,
-    @Request() req: { user: { id: string; email: string; displayName: string } },
-  ): Promise<ApiResponse> {
+    @Request()
+    req: { user: { id: string; email: string; displayName: string } },
+  ): ApiResponse {
     this.realtimeEventsService.emitAssignmentSubmitted(
       tenantId,
       {
@@ -78,10 +77,11 @@ export class WebSocketController {
 
   @Post('assignment-reviewed')
   @ApiOperation({ summary: 'Test assignment reviewed event' })
-  async testAssignmentReviewed(
+  testAssignmentReviewed(
     @Param('tenantId') tenantId: string,
-    @Request() req: { user: { id: string; email: string; displayName: string } },
-  ): Promise<ApiResponse> {
+    @Request()
+    req: { user: { id: string; email: string; displayName: string } },
+  ): ApiResponse {
     this.realtimeEventsService.emitAssignmentReviewed(
       tenantId,
       {
@@ -113,10 +113,11 @@ export class WebSocketController {
 
   @Post('reward-requested')
   @ApiOperation({ summary: 'Test reward requested event' })
-  async testRewardRequested(
+  testRewardRequested(
     @Param('tenantId') tenantId: string,
-    @Request() req: { user: { id: string; email: string; displayName: string } },
-  ): Promise<ApiResponse> {
+    @Request()
+    req: { user: { id: string; email: string; displayName: string } },
+  ): ApiResponse {
     this.realtimeEventsService.emitRewardRequested(
       tenantId,
       {

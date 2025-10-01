@@ -21,9 +21,10 @@ import { useTenant } from '@/lib/contexts/tenant-context'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { useCommonTranslations, usePagesTranslations } from '@/hooks/use-translations'
+import type { RewardRedemption } from '@tiggpro/shared'
 
 interface RewardReviewModalProps {
-  redemption: any | null
+  redemption: RewardRedemption | null
   open: boolean
   onOpenChange: (open: boolean) => void
   onReviewComplete?: () => void
@@ -119,7 +120,7 @@ export function RewardReviewModal({ redemption, open, onOpenChange, onReviewComp
             <CardContent className="pt-4">
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <Badge variant="secondary">{p(`rewards.types.${redemption.type}` as any)}</Badge>
+                  <Badge variant="secondary">{p(`rewards.types.${redemption.type}`)}</Badge>
                   <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
                     <Clock className="h-3 w-3 mr-1" />
                     {new Date(redemption.requestedAt).toLocaleString()}

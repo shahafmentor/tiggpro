@@ -9,6 +9,8 @@ import {
   Index,
 } from 'typeorm';
 import { RewardType, RedemptionStatus } from '@tiggpro/shared';
+import type { User } from './user.entity';
+import type { Tenant } from './tenant.entity';
 
 @Entity('reward_redemptions')
 @Index(['tenantId', 'userId'])
@@ -32,7 +34,11 @@ export class RewardRedemption {
   @Column({ type: 'text', nullable: true })
   notes: string | null;
 
-  @Column({ type: 'enum', enum: RedemptionStatus, default: RedemptionStatus.PENDING })
+  @Column({
+    type: 'enum',
+    enum: RedemptionStatus,
+    default: RedemptionStatus.PENDING,
+  })
   status: RedemptionStatus;
 
   @CreateDateColumn({ name: 'requested_at' })
@@ -50,11 +56,9 @@ export class RewardRedemption {
   // Relations
   @ManyToOne('User')
   @JoinColumn({ name: 'user_id' })
-  user: any;
+  user?: User;
 
   @ManyToOne('Tenant')
   @JoinColumn({ name: 'tenant_id' })
-  tenant: any;
+  tenant?: Tenant;
 }
-
-

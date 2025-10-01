@@ -62,7 +62,6 @@ export function ReviewSubmissionModal({
     },
     onSuccess: (response) => {
       if (response.success) {
-        const action = reviewDecision === 'approve' ? 'approved' : 'rejected'
         toast.success(p('review.title'), {
           description: reviewDecision === 'approve'
             ? p('review.allCaughtUp')
@@ -193,12 +192,13 @@ export function ReviewSubmissionModal({
                 {submission.mediaUrls && submission.mediaUrls.length > 0 && (
                   <div className="space-y-2">
                     <p className="text-sm font-medium flex items-center gap-2">
-                      <Image className="h-4 w-4" />
+                      <Image className="h-4 w-4" aria-label="Photos" />
                       {p('review.photosCount')} ({submission.mediaUrls.length})
                     </p>
                     <div className="grid grid-cols-2 gap-2">
                       {submission.mediaUrls.map((url, index) => (
                         <div key={index} className="aspect-video bg-muted rounded-lg border overflow-hidden">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={url}
                             alt={`${p('review.submissionPhoto')} ${index + 1}`}

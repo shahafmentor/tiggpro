@@ -1,4 +1,8 @@
-import { plainToInstance, Transform } from 'class-transformer';
+import {
+  plainToInstance,
+  Transform,
+  type TransformFnParams,
+} from 'class-transformer';
 import {
   IsEnum,
   IsNumber,
@@ -20,7 +24,7 @@ export class EnvironmentVariables {
 
   @IsNumber()
   @IsOptional()
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(({ value }: TransformFnParams) => parseInt(value as string, 10))
   PORT: number = 3001;
 
   @IsString()
@@ -29,7 +33,7 @@ export class EnvironmentVariables {
 
   @IsNumber()
   @IsOptional()
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(({ value }: TransformFnParams) => parseInt(value as string, 10))
   DATABASE_PORT: number = 5432;
 
   @IsString()

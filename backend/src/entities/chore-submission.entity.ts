@@ -7,6 +7,8 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { ReviewStatus } from '@tiggpro/shared';
+import type { ChoreAssignment } from './chore-assignment.entity';
+import type { User } from './user.entity';
 
 @Entity('chore_submissions')
 export class ChoreSubmission {
@@ -48,17 +50,16 @@ export class ChoreSubmission {
   @Column({ name: 'points_awarded', nullable: true })
   pointsAwarded?: number;
 
-
   // Relations
   @ManyToOne('ChoreAssignment', 'submissions')
   @JoinColumn({ name: 'assignment_id' })
-  assignment: any;
+  assignment?: ChoreAssignment;
 
   @ManyToOne('User')
   @JoinColumn({ name: 'submitted_by' })
-  submitter: any;
+  submitter?: User;
 
   @ManyToOne('User')
   @JoinColumn({ name: 'reviewed_by' })
-  reviewer?: any;
+  reviewer?: User;
 }

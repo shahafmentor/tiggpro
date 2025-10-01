@@ -8,6 +8,8 @@ import {
   Index,
 } from 'typeorm';
 import { TenantMemberRole } from '@tiggpro/shared';
+import type { Tenant } from './tenant.entity';
+import type { User } from './user.entity';
 
 @Entity('tenant_members')
 @Index(['tenantId', 'userId'], { unique: true }) // Ensure unique membership
@@ -40,13 +42,13 @@ export class TenantMember {
   // Relations
   @ManyToOne('Tenant', 'members')
   @JoinColumn({ name: 'tenant_id' })
-  tenant: any;
+  tenant?: Tenant;
 
   @ManyToOne('User', 'tenantMemberships')
   @JoinColumn({ name: 'user_id' })
-  user: any;
+  user?: User;
 
   @ManyToOne('User')
   @JoinColumn({ name: 'invited_by' })
-  inviter?: any;
+  inviter?: User;
 }

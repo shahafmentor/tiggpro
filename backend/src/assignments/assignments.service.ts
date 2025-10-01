@@ -106,7 +106,10 @@ export class AssignmentsService {
     }
 
     // Verify assignment can be submitted (pending or rejected for resubmission)
-    if (assignment.status !== AssignmentStatus.PENDING && assignment.status !== AssignmentStatus.REJECTED) {
+    if (
+      assignment.status !== AssignmentStatus.PENDING &&
+      assignment.status !== AssignmentStatus.REJECTED
+    ) {
       throw new BadRequestException('This assignment cannot be submitted');
     }
 
@@ -181,7 +184,10 @@ export class AssignmentsService {
     }
 
     // Verify the submission belongs to this tenant
-    if (submission.assignment.chore.tenantId !== tenantId) {
+    if (
+      !submission.assignment?.chore ||
+      submission.assignment.chore.tenantId !== tenantId
+    ) {
       throw new NotFoundException('Submission not found in this tenant');
     }
 
@@ -207,7 +213,9 @@ export class AssignmentsService {
     // Set points (use chore defaults if not specified)
     if (reviewDto.reviewStatus === ReviewStatus.APPROVED) {
       submission.pointsAwarded =
-        reviewDto.pointsAwarded ?? submission.assignment.chore.pointsReward;
+        reviewDto.pointsAwarded ??
+        submission.assignment?.chore?.pointsReward ??
+        0;
     } else {
       submission.pointsAwarded = 0;
     }
@@ -215,17 +223,19 @@ export class AssignmentsService {
     const savedSubmission = await this.submissionRepository.save(submission);
 
     // Update assignment status
-    const assignment = submission.assignment;
-    assignment.status =
-      reviewDto.reviewStatus === ReviewStatus.APPROVED
-        ? AssignmentStatus.APPROVED
-        : AssignmentStatus.REJECTED;
-    await this.assignmentRepository.save(assignment);
+    if (submission.assignment) {
+      submission.assignment.status =
+        reviewDto.reviewStatus === ReviewStatus.APPROVED
+          ? AssignmentStatus.APPROVED
+          : AssignmentStatus.REJECTED;
+      await this.assignmentRepository.save(submission.assignment);
+    }
 
     // 🎮 AWARD POINTS AND TRIGGER ACHIEVEMENTS if approved
     if (
       reviewDto.reviewStatus === ReviewStatus.APPROVED &&
-      (savedSubmission.pointsAwarded || 0) > 0
+      (savedSubmission.pointsAwarded || 0) > 0 &&
+      submission.assignment?.assignedTo
     ) {
       try {
         await this.pointsService.awardPoints(
@@ -249,7 +259,7 @@ export class AssignmentsService {
       this.userRepository.findOne({ where: { id: submission.submittedBy } }),
     ]);
 
-    if (reviewedByUser && submittedByUser) {
+    if (reviewedByUser && submittedByUser && submission.assignment?.chore) {
       // Emit real-time event for assignment review
       this.realtimeEventsService.emitAssignmentReviewed(
         tenantId,
@@ -292,24 +302,24 @@ export class AssignmentsService {
     const tenantAssignments = await this.assignmentRepository.find({
       where: {
         chore: {
-          tenantId: tenantId
-        }
+          tenantId: tenantId,
+        },
       },
-      select: ['id']
+      select: ['id'],
     });
 
-    const assignmentIds = tenantAssignments.map(a => a.id);
+    const assignmentIds = tenantAssignments.map((a) => a.id);
 
     const submissions = await this.submissionRepository.find({
       where: {
         reviewStatus: ReviewStatus.PENDING,
-        assignmentId: In(assignmentIds)
+        assignmentId: In(assignmentIds),
       },
       relations: [
         'assignment',
         'assignment.chore',
-        'assignment.assignee',  // Include the assigned user data
-        'assignment.assigner'   // Include the assigner user data
+        'assignment.assignee', // Include the assigned user data
+        'assignment.assigner', // Include the assigner user data
       ],
       order: { submittedAt: 'ASC' },
     });

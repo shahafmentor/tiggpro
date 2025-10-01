@@ -19,7 +19,12 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { TenantsService } from './tenants.service';
-import { CreateTenantDto, InviteMemberDto, JoinTenantDto, UpdateMemberRoleDto } from './dto';
+import {
+  CreateTenantDto,
+  InviteMemberDto,
+  JoinTenantDto,
+  UpdateMemberRoleDto,
+} from './dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { TenantMembershipGuard } from '@/auth/guards/tenant-membership.guard';
 import { RolesGuard } from '@/auth/guards/roles.guard';
@@ -78,12 +83,14 @@ export class TenantsController {
           userId: member.userId,
           role: member.role,
           joinedAt: member.joinedAt,
-          user: {
-            id: member.user.id,
-            email: member.user.email,
-            displayName: member.user.displayName,
-            avatarUrl: member.user.avatarUrl,
-          },
+          user: member.user
+            ? {
+                id: member.user.id,
+                email: member.user.email,
+                displayName: member.user.displayName,
+                avatarUrl: member.user.avatarUrl,
+              }
+            : null,
         })),
         message: 'Tenant members retrieved successfully',
       };
@@ -165,12 +172,14 @@ export class TenantsController {
           membershipId: membership.id,
           role: membership.role,
           joinedAt: membership.joinedAt,
-          tenant: {
-            id: membership.tenant.id,
-            name: membership.tenant.name,
-            tenantCode: membership.tenant.tenantCode,
-            type: membership.tenant.type,
-          },
+          tenant: membership.tenant
+            ? {
+                id: membership.tenant.id,
+                name: membership.tenant.name,
+                tenantCode: membership.tenant.tenantCode,
+                type: membership.tenant.type,
+              }
+            : null,
         })),
         message: 'User tenants retrieved successfully',
       };
@@ -215,7 +224,10 @@ export class TenantsController {
   @ApiParam({ name: 'tenantId', description: 'Tenant ID' })
   @ApiParam({ name: 'userId', description: 'User ID to update role for' })
   @ApiDoc({ status: 200, description: 'Member role updated successfully' })
-  @ApiDoc({ status: 403, description: 'Forbidden - only admins can update roles' })
+  @ApiDoc({
+    status: 403,
+    description: 'Forbidden - only admins can update roles',
+  })
   @ApiDoc({ status: 404, description: 'Member not found' })
   async updateMemberRole(
     @Param('tenantId') tenantId: string,
@@ -243,7 +255,9 @@ export class TenantsController {
       return {
         success: false,
         error:
-          error instanceof Error ? error.message : 'Failed to update member role',
+          error instanceof Error
+            ? error.message
+            : 'Failed to update member role',
       };
     }
   }

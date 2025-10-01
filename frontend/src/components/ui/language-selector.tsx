@@ -22,7 +22,7 @@ interface LanguageSelectorProps {
 }
 
 export function LanguageSelector({ variant = 'default', className }: LanguageSelectorProps) {
-  const { locale, direction } = useLocale();
+  const { locale } = useLocale();
   const router = useLocalizedRouter();
   const pathname = usePathname();
   const t = useLanguageTranslations();

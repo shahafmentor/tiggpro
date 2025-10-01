@@ -196,7 +196,7 @@ export function UnifiedRewardSettings({ settings }: UnifiedRewardSettingsProps) 
                       className="flex items-center gap-2 text-sm font-medium cursor-pointer"
                     >
                       <Icon className={`h-4 w-4 ${rewardType.iconColor}`} />
-                      {p(`rewards.types.${rewardType.key}` as any)}
+                      {p(`rewards.types.${rewardType.key}`)}
                     </Label>
                   </div>
 
@@ -208,7 +208,7 @@ export function UnifiedRewardSettings({ settings }: UnifiedRewardSettingsProps) 
                       </Label>
                       <FormField
                         control={form.control}
-                        name={`conversion.${rewardType.conversionField.replace(/^conversion\./, '')}` as any}
+                        name={`conversion.${rewardType.conversionField.replace(/^conversion\./, '')}` as keyof RewardSettingsForm['conversion']}
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>

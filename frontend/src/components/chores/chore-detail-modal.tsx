@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Clock, Star, CheckSquare } from 'lucide-react'
 import { StatusBadge, PointsBadge, DueDateBadge } from '@/components/ui/semantic-badges'
-import { useChoresTranslations, useCommonTranslations } from '@/hooks/use-translations'
+import { useChoresTranslations } from '@/hooks/use-translations'
 
 interface ChoreDetailModalProps {
   assignment: Assignment | null
@@ -29,7 +29,6 @@ export function ChoreDetailModal({
   canSubmit = false
 }: ChoreDetailModalProps) {
   const choresT = useChoresTranslations()
-  const commonT = useCommonTranslations()
   if (!assignment) return null
 
   const dueDate = new Date(assignment.dueDate)

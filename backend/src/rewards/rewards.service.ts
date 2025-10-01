@@ -1,8 +1,18 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RewardRedemption, UserPoints, User } from '@/entities';
-import { TenantMemberRole, type ApiResponse, RewardType, RedemptionStatus } from '@tiggpro/shared';
+import {
+  TenantMemberRole,
+  type ApiResponse,
+  RewardType,
+  RedemptionStatus,
+} from '@tiggpro/shared';
 import { TenantsService } from '@/tenants/tenants.service';
 import { RewardSettingsService } from './settings.service';
 import { RealtimeEventsService } from '@/websocket/realtime-events.service';
@@ -20,13 +30,30 @@ export class RewardsService {
     private readonly settingsService: RewardSettingsService,
     private readonly realtimeEventsService: RealtimeEventsService,
   ) {}
-  private async ensureReviewer(tenantId: string, userId: string): Promise<void> {
-    await this.tenantsService.verifyUserPermission(tenantId, userId, [TenantMemberRole.ADMIN, TenantMemberRole.PARENT]);
+  private async ensureReviewer(
+    tenantId: string,
+    userId: string,
+  ): Promise<void> {
+    await this.tenantsService.verifyUserPermission(tenantId, userId, [
+      TenantMemberRole.ADMIN,
+      TenantMemberRole.PARENT,
+    ]);
   }
 
-  private async calculatePointCost(tenantId: string, type: RewardType, amount: number | null): Promise<number> {
+  private async calculatePointCost(
+    tenantId: string,
+    type: RewardType,
+    amount: number | null,
+  ): Promise<number> {
     const settings = await this.settingsService.getSettings(tenantId);
-    const conversion = settings.data?.conversion as any;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const conversion = settings.data?.conversion as
+      | {
+          pointsPerMinute?: number;
+          spendingMoney?: { perUnit?: number };
+          fixedCosts?: { socialOuting?: number; specialExperience?: number };
+        }
+      | undefined;
 
     if (!conversion) {
       // Default conversion rates if not configured
@@ -56,7 +83,7 @@ export class RewardsService {
   async requestRedemption(
     tenantId: string,
     userId: string,
-    dto: any,
+    dto: { type: RewardType; amount?: number; notes?: string },
   ): Promise<ApiResponse> {
     // Ensure tenant membership
     await this.tenantsService.verifyUserMembership(tenantId, userId);
@@ -75,7 +102,11 @@ export class RewardsService {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (user) {
       // Calculate point cost for the event
-      const pointCost = await this.calculatePointCost(tenantId, saved.type, saved.amount);
+      const pointCost = await this.calculatePointCost(
+        tenantId,
+        saved.type,
+        saved.amount,
+      );
 
       // Emit real-time event for reward request
       this.realtimeEventsService.emitRewardRequested(
@@ -99,36 +130,56 @@ export class RewardsService {
     return { success: true, data: saved };
   }
 
-  async listRedemptions(tenantId: string, userId: string): Promise<ApiResponse> {
+  async listRedemptions(
+    tenantId: string,
+    userId: string,
+  ): Promise<ApiResponse> {
     // Parents/Admins see all; Children see their own
-    const membership = await this.tenantsService.getMembership(tenantId, userId);
-    const isReviewer = [TenantMemberRole.ADMIN, TenantMemberRole.PARENT].includes(membership.role);
+    const membership = await this.tenantsService.getMembership(
+      tenantId,
+      userId,
+    );
+    const isReviewer = [
+      TenantMemberRole.ADMIN,
+      TenantMemberRole.PARENT,
+    ].includes(membership.role);
 
     const where = isReviewer ? { tenantId } : { tenantId, userId };
     const list = await this.redemptionRepo.find({
       where,
       relations: ['user'], // Include user data to display requester information
-      order: { requestedAt: 'DESC' }
+      order: { requestedAt: 'DESC' },
     });
     return { success: true, data: list };
   }
 
-  async getPendingRedemptions(tenantId: string, userId: string): Promise<ApiResponse> {
+  async getPendingRedemptions(
+    tenantId: string,
+    userId: string,
+  ): Promise<ApiResponse> {
     // Only parents/admins can see pending redemptions
-    const membership = await this.tenantsService.getMembership(tenantId, userId);
-    const isReviewer = [TenantMemberRole.ADMIN, TenantMemberRole.PARENT].includes(membership.role);
+    const membership = await this.tenantsService.getMembership(
+      tenantId,
+      userId,
+    );
+    const isReviewer = [
+      TenantMemberRole.ADMIN,
+      TenantMemberRole.PARENT,
+    ].includes(membership.role);
 
     if (!isReviewer) {
-      throw new ForbiddenException('Only parents and admins can view pending redemptions');
+      throw new ForbiddenException(
+        'Only parents and admins can view pending redemptions',
+      );
     }
 
     const pendingRedemptions = await this.redemptionRepo.find({
       where: {
         tenantId,
-        status: RedemptionStatus.PENDING
+        status: RedemptionStatus.PENDING,
       },
       relations: ['user'], // Include user data to display requester information
-      order: { requestedAt: 'DESC' }
+      order: { requestedAt: 'DESC' },
     });
 
     return { success: true, data: pendingRedemptions };
@@ -138,19 +189,25 @@ export class RewardsService {
     tenantId: string,
     redemptionId: string,
     reviewerId: string,
-    dto: any,
+    dto: { notes?: string },
   ): Promise<ApiResponse> {
     await this.ensureReviewer(tenantId, reviewerId);
 
-    const redemption = await this.redemptionRepo.findOne({ where: { id: redemptionId, tenantId } });
+    const redemption = await this.redemptionRepo.findOne({
+      where: { id: redemptionId, tenantId },
+    });
     if (!redemption) throw new NotFoundException('Redemption not found');
 
     // Calculate point cost
-    const pointCost = await this.calculatePointCost(tenantId, redemption.type, redemption.amount);
+    const pointCost = await this.calculatePointCost(
+      tenantId,
+      redemption.type,
+      redemption.amount,
+    );
 
     // Check user's available points
     const userPoints = await this.userPointsRepo.findOne({
-      where: { userId: redemption.userId, tenantId }
+      where: { userId: redemption.userId, tenantId },
     });
 
     if (!userPoints) {
@@ -158,7 +215,9 @@ export class RewardsService {
     }
 
     if (userPoints.availablePoints < pointCost) {
-      throw new BadRequestException(`Insufficient points. Required: ${pointCost}, Available: ${userPoints.availablePoints}`);
+      throw new BadRequestException(
+        `Insufficient points. Required: ${pointCost}, Available: ${userPoints.availablePoints}`,
+      );
     }
 
     // Deduct points
@@ -209,8 +268,8 @@ export class RewardsService {
       data: {
         redemption: saved,
         pointCost,
-        remainingPoints: userPoints.availablePoints
-      }
+        remainingPoints: userPoints.availablePoints,
+      },
     };
   }
 
@@ -218,18 +277,23 @@ export class RewardsService {
     tenantId: string,
     redemptionId: string,
     reviewerId: string,
-    dto: any,
+    dto: { reason?: string },
   ): Promise<ApiResponse> {
     await this.ensureReviewer(tenantId, reviewerId);
 
-    const redemption = await this.redemptionRepo.findOne({ where: { id: redemptionId, tenantId } });
+    const redemption = await this.redemptionRepo.findOne({
+      where: { id: redemptionId, tenantId },
+    });
     if (!redemption) throw new NotFoundException('Redemption not found');
 
     redemption.status = RedemptionStatus.REJECTED;
     redemption.decidedBy = reviewerId;
     redemption.decidedAt = new Date();
     // Optionally store rejection reason in notes (append)
-    if (dto.reason) redemption.notes = redemption.notes ? `${redemption.notes}\nRejected: ${dto.reason}` : `Rejected: ${dto.reason}`;
+    if (dto.reason)
+      redemption.notes = redemption.notes
+        ? `${redemption.notes}\nRejected: ${dto.reason}`
+        : `Rejected: ${dto.reason}`;
 
     const saved = await this.redemptionRepo.save(redemption);
 
@@ -275,11 +339,15 @@ export class RewardsService {
     await this.tenantsService.verifyUserMembership(tenantId, userId);
 
     // Calculate point cost
-    const pointCost = await this.calculatePointCost(tenantId, body.type as RewardType, body.amount || null);
+    const pointCost = await this.calculatePointCost(
+      tenantId,
+      body.type as RewardType,
+      body.amount || null,
+    );
 
     // Get user's available points
     const userPoints = await this.userPointsRepo.findOne({
-      where: { userId, tenantId }
+      where: { userId, tenantId },
     });
 
     const availablePoints = userPoints?.availablePoints || 0;
@@ -289,10 +357,8 @@ export class RewardsService {
       success: true,
       data: {
         pointCost,
-        remainingPoints
-      }
+        remainingPoints,
+      },
     };
   }
 }
-
-

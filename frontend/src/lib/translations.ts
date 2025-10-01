@@ -4,8 +4,10 @@ import type { Dictionary } from '@/app/[locale]/dictionaries';
  * Simple translation function that navigates nested object keys
  * Example: t(dict, 'navigation.dashboard') -> dict.navigation.dashboard
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function t(dictionary: Dictionary, key: string, params?: Record<string, any>): string {
   const keys = key.split('.');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let current: any = dictionary;
 
   for (const k of keys) {

@@ -7,10 +7,10 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { CountBadge } from '@/components/ui/semantic-badges'
 
-interface DashboardListSectionProps {
+interface DashboardListSectionProps<T = Record<string, unknown>> {
   title: string
   icon: LucideIcon
-  items: any[]
+  items: T[]
   isLoading?: boolean
   error?: string | null
   emptyStateIcon?: LucideIcon
@@ -22,7 +22,7 @@ interface DashboardListSectionProps {
   showMoreText?: string
   showLessText?: string
   headerActions?: ReactNode
-  children: (item: any, index: number) => ReactNode
+  children: (item: T, index: number) => ReactNode
 }
 
 export function DashboardListSection({

@@ -9,11 +9,19 @@ import { AuthModule } from '@/auth/auth.module';
 import { WebSocketModule } from '@/websocket/websocket.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([RewardRedemption, RewardSettings, UserPoints, User]), TenantsModule, AuthModule, WebSocketModule],
+  imports: [
+    TypeOrmModule.forFeature([
+      RewardRedemption,
+      RewardSettings,
+      UserPoints,
+      User,
+    ]),
+    TenantsModule,
+    AuthModule,
+    WebSocketModule,
+  ],
   controllers: [RewardsController],
   providers: [RewardsService, RewardSettingsService],
   exports: [RewardsService, RewardSettingsService],
 })
 export class RewardsModule {}
-
-

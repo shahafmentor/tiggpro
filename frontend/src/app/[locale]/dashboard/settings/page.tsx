@@ -22,7 +22,7 @@ export default function SettingsPage() {
     // Settings
     const { data: settings, isLoading } = useQuery({
         queryKey: ['rewards-settings', tenantId],
-        queryFn: () => tenantId ? rewardsApi.getSettings(tenantId) : Promise.resolve({ success: false } as any),
+        queryFn: () => tenantId ? rewardsApi.getSettings(tenantId) : Promise.resolve(null),
         enabled: !!tenantId,
     })
 
