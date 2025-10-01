@@ -1,0 +1,213 @@
+name: Security and Monitoring
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Daily at 2 AM UTC
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '**/package.json'
+      - '**/package-lock.json'
+      - '**/Dockerfile'
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: us-central1
+  ARTIFACT_REGISTRY_REPO: tiggpro
+
+jobs:
+  dependency-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: |
+          npm audit --audit-level=moderate --json > audit-report.json || true
+
+      - name: Generate security summary
+        run: |
+          CRITICAL=$(cat audit-report.json | jq '.metadata.vulnerabilities.critical // 0')
+          HIGH=$(cat audit-report.json | jq '.metadata.vulnerabilities.high // 0')
+          MODERATE=$(cat audit-report.json | jq '.metadata.vulnerabilities.moderate // 0')
+
+          echo "## Security Audit Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Severity | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Critical | ${CRITICAL} |" >> $GITHUB_STEP_SUMMARY
+          echo "| High | ${HIGH} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Moderate | ${MODERATE} |" >> $GITHUB_STEP_SUMMARY
+
+          if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
+            echo "❌ Security vulnerabilities found! Please review and fix." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "✅ No critical or high severity vulnerabilities found." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-audit-report
+          path: audit-report.json
+
+  container-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+      - name: Scan backend image for vulnerabilities
+        run: |
+          IMAGE_NAME="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/backend:latest"
+
+          # Check if image exists
+          if docker manifest inspect $IMAGE_NAME > /dev/null 2>&1; then
+            # Enable Container Analysis API vulnerability scanning
+            gcloud container images scan $IMAGE_NAME \
+              --project=${{ env.PROJECT_ID }} \
+              --format="json" > backend-vulnerabilities.json || true
+          else
+            echo "Backend image not found, skipping scan"
+            echo '{"vulnerabilities": []}' > backend-vulnerabilities.json
+          fi
+
+      - name: Scan frontend image for vulnerabilities
+        run: |
+          IMAGE_NAME="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/frontend:latest"
+
+          # Check if image exists
+          if docker manifest inspect $IMAGE_NAME > /dev/null 2>&1; then
+            # Enable Container Analysis API vulnerability scanning
+            gcloud container images scan $IMAGE_NAME \
+              --project=${{ env.PROJECT_ID }} \
+              --format="json" > frontend-vulnerabilities.json || true
+          else
+            echo "Frontend image not found, skipping scan"
+            echo '{"vulnerabilities": []}' > frontend-vulnerabilities.json
+          fi
+
+      - name: Generate container scan summary
+        run: |
+          echo "## Container Vulnerability Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Image | Critical | High | Medium |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|----------|------|---------|" >> $GITHUB_STEP_SUMMARY
+
+          # Process backend results
+          if [ -f backend-vulnerabilities.json ]; then
+            BACKEND_CRITICAL=$(cat backend-vulnerabilities.json | jq '[.vulnerabilities[]? | select(.severity == "CRITICAL")] | length')
+            BACKEND_HIGH=$(cat backend-vulnerabilities.json | jq '[.vulnerabilities[]? | select(.severity == "HIGH")] | length')
+            BACKEND_MEDIUM=$(cat backend-vulnerabilities.json | jq '[.vulnerabilities[]? | select(.severity == "MEDIUM")] | length')
+            echo "| Backend | ${BACKEND_CRITICAL} | ${BACKEND_HIGH} | ${BACKEND_MEDIUM} |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Process frontend results
+          if [ -f frontend-vulnerabilities.json ]; then
+            FRONTEND_CRITICAL=$(cat frontend-vulnerabilities.json | jq '[.vulnerabilities[]? | select(.severity == "CRITICAL")] | length')
+            FRONTEND_HIGH=$(cat frontend-vulnerabilities.json | jq '[.vulnerabilities[]? | select(.severity == "HIGH")] | length')
+            FRONTEND_MEDIUM=$(cat frontend-vulnerabilities.json | jq '[.vulnerabilities[]? | select(.severity == "MEDIUM")] | length')
+            echo "| Frontend | ${FRONTEND_CRITICAL} | ${FRONTEND_HIGH} | ${FRONTEND_MEDIUM} |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  cost-monitoring:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Monitor Cloud Run costs
+        run: |
+          # Get current month's Cloud Run costs
+          CURRENT_MONTH=$(date +%Y-%m)
+
+          # Query billing data (requires Billing API to be enabled)
+          echo "## Monthly Cost Report - ${CURRENT_MONTH}" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | Estimated Cost |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|----------------|" >> $GITHUB_STEP_SUMMARY
+
+          # Get Cloud Run service stats
+          BACKEND_REQUESTS=$(gcloud run services describe ${{ env.BACKEND_SERVICE }} \
+            --region ${{ env.REGION }} \
+            --format="value(status.traffic[0].percent)" 2>/dev/null || echo "N/A")
+
+          FRONTEND_REQUESTS=$(gcloud run services describe ${{ env.FRONTEND_SERVICE }} \
+            --region ${{ env.REGION }} \
+            --format="value(status.traffic[0].percent)" 2>/dev/null || echo "N/A")
+
+          echo "| Backend Service | Active (${BACKEND_REQUESTS}% traffic) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend Service | Active (${FRONTEND_REQUESTS}% traffic) |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "💡 **Tip**: Monitor actual costs in the [GCP Billing Console](https://console.cloud.google.com/billing)" >> $GITHUB_STEP_SUMMARY
+
+  uptime-monitoring:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Check service health and uptime
+        run: |
+          # Get service URLs
+          FRONTEND_URL=$(gcloud run services describe ${{ env.FRONTEND_SERVICE }} \
+            --region ${{ env.REGION }} \
+            --format 'value(status.url)' 2>/dev/null || echo "")
+
+          BACKEND_URL=$(gcloud run services describe ${{ env.BACKEND_SERVICE }} \
+            --region ${{ env.REGION }} \
+            --format 'value(status.url)' 2>/dev/null || echo "")
+
+          echo "## Service Health Check" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | Status | Response Time |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|--------|---------------|" >> $GITHUB_STEP_SUMMARY
+
+          # Check backend health
+          if [ -n "$BACKEND_URL" ]; then
+            BACKEND_START=$(date +%s%N)
+            if curl -f --max-time 10 "${BACKEND_URL}/health" > /dev/null 2>&1; then
+              BACKEND_END=$(date +%s%N)
+              BACKEND_TIME=$(echo "scale=3; ($BACKEND_END - $BACKEND_START) / 1000000" | bc)
+              echo "| Backend | ✅ Healthy | ${BACKEND_TIME}ms |" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "| Backend | ❌ Unhealthy | N/A |" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "| Backend | ⚠️ Not Found | N/A |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Check frontend health
+          if [ -n "$FRONTEND_URL" ]; then
+            FRONTEND_START=$(date +%s%N)
+            if curl -f --max-time 10 "${FRONTEND_URL}/api/health" > /dev/null 2>&1; then
+              FRONTEND_END=$(date +%s%N)
+              FRONTEND_TIME=$(echo "scale=3; ($FRONTEND_END - $FRONTEND_START) / 1000000" | bc)
+              echo "| Frontend | ✅ Healthy | ${FRONTEND_TIME}ms |" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "| Frontend | ❌ Unhealthy | N/A |" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "| Frontend | ⚠️ Not Found | N/A |" >> $GITHUB_STEP_SUMMARY
+          fi

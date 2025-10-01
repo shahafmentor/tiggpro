@@ -1,0 +1,274 @@
+name: Deploy to Google Cloud Run (Optimized)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: us-central1
+  ARTIFACT_REGISTRY_REPO: tiggpro
+  FRONTEND_SERVICE: tiggpro-frontend
+  BACKEND_SERVICE: tiggpro-backend
+  CACHE_IMAGE_TAG: cache
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      frontend-changed: ${{ steps.changes.outputs.frontend }}
+      backend-changed: ${{ steps.changes.outputs.backend }}
+      shared-changed: ${{ steps.changes.outputs.shared }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # Need previous commit for change detection
+
+      - name: Detect changes
+        id: changes
+        run: |
+          # Check for changes in different parts of the monorepo
+          if git diff --name-only HEAD~1 HEAD | grep -E '^(frontend/|shared/)' > /dev/null; then
+            echo "frontend=true" >> $GITHUB_OUTPUT
+          else
+            echo "frontend=false" >> $GITHUB_OUTPUT
+          fi
+
+          if git diff --name-only HEAD~1 HEAD | grep -E '^(backend/|shared/)' > /dev/null; then
+            echo "backend=true" >> $GITHUB_OUTPUT
+          else
+            echo "backend=false" >> $GITHUB_OUTPUT
+          fi
+
+          if git diff --name-only HEAD~1 HEAD | grep -E '^shared/' > /dev/null; then
+            echo "shared=true" >> $GITHUB_OUTPUT
+          else
+            echo "shared=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint code
+        run: npm run lint
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Run backend tests
+        if: steps.changes.outputs.backend == 'true' || steps.changes.outputs.shared == 'true'
+        run: |
+          cd backend
+          npm run test
+
+      - name: Run backend e2e tests
+        if: steps.changes.outputs.backend == 'true' || steps.changes.outputs.shared == 'true'
+        run: |
+          cd backend
+          npm run test:e2e
+
+      - name: Build application
+        run: npm run build
+
+      - name: Generate version
+        id: version
+        run: |
+          VERSION=$(echo "${GITHUB_SHA}" | cut -c1-8)
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Generated version: ${VERSION}"
+
+  deploy-backend:
+    needs: test-and-build
+    if: needs.test-and-build.outputs.backend-changed == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+      - name: Build and push backend image with cache
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: backend/Dockerfile
+          target: runner
+          push: true
+          tags: |
+            ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/backend:${{ needs.test-and-build.outputs.version }}
+            ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/backend:latest
+          cache-from: |
+            type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/backend:${{ env.CACHE_IMAGE_TAG }}
+            type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/backend:latest
+          cache-to: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/backend:${{ env.CACHE_IMAGE_TAG }},mode=max
+
+      - name: Deploy backend to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.BACKEND_SERVICE }} \
+            --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/backend:${{ needs.test-and-build.outputs.version }} \
+            --region ${{ env.REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3001 \
+            --memory 1Gi \
+            --cpu 1 \
+            --max-instances 2 \
+            --min-instances 0 \
+            --concurrency 80 \
+            --timeout 300 \
+            --execution-environment gen2 \
+            --cpu-boost \
+            --set-env-vars "NODE_ENV=production,PORT=3001" \
+            --set-secrets "DATABASE_URL=database-url:latest,REDIS_URL=redis-url:latest,JWT_SECRET=jwt-secret:latest,JWT_REFRESH_SECRET=jwt-refresh-secret:latest" \
+            --tag version-${{ needs.test-and-build.outputs.version }}
+
+  deploy-frontend:
+    needs: [test-and-build, deploy-backend]
+    if: always() && (needs.test-and-build.outputs.frontend-changed == 'true' || needs.deploy-backend.result == 'success')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+      - name: Get backend URL
+        id: backend-url
+        run: |
+          BACKEND_URL=$(gcloud run services describe ${{ env.BACKEND_SERVICE }} \
+            --region ${{ env.REGION }} \
+            --format 'value(status.url)')
+          echo "backend_url=${BACKEND_URL}" >> $GITHUB_OUTPUT
+
+      - name: Build and push frontend image with cache
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: frontend/Dockerfile
+          target: runner
+          push: true
+          tags: |
+            ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/frontend:${{ needs.test-and-build.outputs.version }}
+            ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/frontend:latest
+          cache-from: |
+            type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/frontend:${{ env.CACHE_IMAGE_TAG }}
+            type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/frontend:latest
+          cache-to: type=registry,ref=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/frontend:${{ env.CACHE_IMAGE_TAG }},mode=max
+
+      - name: Deploy frontend to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.FRONTEND_SERVICE }} \
+            --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/frontend:${{ needs.test-and-build.outputs.version }} \
+            --region ${{ env.REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 3000 \
+            --memory 512Mi \
+            --cpu 1 \
+            --max-instances 2 \
+            --min-instances 0 \
+            --concurrency 100 \
+            --timeout 300 \
+            --execution-environment gen2 \
+            --cpu-boost \
+            --set-env-vars "NODE_ENV=production,PORT=3000,NEXT_PUBLIC_API_URL=${{ steps.backend-url.outputs.backend_url }},INTERNAL_API_URL=${{ steps.backend-url.outputs.backend_url }}" \
+            --set-secrets "NEXTAUTH_SECRET=nextauth-secret:latest" \
+            --tag version-${{ needs.test-and-build.outputs.version }}
+
+  security-scan:
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  post-deployment:
+    needs: [test-and-build, deploy-backend, deploy-frontend]
+    if: always() && (needs.deploy-backend.result == 'success' || needs.deploy-frontend.result == 'success')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Get service URLs
+        id: urls
+        run: |
+          FRONTEND_URL=$(gcloud run services describe ${{ env.FRONTEND_SERVICE }} \
+            --region ${{ env.REGION }} \
+            --format 'value(status.url)')
+          BACKEND_URL=$(gcloud run services describe ${{ env.BACKEND_SERVICE }} \
+            --region ${{ env.REGION }} \
+            --format 'value(status.url)')
+          echo "frontend_url=${FRONTEND_URL}" >> $GITHUB_OUTPUT
+          echo "backend_url=${BACKEND_URL}" >> $GITHUB_OUTPUT
+
+      - name: Run health checks
+        run: |
+          echo "Checking backend health..."
+          curl -f --retry 3 --retry-delay 10 ${{ steps.urls.outputs.backend_url }}/health || exit 1
+
+          echo "Checking frontend health..."
+          curl -f --retry 3 --retry-delay 10 ${{ steps.urls.outputs.frontend_url }}/api/health || exit 1
+
+      - name: Create deployment summary
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | URL | Version | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|-----|---------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend | ${{ steps.urls.outputs.frontend_url }} | ${{ needs.test-and-build.outputs.version }} | ✅ Deployed |" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend | ${{ steps.urls.outputs.backend_url }} | ${{ needs.test-and-build.outputs.version }} | ✅ Deployed |" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Changes Detected" >> $GITHUB_STEP_SUMMARY
+          echo "- Frontend: ${{ needs.test-and-build.outputs.frontend-changed }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Backend: ${{ needs.test-and-build.outputs.backend-changed }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Shared: ${{ needs.test-and-build.outputs.shared-changed }}" >> $GITHUB_STEP_SUMMARY

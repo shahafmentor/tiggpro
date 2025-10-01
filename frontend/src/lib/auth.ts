@@ -22,7 +22,8 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       // Here we'll sync with our backend
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/sync-user`, {
+        const apiUrl = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL;
+        const response = await fetch(`${apiUrl}/auth/sync-user`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

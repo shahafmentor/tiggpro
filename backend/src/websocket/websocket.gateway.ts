@@ -33,7 +33,11 @@ interface RealTimeEvent {
 @Injectable()
 @WSGateway({
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: [
+      process.env.FRONTEND_URL || 'http://localhost:3000',
+      'http://frontend:3000', // Docker internal
+      'http://localhost:3000'  // Local development
+    ],
     credentials: true,
   },
   namespace: '/realtime',
