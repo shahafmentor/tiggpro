@@ -17,7 +17,7 @@ export class ResponseInterceptor<T>
     next: CallHandler,
   ): Observable<ApiResponse<T>> {
     return next.handle().pipe(
-      map((data: unknown) => {
+      map((data: unknown): ApiResponse<T> => {
         // If the response is already an ApiResponse format, return as is
         if (data && typeof data === 'object' && 'success' in data) {
           return data as ApiResponse<T>;
@@ -28,7 +28,7 @@ export class ResponseInterceptor<T>
           success: true,
           data: data as T,
           message: 'Request successful',
-        } as ApiResponse<T>;
+        };
       }),
     );
   }

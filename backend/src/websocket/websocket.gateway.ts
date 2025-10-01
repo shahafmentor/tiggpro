@@ -24,7 +24,7 @@ interface AuthenticatedSocket extends Socket {
 interface RealTimeEvent {
   type: string;
   tenantId: string;
-  data: Record<string, unknown> | unknown;
+  data: unknown;
   timestamp: string;
   excludeUserId?: string;
 }

@@ -1,4 +1,4 @@
-name: Deploy to Google Cloud Run (Optimized)
+name: Deploy to Google Cloud Run
 
 on:
   push:
