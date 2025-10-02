@@ -186,9 +186,8 @@ jobs:
         id: frontend-url
         run: |
           # Use predictable project-based URL format for NEXTAUTH_URL
-          # Cloud Run uses project NUMBER (not project ID) in the URL
-          PROJECT_NUMBER=$(gcloud projects describe ${{ env.PROJECT_ID }} --format='value(projectNumber)')
-          FRONTEND_URL="https://${{ env.FRONTEND_SERVICE }}-${PROJECT_NUMBER}.${{ env.REGION }}.run.app"
+          # Cloud Run URLs use project NUMBER (204731380744), not project ID (tiggpro)
+          FRONTEND_URL="https://${{ env.FRONTEND_SERVICE }}-204731380744.${{ env.REGION }}.run.app"
           echo "frontend_url=${FRONTEND_URL}" >> $GITHUB_OUTPUT
           echo "Frontend URL: ${FRONTEND_URL}"
 
