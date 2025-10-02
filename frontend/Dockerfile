@@ -88,16 +88,24 @@ CMD ["npm", "run", "dev"]
 FROM node:22-alpine AS runner
 WORKDIR /app
 
+# Install curl for health checks
+RUN apk add --no-cache curl
+
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy necessary files
-COPY --from=builder /app/frontend/public ./public
+# Copy the standalone output which includes node_modules and minimal dependencies
 COPY --from=builder /app/frontend/.next/standalone ./
-COPY --from=builder /app/frontend/.next/static ./.next/static
+
+# Copy static files
+COPY --from=builder /app/frontend/.next/static ./frontend/.next/static
+
+# Copy public files
+COPY --from=builder /app/frontend/public ./frontend/public
 
 # Set proper permissions
+RUN chown -R nextjs:nodejs /app
 USER nextjs
 
 # Expose port
@@ -113,5 +121,5 @@ ENV NEXT_TELEMETRY_DISABLED=1
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3000/api/health || exit 1
 
-# Start the application
-CMD ["node", "server.js"]
+# Start the application from the frontend directory where server.js is located
+CMD ["node", "frontend/server.js"]

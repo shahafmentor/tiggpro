@@ -109,8 +109,10 @@ RUN adduser --system --uid 1001 nestjs
 COPY --from=builder /app/backend/dist ./dist
 COPY --from=prod-deps /app/backend/node_modules ./node_modules
 COPY --from=builder /app/backend/package*.json ./
-COPY --from=builder /app/shared/dist ./shared/dist
-COPY --from=builder /app/shared/package.json ./shared/package.json
+
+# Copy shared package after node_modules to add it to the modules
+COPY --from=builder /app/shared/dist ./node_modules/@tiggpro/shared/dist
+COPY --from=builder /app/shared/package.json ./node_modules/@tiggpro/shared/package.json
 
 # Set proper permissions
 RUN chown -R nestjs:nodejs /app
