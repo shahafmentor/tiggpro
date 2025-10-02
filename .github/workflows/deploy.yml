@@ -279,7 +279,7 @@ jobs:
           curl -f --retry 3 --retry-delay 10 ${{ steps.urls.outputs.backend_url }}/health || exit 1
 
           echo "Checking frontend health..."
-          curl -f --retry 3 --retry-delay 10 ${{ steps.urls.outputs.frontend_url }}/api/health || exit 1
+          curl -f --retry 3 --retry-delay 10 ${{ steps.urls.outputs.frontend_url }} || exit 1
 
       - name: Create deployment summary
         run: |
