@@ -50,11 +50,13 @@ RUN npm run build
 
 # Install production dependencies in a separate location
 FROM base AS prod-deps
-WORKDIR /app
-COPY package*.json ./
-COPY backend/package*.json ./backend/
-COPY shared/package*.json ./shared/
-RUN npm ci --only=production --legacy-peer-deps
+WORKDIR /app/backend
+
+# Copy backend package files only (no workspace context)
+COPY backend/package*.json ./
+
+# Install backend production dependencies standalone (use install since no lockfile)
+RUN npm install --only=production --legacy-peer-deps --prefer-offline
 
 # Stage 5: Development image
 FROM base AS development
@@ -126,4 +128,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
   CMD curl -f http://localhost:3001/health || exit 1
 
 # Start the application
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/src/main.js"]
