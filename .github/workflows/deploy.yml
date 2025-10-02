@@ -92,7 +92,7 @@ jobs:
 
   deploy-backend:
     needs: test-and-build
-    if: needs.test-and-build.outputs.backend-changed == 'true'
+    if: needs.test-and-build.outputs.backend-changed == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
     steps:
@@ -168,10 +168,17 @@ jobs:
       - name: Get backend URL
         id: backend-url
         run: |
-          BACKEND_URL=$(gcloud run services describe ${{ env.BACKEND_SERVICE }} \
-            --region ${{ env.REGION }} \
-            --format 'value(status.url)')
-          echo "backend_url=${BACKEND_URL}" >> $GITHUB_OUTPUT
+          # Try to get backend URL, fail gracefully if service doesn't exist yet
+          if gcloud run services describe ${{ env.BACKEND_SERVICE }} --region ${{ env.REGION }} &>/dev/null; then
+            BACKEND_URL=$(gcloud run services describe ${{ env.BACKEND_SERVICE }} \
+              --region ${{ env.REGION }} \
+              --format 'value(status.url)')
+            echo "backend_url=${BACKEND_URL}" >> $GITHUB_OUTPUT
+            echo "Backend URL: ${BACKEND_URL}"
+          else
+            echo "⚠️ Backend service not found. Frontend will be deployed without backend URL."
+            echo "backend_url=https://backend-placeholder.example.com" >> $GITHUB_OUTPUT
+          fi
 
       - name: Build and push frontend image with cache
         uses: docker/build-push-action@v5
@@ -212,6 +219,7 @@ jobs:
     needs: test-and-build
     runs-on: ubuntu-latest
     continue-on-error: true
+    if: false # Temporarily disabled
 
     steps:
       - name: Checkout code
