@@ -110,9 +110,17 @@ COPY --from=builder /app/backend/dist ./dist
 COPY --from=prod-deps /app/backend/node_modules ./node_modules
 COPY --from=builder /app/backend/package*.json ./
 
+# Copy migrations for production migration runs
+COPY backend/ormconfig.ts ./
+COPY backend/tsconfig.json ./
+
 # Copy shared package after node_modules to add it to the modules
 COPY --from=builder /app/shared/dist ./node_modules/@tiggpro/shared/dist
 COPY --from=builder /app/shared/package.json ./node_modules/@tiggpro/shared/package.json
+
+# Copy startup script
+COPY backend/scripts/start-prod.sh ./scripts/start-prod.sh
+RUN chmod +x ./scripts/start-prod.sh
 
 # Set proper permissions
 RUN chown -R nestjs:nodejs /app
@@ -129,5 +137,5 @@ ENV PORT=3001
 HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
   CMD curl -f http://localhost:3001/health || exit 1
 
-# Start the application
-CMD ["node", "dist/src/main.js"]
+# Start the application (with migrations)
+CMD ["./scripts/start-prod.sh"]
