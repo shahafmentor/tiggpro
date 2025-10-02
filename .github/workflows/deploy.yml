@@ -147,7 +147,7 @@ jobs:
 
   deploy-frontend:
     needs: [test-and-build, deploy-backend]
-    if: always() && (needs.test-and-build.outputs.frontend-changed == 'true' || needs.deploy-backend.result == 'success')
+    if: always() && (needs.test-and-build.outputs.frontend-changed == 'true' || needs.deploy-backend.result == 'success' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
 
     steps:
