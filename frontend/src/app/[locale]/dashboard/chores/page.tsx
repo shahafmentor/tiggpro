@@ -246,7 +246,7 @@ export default function ChoresPage() {
                     } else {
                       toast.error(response.error || 'Failed to delete chore')
                     }
-                  } catch (error) {
+                  } catch {
                     toast.error('Failed to delete chore')
                   }
                   setDeletingChore(null)

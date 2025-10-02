@@ -101,7 +101,7 @@ export default function FamilyPage() {
       setCopiedCode(code)
       toast.success('Tenant code copied to clipboard!')
       setTimeout(() => setCopiedCode(null), 2000)
-    } catch (error) {
+    } catch {
       toast.error('Failed to copy tenant code')
     }
   }

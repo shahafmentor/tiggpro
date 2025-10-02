@@ -48,7 +48,12 @@ COPY package*.json ./
 WORKDIR /app/backend
 RUN npm run build
 
-# Remove dev dependencies
+# Install production dependencies in a separate location
+FROM base AS prod-deps
+WORKDIR /app
+COPY package*.json ./
+COPY backend/package*.json ./backend/
+COPY shared/package*.json ./shared/
 RUN npm ci --only=production --legacy-peer-deps
 
 # Stage 5: Development image
@@ -100,7 +105,7 @@ RUN adduser --system --uid 1001 nestjs
 
 # Copy built application and production dependencies
 COPY --from=builder /app/backend/dist ./dist
-COPY --from=builder /app/backend/node_modules ./node_modules
+COPY --from=prod-deps /app/backend/node_modules ./node_modules
 COPY --from=builder /app/backend/package*.json ./
 COPY --from=builder /app/shared/dist ./shared/dist
 COPY --from=builder /app/shared/package.json ./shared/package.json

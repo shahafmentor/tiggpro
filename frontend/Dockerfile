@@ -15,8 +15,8 @@ COPY package*.json ./
 COPY frontend/package*.json ./frontend/
 COPY shared/package*.json ./shared/
 
-# Install dependencies with npm ci for faster, reliable builds
-RUN npm ci --only=production --legacy-peer-deps
+# Install all dependencies (including dev dependencies needed for build)
+RUN npm ci --legacy-peer-deps
 
 # Stage 3: Build shared package
 FROM base AS shared-builder

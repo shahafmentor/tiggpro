@@ -20,6 +20,7 @@ interface CreateChoreRequest {
   recurrencePattern?: RecurrencePattern
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface UpdateChoreRequest extends Partial<CreateChoreRequest> {}
 
 interface AssignChoreRequest {
