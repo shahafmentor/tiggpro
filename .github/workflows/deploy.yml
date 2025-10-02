@@ -141,7 +141,7 @@ jobs:
             --timeout 300 \
             --execution-environment gen2 \
             --cpu-boost \
-            --set-env-vars "NODE_ENV=production,PORT=3001" \
+            --set-env-vars "NODE_ENV=production" \
             --set-secrets "DATABASE_URL=database-url:latest,REDIS_URL=redis-url:latest,JWT_SECRET=jwt-secret:latest,JWT_REFRESH_SECRET=jwt-refresh-secret:latest" \
             --tag version-${{ needs.test-and-build.outputs.version }}
 
@@ -211,7 +211,7 @@ jobs:
             --timeout 300 \
             --execution-environment gen2 \
             --cpu-boost \
-            --set-env-vars "NODE_ENV=production,PORT=3000,NEXT_PUBLIC_API_URL=${{ steps.backend-url.outputs.backend_url }},INTERNAL_API_URL=${{ steps.backend-url.outputs.backend_url }}" \
+            --set-env-vars "NODE_ENV=production,NEXT_PUBLIC_API_URL=${{ steps.backend-url.outputs.backend_url }},INTERNAL_API_URL=${{ steps.backend-url.outputs.backend_url }}" \
             --set-secrets "NEXTAUTH_SECRET=nextauth-secret:latest" \
             --tag version-${{ needs.test-and-build.outputs.version }}
 
