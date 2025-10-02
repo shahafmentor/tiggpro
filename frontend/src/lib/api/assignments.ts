@@ -1,6 +1,6 @@
 'use client'
 
-import { Priority, AssignmentStatus } from '@tiggpro/shared'
+import { Priority, AssignmentStatus, ReviewStatus } from '@tiggpro/shared'
 import { api } from './base'
 import type { ApiResponse } from './config'
 
@@ -50,7 +50,7 @@ interface Submission {
   submissionNotes?: string
   mediaUrls?: string[]
   submittedAt: string
-  reviewStatus: 'pending' | 'approved' | 'rejected'
+  reviewStatus: ReviewStatus
   reviewFeedback?: string
   pointsAwarded?: number
   reviewedAt?: string

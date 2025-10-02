@@ -13,7 +13,5 @@ export type {
   LeaderboardEntry,
   UserStats,
   Achievement,
-  UserAchievement,
-  RedeemGamingTimeRequest,
-  RedeemGamingTimeResponse
+  UserAchievement
 } from '@/lib/api/gamification'

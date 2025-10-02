@@ -10,7 +10,7 @@ import { PageHeader } from '@/components/layout/page-header'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent } from '@/components/ui/card'
 import { useSession } from 'next-auth/react'
-import { Settings, Shield } from 'lucide-react'
+import { Shield } from 'lucide-react'
 
 export default function SettingsPage() {
     const { currentTenant } = useTenant()
@@ -68,7 +68,6 @@ export default function SettingsPage() {
             <PageHeader
                 title={p('settings.title')}
                 subtitle={p('settings.subtitle')}
-                icon={<Settings className="h-6 w-6" />}
             />
 
             {/* Reward Settings */}

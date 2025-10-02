@@ -23,6 +23,7 @@
     "type-check": "npm run type-check:frontend && npm run type-check:backend",
     "type-check:frontend": "cd frontend && npm run type-check",
     "type-check:backend": "cd backend && npm run type-check",
+    "check": "npm run lint && npm run type-check",
     "db:setup": "docker compose up -d postgres redis",
     "db:migrate": "cd backend && npm run migration:run",
     "db:seed": "cd backend && npm run seed",

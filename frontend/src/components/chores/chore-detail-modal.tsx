@@ -76,7 +76,7 @@ export function ChoreDetailModal({
           {/* Status and Due Date */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <StatusBadge status={assignment.status as 'pending' | 'submitted' | 'approved' | 'completed' | 'rejected' | 'overdue'} />
+              <StatusBadge status={assignment.status} />
               {isOverdue && (
                 <Badge variant="destructive" className="text-xs">
                   {choresT('overdue')}

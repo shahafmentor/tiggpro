@@ -93,7 +93,7 @@ export function DashboardListSection({
         ) : (
           <div className="space-y-3">
             {displayItems.map((item, index) => (
-              <div key={item.id || index}>
+              <div key={('id' in item && typeof item.id === 'string') ? item.id : index}>
                 {children(item, index)}
               </div>
             ))}

@@ -131,7 +131,7 @@ export function AssignmentsSection({
                         {t('resubmit')}
                       </Button>
                     ) : (
-                      <StatusBadge status={assignment.status as 'pending' | 'submitted' | 'approved' | 'completed' | 'rejected' | 'overdue'} />
+                      <StatusBadge status={assignment.status} />
                     )}
                   </div>
                 </div>

@@ -1,13 +1,13 @@
 import { Badge, badgeVariants } from "./badge"
 import { cn } from "@/lib/utils"
 import type { VariantProps } from "class-variance-authority"
-import { TenantMemberRole, AssignmentStatus, Priority, RedemptionStatus } from "@tiggpro/shared"
+import { TenantMemberRole, AssignmentStatus, Priority, RedemptionStatus, ReviewStatus } from "@tiggpro/shared"
 import { useRolesTranslations, useChoresTranslations } from "@/hooks/use-translations"
 
 // Status Badge - for assignment/chore statuses
 interface StatusBadgeProps extends React.ComponentProps<"span">,
   Omit<VariantProps<typeof badgeVariants>, 'variant'> {
-  status: AssignmentStatus | RedemptionStatus | 'completed' | 'overdue'
+  status: AssignmentStatus | RedemptionStatus | ReviewStatus | 'completed' | 'overdue'
   asChild?: boolean
 }
 

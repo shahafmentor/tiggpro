@@ -43,9 +43,7 @@ export type {
   UserStats,
   LeaderboardEntry,
   Achievement,
-  UserAchievement,
-  RedeemGamingTimeRequest,
-  RedeemGamingTimeResponse,
+  UserAchievement
 } from './gamification'
 
 /**

@@ -1,6 +1,6 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
+import { useForm, type FieldPath } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -208,7 +208,7 @@ export function UnifiedRewardSettings({ settings }: UnifiedRewardSettingsProps) 
                       </Label>
                       <FormField
                         control={form.control}
-                        name={`conversion.${rewardType.conversionField.replace(/^conversion\./, '')}` as keyof RewardSettingsForm['conversion']}
+                        name={`conversion.${rewardType.conversionField.replace(/^conversion\./, '')}` as FieldPath<RewardSettingsForm>}
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -216,7 +216,7 @@ export function UnifiedRewardSettings({ settings }: UnifiedRewardSettingsProps) 
                                 type="number"
                                 min={rewardType.conversionMin}
                                 max={rewardType.conversionMax}
-                                {...field}
+                                value={typeof field.value === 'number' ? field.value : rewardType.conversionMin}
                                 onChange={(e) => field.onChange(parseInt(e.target.value) || rewardType.conversionMin)}
                                 disabled={updateSettingsMutation.isPending || !isEnabled}
                                 className="w-24 h-8"

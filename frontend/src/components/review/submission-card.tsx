@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { StatusBadge } from '@/components/ui/semantic-badges'
 import { Calendar, Star, User, Eye } from 'lucide-react'
 import type { Submission } from '@/lib/api/assignments'
+import { AssignmentStatus } from '@tiggpro/shared'
 import { usePagesTranslations } from '@/hooks/use-translations'
 
 interface SubmissionCardProps {
@@ -28,7 +29,7 @@ export function SubmissionCard({ submission, onReview }: SubmissionCardProps) {
               <span>{submission.assignment?.assignedTo?.displayName || pageT('review.unknownUser')}</span>
             </div>
           </div>
-          <StatusBadge status="pending" />
+          <StatusBadge status={AssignmentStatus.PENDING} />
         </div>
       </CardHeader>
 

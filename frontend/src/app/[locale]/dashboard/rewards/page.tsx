@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/ui/semantic-badges'
-import { TenantMemberRole } from '@tiggpro/shared'
+import { TenantMemberRole, RewardRedemption } from '@tiggpro/shared'
 import { usePagesTranslations, useDashboardTranslations, useCommonTranslations } from '@/hooks/use-translations'
 import { Gift, Plus, RefreshCcw } from 'lucide-react'
 import { RewardReviewModal } from '@/components/rewards/reward-review-modal'
@@ -146,8 +146,8 @@ export default function RewardsPage() {
           open={!!requestAgain}
           onOpenChange={(open) => !open && setRequestAgain(null)}
           initialType={requestAgain && 'type' in requestAgain ? requestAgain.type : undefined}
-          initialAmount={requestAgain && 'amount' in requestAgain ? requestAgain.amount : undefined}
-          initialNotes={requestAgain && 'notes' in requestAgain ? requestAgain.notes : undefined}
+          initialAmount={requestAgain && 'amount' in requestAgain ? (requestAgain.amount ?? undefined) : undefined}
+          initialNotes={requestAgain && 'notes' in requestAgain ? (requestAgain.notes ?? undefined) : undefined}
           onSuccess={() => setRequestAgain(null)}
         />
 
@@ -182,13 +182,18 @@ export default function RewardsPage() {
         {/* Use table for parent/admin view, keep existing UI for children */}
         {isReviewer ? (
           <RedemptionReviewTable
-            redemptions={allRedemptions}
+            redemptions={allRedemptions.map(r => ({
+              ...r,
+              requestedAt: typeof r.requestedAt === 'string' ? r.requestedAt : r.requestedAt.toISOString(),
+              amount: r.amount ?? undefined,
+              notes: r.notes ?? undefined
+            }))}
             isLoading={isLoading}
             isChild={isChild}
-            onReview={(redemption) => setReviewing(redemption)}
+            onReview={(redemption) => setReviewing(allRedemptions.find(r => r.id === redemption.id) || null)}
             onReject={(redemption) => rejectMutation.mutate(redemption.id)}
             onApprove={(redemption) => approveMutation.mutate(redemption.id)}
-            onRequestAgain={(redemption) => setRequestAgain(redemption)}
+            onRequestAgain={(redemption) => setRequestAgain(allRedemptions.find(r => r.id === redemption.id) || {})}
             emptyStateIcon={<Gift className="h-12 w-12 text-muted-foreground" />}
             emptyStateTitle={isChild ? p('rewards.noRequestsChild') : p('rewards.noRequests')}
             emptyStateDescription={isChild ? p('rewards.createFirstChild') : p('rewards.createFirst')}
