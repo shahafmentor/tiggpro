@@ -1,0 +1,45 @@
+# Development environment files
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env.local
+
+# Node modules (installed during build)
+node_modules
+*/node_modules
+
+# Build artifacts
+dist
+*/dist
+.next
+*/.next
+
+# Test coverage
+coverage
+*/coverage
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# CI/CD
+.github
+
+# Development files
+docker-compose.yml
