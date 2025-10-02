@@ -170,17 +170,11 @@ jobs:
       - name: Get backend URL
         id: backend-url
         run: |
-          # Try to get backend URL, fail gracefully if service doesn't exist yet
-          if gcloud run services describe ${{ env.BACKEND_SERVICE }} --region ${{ env.REGION }} &>/dev/null; then
-            BACKEND_URL=$(gcloud run services describe ${{ env.BACKEND_SERVICE }} \
-              --region ${{ env.REGION }} \
-              --format 'value(status.url)')
-            echo "backend_url=${BACKEND_URL}" >> $GITHUB_OUTPUT
-            echo "Backend URL: ${BACKEND_URL}"
-          else
-            echo "⚠️ Backend service not found. Frontend will be deployed without backend URL."
-            echo "backend_url=https://backend-placeholder.example.com" >> $GITHUB_OUTPUT
-          fi
+          # Use predictable project-based URL format for backend API
+          # Cloud Run URLs use project NUMBER (204731380744), not project ID (tiggpro)
+          BACKEND_URL="https://${{ env.BACKEND_SERVICE }}-204731380744.${{ env.REGION }}.run.app"
+          echo "backend_url=${BACKEND_URL}" >> $GITHUB_OUTPUT
+          echo "Backend URL: ${BACKEND_URL}"
 
       - name: Get frontend URL (for NEXTAUTH_URL)
         id: frontend-url
