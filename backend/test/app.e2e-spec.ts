@@ -16,9 +16,18 @@ describe('AppController (e2e)', () => {
   });
 
   it('/ (GET)', async () => {
-    await request(app.getHttpServer())
+    const response = await request(app.getHttpServer())
       .get('/')
-      .expect(200)
-      .expect('Hello World!');
+      .expect(200);
+
+    expect(response.body).toEqual({
+      success: true,
+      data: 'Hello World!',
+      message: 'Request successful'
+    });
+  });
+
+  afterEach(async () => {
+    await app.close();
   });
 });
