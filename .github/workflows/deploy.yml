@@ -185,17 +185,10 @@ jobs:
       - name: Get frontend URL (for NEXTAUTH_URL)
         id: frontend-url
         run: |
-          # Try to get existing frontend URL for NEXTAUTH_URL
-          if gcloud run services describe ${{ env.FRONTEND_SERVICE }} --region ${{ env.REGION }} &>/dev/null; then
-            FRONTEND_URL=$(gcloud run services describe ${{ env.FRONTEND_SERVICE }} \
-              --region ${{ env.REGION }} \
-              --format 'value(status.url)')
-            echo "frontend_url=${FRONTEND_URL}" >> $GITHUB_OUTPUT
-            echo "Frontend URL: ${FRONTEND_URL}"
-          else
-            echo "⚠️ Frontend service not found yet. Will use placeholder URL."
-            echo "frontend_url=https://frontend-placeholder.example.com" >> $GITHUB_OUTPUT
-          fi
+          # Use predictable project-based URL format for NEXTAUTH_URL
+          FRONTEND_URL="https://${{ env.FRONTEND_SERVICE }}-${{ env.PROJECT_ID }}.${{ env.REGION }}.run.app"
+          echo "frontend_url=${FRONTEND_URL}" >> $GITHUB_OUTPUT
+          echo "Frontend URL: ${FRONTEND_URL}"
 
       - name: Build and push frontend image with cache
         uses: docker/build-push-action@v5
