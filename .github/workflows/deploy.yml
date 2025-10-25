@@ -112,6 +112,14 @@ jobs:
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
 
+      - name: Get frontend URL for CORS
+        id: frontend-url
+        run: |
+          # Frontend URL needed for backend CORS configuration
+          FRONTEND_URL="https://${{ env.FRONTEND_SERVICE }}-204731380744.${{ env.REGION }}.run.app"
+          echo "frontend_url=${FRONTEND_URL}" >> $GITHUB_OUTPUT
+          echo "Frontend URL for CORS: ${FRONTEND_URL}"
+
       - name: Build and push backend image with cache
         uses: docker/build-push-action@v5
         with:
@@ -143,7 +151,7 @@ jobs:
             --timeout 300 \
             --execution-environment gen2 \
             --cpu-boost \
-            --set-env-vars "NODE_ENV=production" \
+            --set-env-vars "NODE_ENV=production,FRONTEND_URL=${{ steps.frontend-url.outputs.frontend_url }}" \
             --set-secrets "DATABASE_URL=database-url:latest,REDIS_URL=redis-url:latest,JWT_SECRET=jwt-secret:latest,JWT_REFRESH_SECRET=jwt-refresh-secret:latest" \
             --tag version-${{ needs.test-and-build.outputs.version }}
 
