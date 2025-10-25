@@ -8,7 +8,7 @@ export class EnableExtensions1757949410319 implements MigrationInterface {
     await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
+  public async down(): Promise<void> {
     // Don't drop extension as other databases might use it
     // await queryRunner.query(`DROP EXTENSION IF EXISTS "uuid-ossp"`);
   }
