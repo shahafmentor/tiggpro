@@ -192,6 +192,9 @@ jobs:
           file: frontend/Dockerfile
           target: runner
           push: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ steps.backend-url.outputs.backend_url }}
+            NEXTAUTH_URL=${{ steps.frontend-url.outputs.frontend_url }}
           tags: |
             ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/frontend:${{ needs.test-and-build.outputs.version }}
             ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REGISTRY_REPO }}/frontend:latest
@@ -216,7 +219,7 @@ jobs:
             --timeout 300 \
             --execution-environment gen2 \
             --cpu-boost \
-            --set-env-vars "NODE_ENV=production,NEXT_PUBLIC_API_URL=${{ steps.backend-url.outputs.backend_url }},INTERNAL_API_URL=${{ steps.backend-url.outputs.backend_url }},NEXTAUTH_URL=${{ steps.frontend-url.outputs.frontend_url }}" \
+            --set-env-vars "NODE_ENV=production,INTERNAL_API_URL=${{ steps.backend-url.outputs.backend_url }}" \
             --set-secrets "NEXTAUTH_SECRET=nextauth-secret:latest,GOOGLE_CLIENT_ID=google-client-id:latest,GOOGLE_CLIENT_SECRET=google-client-secret:latest" \
             --tag version-${{ needs.test-and-build.outputs.version }}
 

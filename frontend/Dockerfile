@@ -28,6 +28,11 @@ RUN cd shared && npm install && npm run build
 FROM base AS builder
 WORKDIR /app
 
+# Accept build arguments for Next.js public environment variables
+# These must be provided at build time to be baked into the bundle
+ARG NEXT_PUBLIC_API_URL
+ARG NEXTAUTH_URL
+
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
@@ -43,6 +48,9 @@ COPY package*.json ./
 # Set environment variables for build
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+# Pass build args as environment variables so Next.js can use them during build
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXTAUTH_URL=${NEXTAUTH_URL}
 
 # Build the application
 WORKDIR /app/frontend
