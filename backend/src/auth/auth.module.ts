@@ -6,11 +6,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthController } from '@/auth/auth.controller';
 import { AuthService } from '@/auth/auth.service';
 import { JwtStrategy } from '@/auth/strategies/jwt.strategy';
-import { User, TenantMember } from '@/entities';
+import { User, TenantMember, Invitation } from '@/entities';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, TenantMember]),
+    TypeOrmModule.forFeature([User, TenantMember, Invitation]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

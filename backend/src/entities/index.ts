@@ -10,3 +10,4 @@ export { UserAchievement } from './user-achievement.entity';
 export { Notification } from './notification.entity';
 export { RewardRedemption } from './reward-redemption.entity';
 export { RewardSettings } from './reward-settings.entity';
+export * from './invitation.entity';

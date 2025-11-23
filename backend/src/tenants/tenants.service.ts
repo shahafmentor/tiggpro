@@ -4,10 +4,11 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { customAlphabet } from 'nanoid';
-import { Tenant, TenantMember, User } from '@/entities';
+import { Tenant, TenantMember, User, Invitation, InvitationStatus } from '@/entities';
 import {
   CreateTenantDto,
   InviteMemberDto,
@@ -31,6 +32,9 @@ export class TenantsService {
     private tenantMemberRepository: Repository<TenantMember>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(Invitation)
+    private invitationRepository: Repository<Invitation>,
+    private configService: ConfigService,
   ) {}
 
   async createTenant(
@@ -98,31 +102,73 @@ export class TenantsService {
       where: { email: inviteMemberDto.email, isActive: true },
     });
 
-    if (!user) {
-      throw new NotFoundException('User with this email not found');
+    if (user) {
+      // Check if user is already a member
+      const existingMembership = await this.tenantMemberRepository.findOne({
+        where: { tenantId, userId: user.id },
+      });
+
+      if (existingMembership) {
+        throw new ConflictException('User is already a member of this tenant');
+      }
+
+      // Create membership
+      const membership = this.tenantMemberRepository.create({
+        tenantId,
+        userId: user.id,
+        role: inviteMemberDto.role,
+        invitedBy: invitedById,
+        isActive: true,
+      });
+
+      await this.tenantMemberRepository.save(membership);
+
+      // TODO: Send email notification to existing user
+    } else {
+      // User does not exist, create invitation
+
+      // Check for existing pending invitation
+      let invitation = await this.invitationRepository.findOne({
+        where: {
+          email: inviteMemberDto.email,
+          tenantId,
+          status: InvitationStatus.PENDING
+        },
+      });
+
+      const token = this.generateCode(); // Reusing nanoid generator for token
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7); // Expires in 7 days
+
+      if (invitation) {
+        // Update existing invitation
+        invitation.role = inviteMemberDto.role;
+        invitation.invitedBy = invitedById;
+        invitation.token = token;
+        invitation.expiresAt = expiresAt;
+        invitation.message = inviteMemberDto.message; // Assuming we add message to entity or just ignore it for now if not in entity
+      } else {
+        // Create new invitation
+        invitation = this.invitationRepository.create({
+          email: inviteMemberDto.email,
+          tenantId,
+          role: inviteMemberDto.role,
+          invitedBy: invitedById,
+          token,
+          expiresAt,
+          status: InvitationStatus.PENDING,
+        });
+      }
+
+      await this.invitationRepository.save(invitation);
+
+      // Generate invitation link
+      const baseUrl = this.configService.get<string>('app.invitationLinkUrl');
+      const invitationLink = `${baseUrl}?token=${token}`;
+
+      // TODO: Send invitation email
+      console.log(`[Mock Email] Invitation sent to ${inviteMemberDto.email}: ${invitationLink}`);
     }
-
-    // Check if user is already a member
-    const existingMembership = await this.tenantMemberRepository.findOne({
-      where: { tenantId, userId: user.id },
-    });
-
-    if (existingMembership) {
-      throw new ConflictException('User is already a member of this tenant');
-    }
-
-    // Create membership
-    const membership = this.tenantMemberRepository.create({
-      tenantId,
-      userId: user.id,
-      role: inviteMemberDto.role,
-      invitedBy: invitedById,
-      isActive: true,
-    });
-
-    await this.tenantMemberRepository.save(membership);
-
-    // TODO: Send invitation notification/email
   }
 
   async joinTenant(

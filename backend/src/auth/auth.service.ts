@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
-import { User, TenantMember } from '@/entities';
+import { User, TenantMember, Invitation, InvitationStatus } from '@/entities';
 import { SyncUserDto, UpdateProfileDto } from '@/auth/dto';
 import { AuthProvider, TenantMemberRole } from '@tiggpro/shared';
 
@@ -14,6 +14,8 @@ export class AuthService {
     private userRepository: Repository<User>,
     @InjectRepository(TenantMember)
     private tenantMemberRepository: Repository<TenantMember>,
+    @InjectRepository(Invitation)
+    private invitationRepository: Repository<Invitation>,
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
@@ -77,6 +79,41 @@ export class AuthService {
       user = this.userRepository.create(userData);
 
       user = await this.userRepository.save(user);
+    }
+
+    // Check for pending invitations
+    const invitations = await this.invitationRepository.find({
+      where: {
+        email: user.email,
+        status: InvitationStatus.PENDING,
+      },
+    });
+
+    for (const invitation of invitations) {
+      // Check if already a member (sanity check)
+      const existingMembership = await this.tenantMemberRepository.findOne({
+        where: {
+          tenantId: invitation.tenantId,
+          userId: user.id,
+        },
+      });
+
+      if (!existingMembership) {
+        // Create membership
+        const membership = this.tenantMemberRepository.create({
+          tenantId: invitation.tenantId,
+          userId: user.id,
+          role: invitation.role,
+          invitedBy: invitation.invitedBy,
+          isActive: true,
+        });
+
+        await this.tenantMemberRepository.save(membership);
+      }
+
+      // Mark invitation as accepted
+      invitation.status = InvitationStatus.ACCEPTED;
+      await this.invitationRepository.save(invitation);
     }
 
     return user;
