@@ -44,6 +44,12 @@ export const authOptions: NextAuthOptions = {
 
         const backendUser = await response.json();
 
+        // Check if the backend returned a successful response
+        if (!backendUser.success || !backendUser.data) {
+          console.error('Backend sync-user failed:', backendUser.error || 'Unknown error');
+          return false;
+        }
+
         // Store backend user info and JWT token in the session
         user.id = backendUser.data.user.id;
         user.backendToken = backendUser.data.access_token;
