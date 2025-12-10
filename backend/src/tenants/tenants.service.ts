@@ -8,7 +8,13 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { customAlphabet } from 'nanoid';
-import { Tenant, TenantMember, User, Invitation, InvitationStatus } from '@/entities';
+import {
+  Tenant,
+  TenantMember,
+  User,
+  Invitation,
+  InvitationStatus,
+} from '@/entities';
 import {
   CreateTenantDto,
   InviteMemberDto,
@@ -132,7 +138,7 @@ export class TenantsService {
         where: {
           email: inviteMemberDto.email,
           tenantId,
-          status: InvitationStatus.PENDING
+          status: InvitationStatus.PENDING,
         },
       });
 
@@ -167,7 +173,9 @@ export class TenantsService {
       const invitationLink = `${baseUrl}?token=${token}`;
 
       // TODO: Send invitation email
-      console.log(`[Mock Email] Invitation sent to ${inviteMemberDto.email}: ${invitationLink}`);
+      console.log(
+        `[Mock Email] Invitation sent to ${inviteMemberDto.email}: ${invitationLink}`,
+      );
     }
   }
 

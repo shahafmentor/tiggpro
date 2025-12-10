@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Gamified chore management app for families",
   "private": true,
+  "overrides": {
+    "js-yaml": "4.1.1"
+  },
   "workspaces": [
     "frontend",
     "backend",

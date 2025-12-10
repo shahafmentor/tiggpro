@@ -70,4 +70,3 @@ export class AddInvitations1759003000000 implements MigrationInterface {
     await queryRunner.query(`DROP TYPE "public"."invitation_status_enum"`);
   }
 }
-
