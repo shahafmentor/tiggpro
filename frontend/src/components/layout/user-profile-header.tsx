@@ -16,7 +16,11 @@ import { signOut } from 'next-auth/react'
 import { useLocalizedRouter } from '@/hooks/use-localized-router'
 import { useCommonTranslations } from '@/hooks/use-translations'
 
-export function UserProfileHeader() {
+interface UserProfileHeaderProps {
+  variant?: 'default' | 'compact'
+}
+
+export function UserProfileHeader({ variant = 'default' }: UserProfileHeaderProps) {
   const { data: session } = useSession()
   const router = useLocalizedRouter()
   const t = useCommonTranslations()
@@ -32,6 +36,7 @@ export function UserProfileHeader() {
     .join('')
     .toUpperCase() || 'U'
 
+  const isCompact = variant === 'compact'
 
   const handleSignOut = async () => {
     await signOut({ redirect: false })
@@ -41,25 +46,36 @@ export function UserProfileHeader() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="w-full justify-start gap-3 h-auto p-2 rtl:justify-start">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={user.image || undefined} alt={user.name || t('user')} />
-            <AvatarFallback className="bg-primary text-primary-foreground">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 text-left rtl:text-right min-w-0">
-            <div className="flex items-center gap-2">
-              <p className="font-medium text-sm text-foreground truncate">
-                {user.name}
-              </p>
+        {isCompact ? (
+          <Button variant="ghost" size="sm" className="h-8 w-8 rounded-full p-0">
+            <Avatar className="h-7 w-7">
+              <AvatarImage src={user.image || undefined} alt={user.name || t('user')} />
+              <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+          </Button>
+        ) : (
+          <Button variant="ghost" className="w-full justify-start gap-3 h-auto p-2 rtl:justify-start">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={user.image || undefined} alt={user.name || t('user')} />
+              <AvatarFallback className="bg-primary text-primary-foreground">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 text-left rtl:text-right min-w-0">
+              <div className="flex items-center gap-2">
+                <p className="font-medium text-sm text-foreground truncate">
+                  {user.name}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span className="truncate">{user.email}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="truncate">{user.email}</span>
-            </div>
-          </div>
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-        </Button>
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          </Button>
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="start">
         <DropdownMenuLabel className="font-normal">

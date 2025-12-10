@@ -63,29 +63,29 @@ export function RewardsStatus({
                 ) : (
                     <div className="space-y-4">
                         {/* Status Summary */}
-                        <div className="grid grid-cols-3 gap-4">
+                        <div className="flex flex-wrap justify-center gap-4">
                             {statusCounts.pending > 0 && (
-                                <div className="text-center">
-                                    <div className="text-2xl font-bold text-yellow-600">
+                                <div className="text-center min-w-[60px]">
+                                    <div className="text-xl sm:text-2xl font-bold text-yellow-600">
                                         {statusCounts.pending}
                                     </div>
-                                    <div className="text-sm text-muted-foreground">{t('pending')}</div>
+                                    <div className="text-xs sm:text-sm text-muted-foreground">{t('pending')}</div>
                                 </div>
                             )}
                             {statusCounts.approved > 0 && (
-                                <div className="text-center">
-                                    <div className="text-2xl font-bold text-green-600">
+                                <div className="text-center min-w-[60px]">
+                                    <div className="text-xl sm:text-2xl font-bold text-green-600">
                                         {statusCounts.approved}
                                     </div>
-                                    <div className="text-sm text-muted-foreground">{t('approved')}</div>
+                                    <div className="text-xs sm:text-sm text-muted-foreground">{t('approved')}</div>
                                 </div>
                             )}
                             {statusCounts.rejected > 0 && (
-                                <div className="text-center">
-                                    <div className="text-2xl font-bold text-red-600">
+                                <div className="text-center min-w-[60px]">
+                                    <div className="text-xl sm:text-2xl font-bold text-red-600">
                                         {statusCounts.rejected}
                                     </div>
-                                    <div className="text-sm text-muted-foreground">{t('rejected')}</div>
+                                    <div className="text-xs sm:text-sm text-muted-foreground">{t('rejected')}</div>
                                 </div>
                             )}
                         </div>

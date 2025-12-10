@@ -18,8 +18,13 @@ import { tenantsApi } from '@/lib/api/tenants'
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { usePagesTranslations } from '@/hooks/use-translations'
 import { useLocalizedRouter } from '@/hooks/use-localized-router'
+import { cn } from '@/lib/utils'
 
-export function TenantSelector() {
+interface TenantSelectorProps {
+  variant?: 'default' | 'compact'
+}
+
+export function TenantSelector({ variant = 'default' }: TenantSelectorProps) {
   const { currentTenant, setCurrentTenant } = useTenant()
   const { data: session, status } = useSession()
   const pageT = usePagesTranslations()
@@ -43,9 +48,14 @@ export function TenantSelector() {
     }
   }, [currentTenant, tenants, isLoading, setCurrentTenant])
 
+  const isCompact = variant === 'compact'
+
   if (isLoading) {
     return (
-      <div className="w-48 h-10 bg-muted rounded-md animate-pulse" />
+      <div className={cn(
+        "bg-muted rounded-md animate-pulse",
+        isCompact ? "w-24 h-8" : "w-48 h-10"
+      )} />
     )
   }
 
@@ -53,12 +63,15 @@ export function TenantSelector() {
     return (
       <Button
         variant="outline"
-        className="gap-2"
+        className={cn(
+          "gap-2",
+          isCompact && "h-8 px-2"
+        )}
         size="sm"
         onClick={() => router.push('/dashboard/family')}
       >
         <Plus className="h-4 w-4" />
-        <span className="hidden sm:inline">{pageT('family.createFamily')}</span>
+        {!isCompact && <span className="hidden sm:inline">{pageT('family.createFamily')}</span>}
       </Button>
     )
   }
@@ -66,19 +79,29 @@ export function TenantSelector() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="gap-2 min-w-0">
+        <Button
+          variant="outline"
+          size={isCompact ? "sm" : "default"}
+          className={cn(
+            "gap-1.5 min-w-0",
+            isCompact && "h-8 px-2"
+          )}
+        >
           <Users className="h-4 w-4 flex-shrink-0" />
           {currentTenant ? (
             <>
-              <span className="truncate max-w-[120px] sm:max-w-[150px]">
+              <span className={cn(
+                "truncate",
+                isCompact ? "max-w-[80px]" : "max-w-[120px] sm:max-w-[150px]"
+              )}>
                 {currentTenant.tenant.name}
               </span>
-              <RoleBadge role={currentTenant.role} />
+              <RoleBadge role={currentTenant.role} size={isCompact ? "sm" : "default"} />
             </>
           ) : (
-            <span>{pageT('family.selectFamily')}</span>
+            <span className="truncate">{pageT('family.selectFamily')}</span>
           )}
-          <ChevronDown className="h-4 w-4 flex-shrink-0" />
+          <ChevronDown className="h-3 w-3 flex-shrink-0" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-64" align="end">

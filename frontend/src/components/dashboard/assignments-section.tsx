@@ -78,39 +78,44 @@ export function AssignmentsSection({
               return (
                 <div
                   key={assignment.id}
-                  className={`flex items-center space-x-4 p-3 rounded-lg border hover:bg-muted/50 transition-colors ${isChild ? 'cursor-pointer' : ''
-                    }`}
+                  className={`p-3 rounded-lg border hover:bg-muted/50 transition-colors ${isChild ? 'cursor-pointer' : ''}`}
                   onClick={isChild ? () => onViewAssignment?.(assignment) : undefined}
                 >
-                  <div className="flex-shrink-0">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${assignment.status === 'approved' ? 'bg-chore-completed/10' :
-                      assignment.status === 'submitted' ? 'bg-chore-submitted/10' :
-                        isOverdue ? 'bg-chore-overdue/10' :
-                          'bg-chore-pending/10'
-                      }`}>
-                      <CheckSquare className={`h-5 w-5 ${assignment.status === 'approved' ? 'text-chore-completed' :
-                        assignment.status === 'submitted' ? 'text-chore-submitted' :
-                          isOverdue ? 'text-chore-overdue' :
-                            'text-chore-pending'
-                        }`} />
+                  {/* Main row - icon, title, and action */}
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${assignment.status === 'approved' ? 'bg-chore-completed/10' :
+                        assignment.status === 'submitted' ? 'bg-chore-submitted/10' :
+                          isOverdue ? 'bg-chore-overdue/10' :
+                            'bg-chore-pending/10'
+                        }`}>
+                        <CheckSquare className={`h-5 w-5 ${assignment.status === 'approved' ? 'text-chore-completed' :
+                          assignment.status === 'submitted' ? 'text-chore-submitted' :
+                            isOverdue ? 'text-chore-overdue' :
+                              'text-chore-pending'
+                          }`} />
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {assignment.chore.title}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3 flex-shrink-0" />
+                          <span className="truncate">{t('due').replace('{date}', dueDate.toLocaleDateString())}</span>
+                        </div>
+                        <DueDateBadge dueDate={dueDate} />
+                      </div>
                     </div>
                   </div>
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm font-medium text-foreground">
-                      {assignment.chore.title}
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      <span>{t('due').replace('{date}', dueDate.toLocaleDateString())}</span>
-                      <DueDateBadge dueDate={dueDate} />
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
+                  {/* Footer row - points and action button */}
+                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50">
                     <PointsBadge points={assignment.chore.pointsReward} />
                     {assignment.status === 'pending' ? (
                       <Button
                         size="sm"
-                        className="text-xs h-6"
+                        className="text-xs h-7 px-3"
                         onClick={(e) => {
                           e.stopPropagation()
                           onSubmitAssignment?.(assignment)
@@ -122,7 +127,7 @@ export function AssignmentsSection({
                       <Button
                         size="sm"
                         variant="outline"
-                        className="text-xs h-6"
+                        className="text-xs h-7 px-3"
                         onClick={(e) => {
                           e.stopPropagation()
                           onSubmitAssignment?.(assignment)

@@ -127,8 +127,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border">
-        <div className="flex">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border safe-area-inset-bottom">
+        <div className="flex items-stretch">
           <DashboardNavigation
             userRole={userRole}
             pendingCount={pendingCount}
@@ -139,11 +139,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="flex-col h-16 w-16 gap-1"
+              className="flex-col h-14 min-w-[4rem] gap-0.5 rounded-none"
               onClick={() => router.push('/dashboard/chores/new')}
             >
               <Plus className="h-5 w-5" />
-              <span className="text-xs">{choresT('create')}</span>
+              <span className="text-[10px] leading-tight">{choresT('create')}</span>
             </Button>
           )}
         </div>
@@ -151,17 +151,16 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Mobile Header */}
       <div className="lg:hidden sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">T</span>
+        <div className="flex items-center justify-between h-14 px-3">
+          <div className="flex items-center gap-2">
+            <UserProfileHeader variant="compact" />
+            <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+              <span className="text-primary-foreground font-bold text-sm">T</span>
             </div>
-            <span className="font-bold text-xl text-foreground">Tiggpro</span>
+            <span className="font-bold text-lg text-foreground">Tiggpro</span>
           </div>
-          <div className={cn(
-            "flex items-center gap-2"
-          )}>
-            <TenantSelector />
+          <div className="flex items-center gap-1">
+            <TenantSelector variant="compact" />
             <ThemeToggle variant="compact" />
             <LanguageSelector variant="compact" />
           </div>
@@ -169,9 +168,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </div>
 
       {/* Main Content */}
-      <div className="lg:pl-64 rtl:lg:pl-0 rtl:lg:pr-64">
+      <div className="lg:pl-64 rtl:lg:pl-0 rtl:lg:pr-64 overflow-x-hidden">
         <main className="min-h-screen pb-20 lg:pb-0">
-          <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6">
             {children}
           </div>
         </main>

@@ -120,13 +120,13 @@ export default function DashboardPage() {
 
   return (
     <RealtimePageWrapper>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Welcome Header */}
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-foreground">
+        <div className="space-y-1 sm:space-y-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             {t('welcome').replace('{name}', session?.user?.name?.split(' ')[0] || 'Champion')}
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground">
             {t('whatsHappening')}
           </p>
         </div>
@@ -197,25 +197,25 @@ export default function DashboardPage() {
         {/* Points Balance for Kids */}
         {isChild && userStatsResponse?.success && (
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2">
-                <Star className="h-5 w-5" />
-                {t('myPoints')}
+                <Star className="h-5 w-5 flex-shrink-0" />
+                <span className="truncate">{t('myPoints')}</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">
+              <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                <div className="text-center p-2 rounded-lg bg-muted/50">
+                  <div className="text-xl sm:text-2xl font-bold text-blue-600">
                     {userStatsResponse?.data?.availablePoints || 0}
                   </div>
-                  <div className="text-sm text-muted-foreground">{t('available')}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">{t('available')}</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">
+                <div className="text-center p-2 rounded-lg bg-muted/50">
+                  <div className="text-xl sm:text-2xl font-bold text-green-600">
                     {userStatsResponse?.data?.totalPoints || 0}
                   </div>
-                  <div className="text-sm text-muted-foreground">{t('totalEarned')}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">{t('totalEarned')}</div>
                 </div>
               </div>
             </CardContent>
@@ -233,21 +233,21 @@ export default function DashboardPage() {
 
         {/* My Assignments Section */}
         <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
+          <CardHeader className="pb-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <CardTitle className="flex items-center gap-2">
-                <CheckSquare className="h-5 w-5" />
-                {t('myAssignments')}
+                <CheckSquare className="h-5 w-5 flex-shrink-0" />
+                <span className="truncate">{t('myAssignments')}</span>
                 {allAssignments.length > 0 && (
-                  <Badge variant="secondary" className="ml-2">
+                  <Badge variant="secondary" className="flex-shrink-0">
                     {allAssignments.length}
                   </Badge>
                 )}
               </CardTitle>
               <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-muted-foreground" />
+                <Filter className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder={t('filterByStatus')} />
                   </SelectTrigger>
                   <SelectContent>

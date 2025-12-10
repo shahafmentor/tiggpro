@@ -95,7 +95,7 @@ export function DashboardNavigation({ userRole, pendingCount = 0, pendingRewards
 
   if (isMobile) {
     return (
-      <nav className="flex justify-around py-2">
+      <nav className="flex flex-1">
         {filteredNavItems.slice(0, 4).map((item) => {
           const isActive = isPathActive(item.href, pathname)
           const Icon = item.icon
@@ -106,17 +106,17 @@ export function DashboardNavigation({ userRole, pendingCount = 0, pendingRewards
               variant={isActive ? "default" : "ghost"}
               size="sm"
               className={cn(
-                "flex-col h-16 w-16 gap-1 relative",
+                "flex-1 flex-col h-14 min-w-0 gap-0.5 relative rounded-none",
                 isActive && "bg-primary text-primary-foreground hover:bg-primary/90"
               )}
               onClick={() => router.push(item.href)}
             >
               <Icon className="h-5 w-5" />
-              <span className="text-xs">{item.label}</span>
+              <span className="text-[10px] leading-tight truncate max-w-full px-1">{item.label}</span>
               {item.badge && (
                 <Badge
                   variant="destructive"
-                  className="absolute -top-1 -right-1 h-5 w-5 p-0 text-xs rtl:-right-auto rtl:-left-1"
+                  className="absolute top-1 end-1 h-4 min-w-4 p-0 text-[10px] flex items-center justify-center"
                 >
                   {item.badge}
                 </Badge>

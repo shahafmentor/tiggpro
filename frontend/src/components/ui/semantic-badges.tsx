@@ -191,10 +191,11 @@ export function DueDateBadge({ dueDate, currentDate = new Date(), className, asC
 interface RoleBadgeProps extends React.ComponentProps<"span">,
   Omit<VariantProps<typeof badgeVariants>, 'variant'> {
   role: TenantMemberRole
+  size?: 'default' | 'sm'
   asChild?: boolean
 }
 
-export function RoleBadge({ role, className, asChild, ...props }: RoleBadgeProps) {
+export function RoleBadge({ role, size = 'default', className, asChild, ...props }: RoleBadgeProps) {
   const rolesT = useRolesTranslations()
 
   const getRoleDisplayName = (role: TenantMemberRole) => {
@@ -240,7 +241,11 @@ export function RoleBadge({ role, className, asChild, ...props }: RoleBadgeProps
   return (
     <Badge
       variant={variant}
-      className={cn("text-xs", roleClassName, className)}
+      className={cn(
+        size === 'sm' ? "text-[10px] px-1.5 py-0" : "text-xs",
+        roleClassName,
+        className
+      )}
       asChild={asChild}
       {...props}
     >

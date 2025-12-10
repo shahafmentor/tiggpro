@@ -64,20 +64,20 @@ export function ChoreCard({ chore, isChild, onClick, onAssign, onSubmitAssignmen
       className="hover:shadow-md transition-shadow cursor-pointer"
       onClick={() => onClick?.(chore.id)}
     >
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-lg font-semibold mb-1">
+      <CardHeader className="pb-2 sm:pb-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-base sm:text-lg font-semibold mb-1 truncate">
               {chore.title}
             </CardTitle>
-            <p className="text-sm text-muted-foreground line-clamp-2">
+            <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
               {chore.description}
             </p>
           </div>
           {chore.assignment && (
             <Badge
               className={cn(
-                'ml-2 text-white font-medium',
+                'flex-shrink-0 text-white font-medium text-xs',
                 getStatusColor(chore.assignment.status?.toUpperCase())
               )}
             >
@@ -86,53 +86,50 @@ export function ChoreCard({ chore, isChild, onClick, onAssign, onSubmitAssignmen
           )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-muted-foreground" />
-            <span className="text-muted-foreground">{chore.estimatedTime}m</span>
+      <CardContent className="space-y-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5 flex-shrink-0" />
+            <span>{chore.estimatedTime}m</span>
           </div>
-        </div>
-
-        {chore.assignedTo && (
-          <div className="flex items-center gap-2 text-sm">
-            <User className="h-4 w-4 text-muted-foreground" />
-            <div className="flex items-center gap-2">
-              <Avatar className="h-5 w-5">
-                <AvatarImage src={chore.assignedTo.avatar} alt={chore.assignedTo.name} />
-                <AvatarFallback className="text-xs">
-                  {chore.assignedTo.name.split(' ').map(n => n[0]).join('')}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-muted-foreground">{chore.assignedTo.name}</span>
-            </div>
-          </div>
-        )}
-
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">{chore.dueDate}</span>
+          <span className="truncate">{chore.dueDate}</span>
           {isChild && chore.assignment && chore.assignment.status?.toUpperCase() === 'OVERDUE' && (
-            <Badge variant="destructive" className="text-xs">
+            <Badge variant="destructive" className="text-[10px] sm:text-xs">
               Overdue
             </Badge>
           )}
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-border">
-          <Badge variant="secondary" className="bg-points-primary/10 text-points-primary font-medium">
-            {chore.points} points
+        {chore.assignedTo && (
+          <div className="flex items-center gap-2 text-xs sm:text-sm">
+            <User className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+            <div className="flex items-center gap-1.5 min-w-0">
+              <Avatar className="h-5 w-5 flex-shrink-0">
+                <AvatarImage src={chore.assignedTo.avatar} alt={chore.assignedTo.name} />
+                <AvatarFallback className="text-[10px]">
+                  {chore.assignedTo.name.split(' ').map(n => n[0]).join('')}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-muted-foreground truncate">{chore.assignedTo.name}</span>
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between pt-2 border-t border-border gap-2">
+          <Badge variant="secondary" className="bg-points-primary/10 text-points-primary font-medium text-xs flex-shrink-0">
+            {chore.points} pts
           </Badge>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
             {!isChild && !chore.assignment && (
               <Button
                 size="sm"
-                className="h-8"
+                className="h-7 text-xs px-2"
                 onClick={(e) => {
                   e.stopPropagation()
                   onAssign?.(chore.id)
                 }}
               >
-                <User className="h-3 w-3 mr-1" />
+                <User className="h-3 w-3 mr-1 rtl:mr-0 rtl:ml-1" />
                 {choresT('assignTo')}
               </Button>
             )}
@@ -141,13 +138,13 @@ export function ChoreCard({ chore, isChild, onClick, onAssign, onSubmitAssignmen
                 {chore.assignment.status?.toUpperCase() === 'PENDING' && (
                   <Button
                     size="sm"
-                    className="h-8"
+                    className="h-7 text-xs px-2"
                     onClick={(e) => {
                       e.stopPropagation()
                       onSubmitAssignment?.(chore.assignment!)
                     }}
                   >
-                    <CheckSquare className="h-3 w-3 mr-1" />
+                    <CheckSquare className="h-3 w-3 mr-1 rtl:mr-0 rtl:ml-1" />
                     {choresT('submit')}
                   </Button>
                 )}
@@ -155,13 +152,13 @@ export function ChoreCard({ chore, isChild, onClick, onAssign, onSubmitAssignmen
                   <Button
                     size="sm"
                     variant="destructive"
-                    className="h-8"
+                    className="h-7 text-xs px-2"
                     onClick={(e) => {
                       e.stopPropagation()
                       onSubmitAssignment?.(chore.assignment!)
                     }}
                   >
-                    <Clock className="h-3 w-3 mr-1" />
+                    <Clock className="h-3 w-3 mr-1 rtl:mr-0 rtl:ml-1" />
                     {choresT('submit')}
                   </Button>
                 )}
