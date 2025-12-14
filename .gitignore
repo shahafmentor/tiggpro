@@ -47,11 +47,15 @@ Thumbs.db
 
 # IDE
 .vscode/
-!.vscode/launch.json
+.cursor/
+.claude/
 .idea/
 *.swp
 *.swo
 *~
+
+# Cursor IDE metadata
+.cursor/
 
 # Docker
 .docker/
