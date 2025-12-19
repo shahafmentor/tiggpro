@@ -24,7 +24,6 @@ import { AssignChoreModal } from '@/components/chores/assign-chore-modal'
 import { SubmitAssignmentModal } from '@/components/chores/submit-assignment-modal'
 import { choresApi, Chore } from '@/lib/api/chores'
 import { assignmentsApi, Assignment } from '@/lib/api/assignments'
-import { tenantsApi, TenantMember } from '@/lib/api/tenants'
 import { TenantMemberRole } from '@tiggpro/shared'
 import { toast } from 'sonner'
 import { useLocalizedRouter } from '@/hooks/use-localized-router'
@@ -41,10 +40,6 @@ interface ChoreWithAssignment {
   description: string
   points: number
   difficulty: 'EASY' | 'MEDIUM' | 'HARD'
-  assignedTo?: {
-    name: string
-    avatar?: string
-  }
   dueDate: string
   estimatedTime: number // in minutes
   assignment?: Assignment // Assignment contains the status
@@ -60,70 +55,50 @@ export default function ChoresPage() {
   const { currentTenant } = useTenant()
   const queryClient = useQueryClient()
   const p = usePagesTranslations()
+  const isChild = currentTenant?.role === TenantMemberRole.CHILD
 
   // Fetch real chores data
-  const { data: choresResponse, isLoading } = useQuery({
+  const { data: choresResponse, isLoading: choresLoading } = useQuery({
     queryKey: ['chores', currentTenant?.tenant.id],
     queryFn: () => currentTenant ? choresApi.getChoresByTenant(currentTenant.tenant.id) : null,
-    enabled: !!currentTenant && !!session,
+    enabled: !!currentTenant && !!session && !isChild,
   })
 
   // Fetch assignments data
-  const { data: assignmentsResponse } = useQuery({
+  const { data: assignmentsResponse, isLoading: assignmentsLoading } = useQuery({
     queryKey: ['assignments', currentTenant?.tenant.id],
     queryFn: () => currentTenant ? assignmentsApi.getUserAssignments(currentTenant.tenant.id) : null,
-    enabled: !!currentTenant && !!session,
-  })
-
-  // Fetch tenant members for assignment display
-  const { data: membersResponse } = useQuery({
-    queryKey: ['tenantMembers', currentTenant?.tenant.id],
-    queryFn: () => currentTenant ? tenantsApi.getTenantMembers(currentTenant.tenant.id) : null,
-    enabled: !!currentTenant && !!session,
+    enabled: !!currentTenant && !!session && isChild,
   })
 
   const chores: Chore[] = choresResponse?.success ? choresResponse.data || [] : []
   const assignments: Assignment[] = assignmentsResponse?.success ? assignmentsResponse.data || [] : []
-  const tenantMembers: TenantMember[] = membersResponse?.success ? membersResponse.data || [] : []
 
   // Convert real chores to display format with assignment data
-  const isChild = currentTenant?.role === TenantMemberRole.CHILD
+  const displayChores: ChoreWithAssignment[] = isChild
+    ? assignments.map((assignment) => ({
+      id: assignment.choreInstanceId,
+      title: assignment.chore.title,
+      description: assignment.chore.description || p('chores.noDescriptionProvided'),
+      points: assignment.chore.pointsReward,
+      difficulty: assignment.chore.difficultyLevel.toUpperCase() as 'EASY' | 'MEDIUM' | 'HARD',
+      dueDate: assignment.dueDate
+        ? new Date(assignment.dueDate).toLocaleDateString()
+        : p('chores.noDueDate'),
+      estimatedTime: assignment.chore.estimatedDurationMinutes,
+      assignment,
+    }))
+    : chores.map((chore) => ({
+      id: chore.id,
+      title: chore.title,
+      description: chore.description || p('chores.noDescriptionProvided'),
+      points: chore.pointsReward,
+      difficulty: chore.difficultyLevel.toUpperCase() as 'EASY' | 'MEDIUM' | 'HARD',
+      dueDate: p('chores.noDueDate'),
+      estimatedTime: chore.estimatedDurationMinutes,
+    }))
 
-  const displayChores = chores
-    .map((chore): ChoreWithAssignment => {
-      // Find assignment for this chore
-      const assignment = assignments.find(a => a.choreId === chore.id)
-
-      // Find assigned member details
-      const assignedMember = assignment
-        ? tenantMembers.find(m => m.userId === assignment.assignedTo?.id)
-        : undefined
-
-      return {
-        id: chore.id,
-        title: chore.title,
-        description: chore.description || 'No description provided',
-        points: chore.pointsReward,
-        difficulty: chore.difficultyLevel.toUpperCase() as 'EASY' | 'MEDIUM' | 'HARD',
-        assignedTo: assignedMember ? {
-          name: assignedMember.user.displayName || assignedMember.user.email,
-          avatar: assignedMember.user.avatarUrl,
-        } : undefined,
-        dueDate: assignment?.dueDate
-          ? new Date(assignment.dueDate).toLocaleDateString()
-          : 'No due date',
-        estimatedTime: chore.estimatedDurationMinutes,
-        assignment, // Assignment contains the status
-      }
-    })
-    .filter((chore) => {
-      // If user is a child, only show chores assigned to them
-      if (isChild) {
-        return chore.assignment && chore.assignment.assignedTo?.id === session?.user?.id
-      }
-      // For admins and parents, show all chores
-      return true
-    })
+  const isLoading = isChild ? assignmentsLoading : choresLoading
 
   if (isLoading) {
     return (
@@ -170,20 +145,20 @@ export default function ChoresPage() {
             key={chore.id}
             chore={chore as unknown as ChoreCardData}
             isChild={isChild}
-            onClick={(id) => {
+            onClick={isChild ? undefined : (id) => {
               const originalChore = chores.find(c => c.id === id)
               if (originalChore) setEditingChore(originalChore)
             }}
-            onAssign={(id) => {
+            onAssign={isChild ? undefined : (id) => {
               const originalChore = chores.find(c => c.id === id)
               if (originalChore) setAssigningChore(originalChore)
             }}
             onSubmitAssignment={(assignment) => setSubmittingAssignment(assignment)}
-            onDelete={(id) => {
+            onDelete={isChild ? undefined : (id) => {
               const originalChore = chores.find(c => c.id === id)
               if (originalChore) setDeletingChore(originalChore)
             }}
-            onEdit={(id) => {
+            onEdit={isChild ? undefined : (id) => {
               const originalChore = chores.find(c => c.id === id)
               if (originalChore) setEditingChore(originalChore)
             }}
@@ -198,12 +173,14 @@ export default function ChoresPage() {
             <EmptyState
               icon={<CheckSquare className="h-12 w-12 text-muted-foreground" />}
               title={p('chores.noChores')}
-              description={p('chores.createFirst')}
+              description={isChild ? p('chores.subtitleChild') : p('chores.createFirst')}
               action={(
-                <Button onClick={() => router.push('/dashboard/chores/new')}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  {p('chores.addFirst')}
-                </Button>
+                !isChild ? (
+                  <Button onClick={() => router.push('/dashboard/chores/new')}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    {p('chores.addFirst')}
+                  </Button>
+                ) : undefined
               )}
             />
           </CardContent>
@@ -216,7 +193,7 @@ export default function ChoresPage() {
         open={!!editingChore}
         onOpenChange={(open) => !open && setEditingChore(null)}
         onSuccess={() => {
-          toast.success('Chore updated successfully!')
+          toast.success(p('chores.toasts.choreUpdatedSuccess'))
           setEditingChore(null)
           // Refetch chores to show updated data
           queryClient.invalidateQueries({ queryKey: ['chores', currentTenant?.tenant.id] })
@@ -227,34 +204,34 @@ export default function ChoresPage() {
       <AlertDialog open={!!deletingChore} onOpenChange={(open) => !open && setDeletingChore(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Chore</AlertDialogTitle>
+            <AlertDialogTitle>{p('chores.deleteDialog.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete &ldquo;{deletingChore?.title}&rdquo;? This action cannot be undone.
+              {p('chores.deleteDialog.description', { title: deletingChore?.title ?? '' })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{p('chores.deleteDialog.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
                 if (deletingChore && currentTenant) {
                   try {
                     const response = await choresApi.deleteChore(currentTenant.tenant.id, deletingChore.id)
                     if (response.success) {
-                      toast.success('Chore deleted successfully!')
+                      toast.success(p('chores.toasts.choreDeletedSuccess'))
                       // Refresh the chores list
                       queryClient.invalidateQueries({ queryKey: ['chores', currentTenant.tenant.id] })
                     } else {
-                      toast.error(response.error || 'Failed to delete chore')
+                      toast.error(response.error || p('chores.toasts.choreDeleteFailed'))
                     }
                   } catch {
-                    toast.error('Failed to delete chore')
+                    toast.error(p('chores.toasts.choreDeleteFailed'))
                   }
                   setDeletingChore(null)
                 }
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete
+              {p('chores.deleteDialog.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

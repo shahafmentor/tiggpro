@@ -318,8 +318,21 @@
       "noChores": "לא נמצאו מטלות",
       "createFirst": "התחל ביצירת המטלה הראשונה שלך!",
       "addFirst": "הוסף מטלה ראשונה",
+      "noDescriptionProvided": "אין תיאור",
+      "noDueDate": "אין תאריך יעד",
       "noFamilySelectedTitle": "לא נבחרה משפחה",
-      "noFamilySelectedDesc": "בחר משפחה כדי לראות ולנהל מטלות."
+      "noFamilySelectedDesc": "בחר משפחה כדי לראות ולנהל מטלות.",
+      "deleteDialog": {
+        "title": "מחיקת מטלה",
+        "description": "האם אתה בטוח שברצונך למחוק את \"{title}\"? פעולה זו אינה ניתנת לביטול.",
+        "confirm": "מחק",
+        "cancel": "ביטול"
+      },
+      "toasts": {
+        "choreUpdatedSuccess": "המטלה עודכנה בהצלחה!",
+        "choreDeletedSuccess": "המטלה נמחקה בהצלחה!",
+        "choreDeleteFailed": "נכשל במחיקת המטלה"
+      }
     },
     "family": {
       "title": "ניהול משפחה",
@@ -341,7 +354,37 @@
       "createFamily": "צור משפחה",
       "selectFamily": "בחר משפחה",
       "switchFamily": "החלף משפחה",
-      "manageFamilies": "נהל משפחות"
+      "manageFamilies": "נהל משפחות",
+      "inviteDialog": {
+        "title": "הזמנת בן משפחה",
+        "description": "שלח הזמנה להצטרף למשפחה \"{familyName}\""
+      },
+      "removeMemberDialog": {
+        "title": "הסרת בן משפחה",
+        "description": "האם אתה בטוח שברצונך להסיר את {name} מהמשפחה? פעולה זו אינה ניתנת לביטול.",
+        "confirm": "הסר בן משפחה",
+        "cancel": "ביטול"
+      },
+      "deleteFamilyDialog": {
+        "title": "מחיקת משפחה",
+        "descriptionIntro": "האם אתה בטוח שברצונך למחוק את \"{name}\"? פעולה זו אינה ניתנת לביטול ותסיר לצמיתות:",
+        "bullets": {
+          "members": "כל בני המשפחה",
+          "choresAssignments": "כל המטלות וההקצאות",
+          "pointsAchievements": "כל הנקודות וההישגים",
+          "data": "כל נתוני המשפחה"
+        },
+        "confirm": "מחק משפחה",
+        "cancel": "ביטול"
+      },
+      "toasts": {
+        "memberRemovedSuccess": "בן המשפחה הוסר בהצלחה",
+        "memberRemoveFailed": "נכשל בהסרת בן המשפחה",
+        "copyCodeSuccess": "קוד המשפחה הועתק ללוח!",
+        "copyCodeFailed": "נכשל בהעתקת קוד המשפחה",
+        "familyDeletedSuccess": "המשפחה נמחקה בהצלחה",
+        "familyDeleteFailed": "נכשל במחיקת המשפחה"
+      }
     },
     "achievements": {
       "title": "הישגים",

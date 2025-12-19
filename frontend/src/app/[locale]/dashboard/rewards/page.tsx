@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/ui/semantic-badges'
 import { TenantMemberRole, RewardRedemption } from '@tiggpro/shared'
-import { usePagesTranslations, useDashboardTranslations, useCommonTranslations } from '@/hooks/use-translations'
+import { usePagesTranslations, useCommonTranslations } from '@/hooks/use-translations'
 import { Gift, Plus, RefreshCcw } from 'lucide-react'
 import { RewardReviewModal } from '@/components/rewards/reward-review-modal'
 import { RewardRedemptionModal } from '@/components/gamification/reward-redemption-modal'
@@ -20,8 +20,8 @@ import { RedemptionReviewTable } from '@/components/rewards/redemption-review-ta
 import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
 import { gamificationApi } from '@/lib/api/gamification'
-import { Star } from 'lucide-react'
 import { RealtimePageWrapper } from '@/components/realtime/realtime-page-wrapper'
+import { MyPointsCard } from '@/components/gamification'
 
 export default function RewardsPage() {
   const { currentTenant } = useTenant()
@@ -30,7 +30,6 @@ export default function RewardsPage() {
   const isReviewer = currentTenant?.role === TenantMemberRole.ADMIN || currentTenant?.role === TenantMemberRole.PARENT
   const isChild = currentTenant?.role === TenantMemberRole.CHILD
   const p = usePagesTranslations()
-  const t = useDashboardTranslations()
   const c = useCommonTranslations()
   const { data: session } = useSession()
 
@@ -152,31 +151,8 @@ export default function RewardsPage() {
         />
 
         {/* Points Balance for Kids */}
-        {isChild && userStatsResponse?.success && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Star className="h-5 w-5" />
-                {t('myPoints')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">
-                    {userStatsResponse?.data?.availablePoints || 0}
-                  </div>
-                  <div className="text-sm text-muted-foreground">{t('available')}</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">
-                    {userStatsResponse?.data?.totalPoints || 0}
-                  </div>
-                  <div className="text-sm text-muted-foreground">{t('totalEarned')}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {isChild && userStatsResponse?.success && userStatsResponse.data && (
+          <MyPointsCard stats={userStatsResponse.data} />
         )}
 
         {/* Use table for parent/admin view, keep existing UI for children */}

@@ -318,8 +318,21 @@
       "noChores": "No chores found",
       "createFirst": "Get started by creating your first chore!",
       "addFirst": "Add First Chore",
+      "noDescriptionProvided": "No description provided",
+      "noDueDate": "No due date",
       "noFamilySelectedTitle": "No Family Selected",
-      "noFamilySelectedDesc": "Please select a family to view and manage chores."
+      "noFamilySelectedDesc": "Please select a family to view and manage chores.",
+      "deleteDialog": {
+        "title": "Delete Chore",
+        "description": "Are you sure you want to delete “{title}”? This action cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel"
+      },
+      "toasts": {
+        "choreUpdatedSuccess": "Chore updated successfully!",
+        "choreDeletedSuccess": "Chore deleted successfully!",
+        "choreDeleteFailed": "Failed to delete chore"
+      }
     },
     "family": {
       "title": "Family Management",
@@ -341,7 +354,37 @@
       "createFamily": "Create Family",
       "selectFamily": "Select Family",
       "switchFamily": "Switch Family",
-      "manageFamilies": "Manage Families"
+      "manageFamilies": "Manage Families",
+      "inviteDialog": {
+        "title": "Invite Family Member",
+        "description": "Send an invitation to join {familyName}"
+      },
+      "removeMemberDialog": {
+        "title": "Remove Family Member",
+        "description": "Are you sure you want to remove {name} from this family? This action cannot be undone.",
+        "confirm": "Remove Member",
+        "cancel": "Cancel"
+      },
+      "deleteFamilyDialog": {
+        "title": "Delete Family",
+        "descriptionIntro": "Are you sure you want to delete “{name}”? This action cannot be undone and will permanently remove:",
+        "bullets": {
+          "members": "All family members",
+          "choresAssignments": "All chores and assignments",
+          "pointsAchievements": "All points and achievements",
+          "data": "All family data"
+        },
+        "confirm": "Delete Family",
+        "cancel": "Cancel"
+      },
+      "toasts": {
+        "memberRemovedSuccess": "Member removed successfully",
+        "memberRemoveFailed": "Failed to remove member",
+        "copyCodeSuccess": "Family code copied to clipboard!",
+        "copyCodeFailed": "Failed to copy family code",
+        "familyDeletedSuccess": "Family deleted successfully",
+        "familyDeleteFailed": "Failed to delete family"
+      }
     },
     "achievements": {
       "title": "Achievements",

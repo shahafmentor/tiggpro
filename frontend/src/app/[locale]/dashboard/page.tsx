@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useQuery as useRewardsQuery } from '@tanstack/react-query'
 import {
-  Star,
   AlertCircle,
   Eye,
   Filter,
@@ -28,6 +27,7 @@ import { TenantMemberRole, type RewardRedemption } from '@tiggpro/shared'
 import { useLocalizedRouter } from '@/hooks/use-localized-router'
 import { useDashboardTranslations } from '@/hooks/use-translations'
 import { RealtimePageWrapper } from '@/components/realtime/realtime-page-wrapper'
+import { MyPointsCard } from '@/components/gamification'
 
 export default function DashboardPage() {
   const { data: session } = useSession()
@@ -195,31 +195,8 @@ export default function DashboardPage() {
 
 
         {/* Points Balance for Kids */}
-        {isChild && userStatsResponse?.success && (
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2">
-                <Star className="h-5 w-5 flex-shrink-0" />
-                <span className="truncate">{t('myPoints')}</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                <div className="text-center p-2 rounded-lg bg-muted/50">
-                  <div className="text-xl sm:text-2xl font-bold text-blue-600">
-                    {userStatsResponse?.data?.availablePoints || 0}
-                  </div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">{t('available')}</div>
-                </div>
-                <div className="text-center p-2 rounded-lg bg-muted/50">
-                  <div className="text-xl sm:text-2xl font-bold text-green-600">
-                    {userStatsResponse?.data?.totalPoints || 0}
-                  </div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">{t('totalEarned')}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {isChild && userStatsResponse?.success && userStatsResponse.data && (
+          <MyPointsCard stats={userStatsResponse.data} />
         )}
 
         {/* Rewards Status for Kids */}

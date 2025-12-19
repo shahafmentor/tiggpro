@@ -6,7 +6,6 @@ import {
   Plus
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 import { UserProfileHeader } from '@/components/layout/user-profile-header'
 import { TenantSelector } from '@/components/tenant/tenant-selector'
 import { LanguageSelector } from '@/components/ui/language-selector'

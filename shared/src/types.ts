@@ -89,10 +89,28 @@ export interface RecurrencePattern {
   dayOfMonth?: number; // 1-31
 }
 
+// Chore Instance (snapshot) Types
+export interface ChoreInstance {
+  id: string;
+  tenantId: string;
+  templateChoreId: string;
+  title: string;
+  description: string | null;
+  pointsReward: number;
+  difficultyLevel: DifficultyLevel;
+  estimatedDurationMinutes: number;
+  isRecurring: boolean;
+  recurrencePattern?: RecurrencePattern;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Chore Assignment Types
 export interface ChoreAssignment {
   id: string;
-  choreId: string;
+  choreInstanceId: string;
+  templateChoreId: string;
   assignedTo: string;
   assignedBy: string;
   dueDate: Date;

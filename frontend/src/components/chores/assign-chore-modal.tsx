@@ -35,9 +35,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { choresApi, AssignChoreRequest, Chore } from '@/lib/api/chores'
+import { choresApi, AssignChoreRequest, Chore, ActiveTemplateAssignment } from '@/lib/api/chores'
 import { tenantsApi, TenantMember } from '@/lib/api/tenants'
-import { assignmentsApi, Assignment } from '@/lib/api/assignments'
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { toast } from 'sonner'
 import { User, Users, Calendar, Flag } from 'lucide-react'
@@ -74,18 +73,23 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
     enabled: !!currentTenant && !!session && open,
   })
 
-  // Fetch current assignments to check if chore is already assigned
-  const { data: assignmentsResponse } = useQuery({
-    queryKey: ['assignments', currentTenant?.tenant.id],
-    queryFn: () => currentTenant ? assignmentsApi.getUserAssignments(currentTenant.tenant.id) : null,
-    enabled: !!currentTenant && !!session && open,
+  // Template-centric: fetch active assignments for this template (to show "currently assigned" / allow reassign)
+  const { data: activeAssignmentsResponse } = useQuery({
+    queryKey: ['choreTemplateActiveAssignments', currentTenant?.tenant.id, chore?.id],
+    queryFn: () => (currentTenant && chore)
+      ? choresApi.getActiveAssignmentsForTemplate(currentTenant.tenant.id, chore.id)
+      : null,
+    enabled: !!currentTenant && !!session && open && !!chore,
   })
 
   const tenantMembers: TenantMember[] = (membersResponse?.success && membersResponse.data) ? membersResponse.data : []
-  const assignments: Assignment[] = (assignmentsResponse?.success && assignmentsResponse.data) ? assignmentsResponse.data : []
+  const activeAssignments: ActiveTemplateAssignment[] =
+    (activeAssignmentsResponse?.success && activeAssignmentsResponse.data)
+      ? activeAssignmentsResponse.data
+      : []
 
-  // Find current assignment for this chore
-  const currentAssignment = chore ? assignments.find(a => a.choreId === chore.id) : null
+  // Best-effort: pick the newest active assignment to show as "currently assigned"
+  const currentAssignment = activeAssignments[0] ?? null
 
   const assignChoreSchema = getAssignChoreSchema(modalsT)
 
@@ -137,6 +141,7 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
         toast.success(modalsT('assignChore.success'))
         queryClient.invalidateQueries({ queryKey: ['chores'] })
         queryClient.invalidateQueries({ queryKey: ['assignments'] })
+        queryClient.invalidateQueries({ queryKey: ['choreTemplateActiveAssignments'] })
         form.reset()
         onOpenChange(false)
         onSuccess?.()

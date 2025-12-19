@@ -11,7 +11,8 @@ export interface RealtimeEvent {
 
 export interface ChoreAssignedEvent {
   assignmentId: string
-  choreId: string
+  choreInstanceId: string
+  templateChoreId: string
   choreTitle: string
   assignedTo: {
     id: string

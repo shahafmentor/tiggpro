@@ -241,4 +241,68 @@ export class ChoresController {
       };
     }
   }
+
+  @Get(':choreId/assignments/active')
+  @ApiOperation({
+    summary: 'Get active assignments for a chore template',
+    description:
+      'Retrieves active assignments (pending/submitted/overdue) for a chore template in the tenant',
+  })
+  @ApiParam({ name: 'tenantId', description: 'Tenant ID' })
+  @ApiParam({ name: 'choreId', description: 'Template chore ID' })
+  @ApiDoc({
+    status: 200,
+    description: 'Active template assignments retrieved successfully',
+  })
+  @ApiDoc({ status: 403, description: 'Insufficient permissions' })
+  async getActiveAssignmentsForTemplate(
+    @Param('tenantId') tenantId: string,
+    @Param('choreId') choreId: string,
+    @Request() req: { user: { id: string } },
+  ): Promise<ApiResponse> {
+    try {
+      const assignments = await this.choresService.getActiveAssignmentsForTemplate(
+        tenantId,
+        choreId,
+        req.user.id,
+      );
+
+      return {
+        success: true,
+        data: assignments.map((a) => ({
+          id: a.id,
+          choreInstanceId: a.choreInstanceId,
+          status: a.status,
+          dueDate: a.dueDate,
+          priority: a.priority,
+          createdAt: a.createdAt,
+          assignedTo: a.assignee
+            ? {
+                id: a.assignee.id,
+                email: a.assignee.email,
+                displayName: a.assignee.displayName,
+                avatarUrl: a.assignee.avatarUrl,
+              }
+            : undefined,
+          assignedBy: a.assigner
+            ? {
+                id: a.assigner.id,
+                email: a.assigner.email,
+                displayName: a.assigner.displayName,
+                avatarUrl: a.assigner.avatarUrl,
+              }
+            : undefined,
+        })),
+        message: 'Active template assignments retrieved successfully',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to get active template assignments',
+      };
+    }
+  }
 }

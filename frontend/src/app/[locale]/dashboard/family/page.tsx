@@ -71,11 +71,11 @@ export default function FamilyPage() {
     mutationFn: ({ tenantId, userId }: { tenantId: string, userId: string }) =>
       tenantsApi.removeMember(tenantId, userId),
     onSuccess: () => {
-      toast.success('Member removed successfully')
+      toast.success(p('family.toasts.memberRemovedSuccess'))
       queryClient.invalidateQueries({ queryKey: ['tenant-members'] })
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to remove member')
+      toast.error(error.message || p('family.toasts.memberRemoveFailed'))
     },
   })
 
@@ -83,12 +83,12 @@ export default function FamilyPage() {
   const deleteTenantMutation = useMutation({
     mutationFn: (tenantId: string) => tenantsApi.deleteTenant(tenantId),
     onSuccess: () => {
-      toast.success('Family deleted successfully')
+      toast.success(p('family.toasts.familyDeletedSuccess'))
       queryClient.invalidateQueries({ queryKey: ['tenants', 'my'] })
       setSelectedTenant(null) // Clear selected tenant
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to delete family')
+      toast.error(error.message || p('family.toasts.familyDeleteFailed'))
     },
   })
 
@@ -99,10 +99,10 @@ export default function FamilyPage() {
     try {
       await navigator.clipboard.writeText(code)
       setCopiedCode(code)
-      toast.success('Tenant code copied to clipboard!')
+      toast.success(p('family.toasts.copyCodeSuccess'))
       setTimeout(() => setCopiedCode(null), 2000)
     } catch {
-      toast.error('Failed to copy tenant code')
+      toast.error(p('family.toasts.copyCodeFailed'))
     }
   }
 
@@ -227,9 +227,9 @@ export default function FamilyPage() {
                           </DialogTrigger>
                           <DialogContent>
                             <DialogHeader>
-                              <DialogTitle>Invite Family Member</DialogTitle>
+                              <DialogTitle>{p('family.inviteDialog.title')}</DialogTitle>
                               <DialogDescription>
-                                Send an invitation to join {selectedTenant.tenant.name}
+                                {p('family.inviteDialog.description', { familyName: selectedTenant.tenant.name })}
                               </DialogDescription>
                             </DialogHeader>
                             <InviteMemberForm tenantId={selectedTenant.tenant.id} />
@@ -316,19 +316,20 @@ export default function FamilyPage() {
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Remove Family Member</AlertDialogTitle>
+                                  <AlertDialogTitle>{p('family.removeMemberDialog.title')}</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Are you sure you want to remove {member.user.displayName} from this family?
-                                    This action cannot be undone.
+                                    {p('family.removeMemberDialog.description', {
+                                      name: member.user.displayName || member.user.email
+                                    })}
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogCancel>{p('family.removeMemberDialog.cancel')}</AlertDialogCancel>
                                   <AlertDialogAction
                                     onClick={() => handleRemoveMember(member.userId)}
                                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                   >
-                                    Remove Member
+                                    {p('family.removeMemberDialog.confirm')}
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
@@ -357,23 +358,22 @@ export default function FamilyPage() {
       <AlertDialog open={!!deletingTenant} onOpenChange={(open) => !open && setDeletingTenant(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Family</AlertDialogTitle>
+            <AlertDialogTitle>{p('family.deleteFamilyDialog.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete &ldquo;{deletingTenant?.tenant.name}&rdquo;?
-              This action cannot be undone and will permanently remove:
+              {p('family.deleteFamilyDialog.descriptionIntro', { name: deletingTenant?.tenant.name ?? '' })}
               <br />
               <br />
-              • All family members
+              • {p('family.deleteFamilyDialog.bullets.members')}
               <br />
-              • All chores and assignments
+              • {p('family.deleteFamilyDialog.bullets.choresAssignments')}
               <br />
-              • All points and achievements
+              • {p('family.deleteFamilyDialog.bullets.pointsAchievements')}
               <br />
-              • All family data
+              • {p('family.deleteFamilyDialog.bullets.data')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{p('family.deleteFamilyDialog.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 if (deletingTenant) {
@@ -383,7 +383,7 @@ export default function FamilyPage() {
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete Family
+              {p('family.deleteFamilyDialog.confirm')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

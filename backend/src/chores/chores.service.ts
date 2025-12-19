@@ -6,7 +6,13 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Chore, ChoreAssignment, TenantMember, User } from '@/entities';
+import {
+  Chore,
+  ChoreAssignment,
+  ChoreInstance,
+  TenantMember,
+  User,
+} from '@/entities';
 import { CreateChoreDto, UpdateChoreDto, AssignChoreDto } from './dto';
 import { AssignmentStatus, TenantMemberRole } from '@tiggpro/shared';
 import { RealtimeEventsService } from '@/websocket/realtime-events.service';
@@ -16,6 +22,8 @@ export class ChoresService {
   constructor(
     @InjectRepository(Chore)
     private choreRepository: Repository<Chore>,
+    @InjectRepository(ChoreInstance)
+    private choreInstanceRepository: Repository<ChoreInstance>,
     @InjectRepository(ChoreAssignment)
     private assignmentRepository: Repository<ChoreAssignment>,
     @InjectRepository(TenantMember)
@@ -107,12 +115,14 @@ export class ChoresService {
     }
 
     // Check if chore has active assignments
-    const activeAssignments = await this.assignmentRepository.count({
-      where: {
-        choreId,
-        status: AssignmentStatus.PENDING,
-      },
-    });
+    const activeAssignments = await this.assignmentRepository
+      .createQueryBuilder('assignment')
+      .innerJoin('assignment.choreInstance', 'choreInstance')
+      .where('choreInstance.templateChoreId = :templateChoreId', {
+        templateChoreId: choreId,
+      })
+      .andWhere('assignment.status = :status', { status: AssignmentStatus.PENDING })
+      .getCount();
 
     if (activeAssignments > 0) {
       throw new BadRequestException(
@@ -143,13 +153,19 @@ export class ChoresService {
     await this.verifyUserMembership(tenantId, assignChoreDto.assignedTo);
 
     // Check if there's already a pending assignment for this chore and user
-    const existingAssignment = await this.assignmentRepository.findOne({
-      where: {
-        choreId,
+    const existingAssignment = await this.assignmentRepository
+      .createQueryBuilder('assignment')
+      .innerJoin('assignment.choreInstance', 'choreInstance')
+      .where('choreInstance.templateChoreId = :templateChoreId', {
+        templateChoreId: choreId,
+      })
+      .andWhere('assignment.assignedTo = :assignedTo', {
         assignedTo: assignChoreDto.assignedTo,
+      })
+      .andWhere('assignment.status = :status', {
         status: AssignmentStatus.PENDING,
-      },
-    });
+      })
+      .getOne();
 
     if (existingAssignment) {
       throw new BadRequestException(
@@ -157,8 +173,23 @@ export class ChoresService {
       );
     }
 
+    // Create a snapshot instance at assignment time (copy-on-assign)
+    const choreInstance = this.choreInstanceRepository.create({
+      tenantId,
+      templateChoreId: chore.id,
+      title: chore.title,
+      description: chore.description,
+      pointsReward: chore.pointsReward,
+      difficultyLevel: chore.difficultyLevel,
+      estimatedDurationMinutes: chore.estimatedDurationMinutes,
+      isRecurring: chore.isRecurring,
+      recurrencePattern: chore.recurrencePattern,
+      createdBy: assignedById,
+    });
+    const savedInstance = await this.choreInstanceRepository.save(choreInstance);
+
     const assignment = this.assignmentRepository.create({
-      choreId,
+      choreInstanceId: savedInstance.id,
       assignedTo: assignChoreDto.assignedTo,
       assignedBy: assignedById,
       dueDate: new Date(assignChoreDto.dueDate),
@@ -180,8 +211,9 @@ export class ChoresService {
         tenantId,
         {
           assignmentId: savedAssignment.id,
-          choreId: chore.id,
-          choreTitle: chore.title,
+          choreInstanceId: savedInstance.id,
+          templateChoreId: chore.id,
+          choreTitle: savedInstance.title,
           assignedTo: {
             id: assignedToUser.id,
             displayName: assignedToUser.displayName,
@@ -194,13 +226,47 @@ export class ChoresService {
           },
           dueDate: savedAssignment.dueDate.toISOString(),
           priority: savedAssignment.priority,
-          pointsReward: chore.pointsReward,
+          pointsReward: savedInstance.pointsReward,
         },
         assignedById, // Exclude the assigner from receiving the notification
       );
     }
 
     return savedAssignment;
+  }
+
+  async getActiveAssignmentsForTemplate(
+    tenantId: string,
+    templateChoreId: string,
+    userId: string,
+  ): Promise<ChoreAssignment[]> {
+    // Verify user has permission to view assignments for templates (ADMIN or PARENT)
+    await this.verifyUserPermission(tenantId, userId, [
+      TenantMemberRole.ADMIN,
+      TenantMemberRole.PARENT,
+    ]);
+
+    // Verify template exists in this tenant
+    await this.getChoreById(templateChoreId, tenantId, userId);
+
+    return this.assignmentRepository
+      .createQueryBuilder('assignment')
+      .innerJoinAndSelect('assignment.choreInstance', 'choreInstance')
+      .leftJoinAndSelect('assignment.assignee', 'assignee')
+      .leftJoinAndSelect('assignment.assigner', 'assigner')
+      .where('choreInstance.tenantId = :tenantId', { tenantId })
+      .andWhere('choreInstance.templateChoreId = :templateChoreId', {
+        templateChoreId,
+      })
+      .andWhere('assignment.status IN (:...statuses)', {
+        statuses: [
+          AssignmentStatus.PENDING,
+          AssignmentStatus.SUBMITTED,
+          AssignmentStatus.OVERDUE,
+        ],
+      })
+      .orderBy('assignment.createdAt', 'DESC')
+      .getMany();
   }
 
   private async verifyUserMembership(
