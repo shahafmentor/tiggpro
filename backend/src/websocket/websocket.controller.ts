@@ -20,7 +20,8 @@ export class WebSocketController {
       tenantId,
       {
         assignmentId: 'test-assignment-123',
-        choreId: 'test-chore-123',
+        choreInstanceId: 'test-chore-instance-123',
+        templateChoreId: 'test-template-chore-123',
         choreTitle: 'Test Chore - Clean Room',
         assignedTo: {
           id: 'test-child-id',

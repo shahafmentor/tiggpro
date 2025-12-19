@@ -52,20 +52,20 @@ export class AssignmentsController {
         success: true,
         data: assignments.map((assignment) => ({
           id: assignment.id,
-          choreId: assignment.choreId,
+          choreInstanceId: assignment.choreInstanceId,
           dueDate: assignment.dueDate,
           priority: assignment.priority,
           status: assignment.status,
           createdAt: assignment.createdAt,
-          chore: assignment.chore
+          chore: assignment.choreInstance
             ? {
-                id: assignment.chore.id,
-                title: assignment.chore.title,
-                description: assignment.chore.description,
-                pointsReward: assignment.chore.pointsReward,
-                difficultyLevel: assignment.chore.difficultyLevel,
+                id: assignment.choreInstanceId,
+                title: assignment.choreInstance.title,
+                description: assignment.choreInstance.description,
+                pointsReward: assignment.choreInstance.pointsReward,
+                difficultyLevel: assignment.choreInstance.difficultyLevel,
                 estimatedDurationMinutes:
-                  assignment.chore.estimatedDurationMinutes,
+                  assignment.choreInstance.estimatedDurationMinutes,
               }
             : undefined,
         })),
@@ -104,7 +104,26 @@ export class AssignmentsController {
 
       return {
         success: true,
-        data: assignment,
+        data: {
+          id: assignment.id,
+          choreInstanceId: assignment.choreInstanceId,
+          dueDate: assignment.dueDate,
+          priority: assignment.priority,
+          status: assignment.status,
+          createdAt: assignment.createdAt,
+          updatedAt: assignment.updatedAt,
+          chore: assignment.choreInstance
+            ? {
+                id: assignment.choreInstanceId,
+                title: assignment.choreInstance.title,
+                description: assignment.choreInstance.description,
+                pointsReward: assignment.choreInstance.pointsReward,
+                difficultyLevel: assignment.choreInstance.difficultyLevel,
+                estimatedDurationMinutes:
+                  assignment.choreInstance.estimatedDurationMinutes,
+              }
+            : undefined,
+        },
         message: 'Assignment retrieved successfully',
       };
     } catch (error) {
@@ -249,11 +268,12 @@ export class AssignmentsController {
                       avatarUrl: submission.assignment.assigner.avatarUrl,
                     }
                   : undefined,
-                chore: submission.assignment.chore
+                chore: submission.assignment.choreInstance
                   ? {
-                      id: submission.assignment.chore.id,
-                      title: submission.assignment.chore.title,
-                      pointsReward: submission.assignment.chore.pointsReward,
+                      id: submission.assignment.choreInstanceId,
+                      title: submission.assignment.choreInstance.title,
+                      pointsReward:
+                        submission.assignment.choreInstance.pointsReward,
                     }
                   : undefined,
               }

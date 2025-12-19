@@ -24,10 +24,23 @@ const parseDatabaseUrl = (url?: string) => {
 const dbConfig = parseDatabaseUrl(process.env.DATABASE_URL) || {
   host: process.env.DATABASE_HOST || 'localhost',
   port: parseInt(process.env.DATABASE_PORT || '5432', 10),
-  username: process.env.DATABASE_USERNAME || 'tiggpro_user',
+  username:
+    process.env.DATABASE_USERNAME ||
+    process.env.DATABASE_USER || // Support common docker-compose env naming
+    'tiggpro_user',
   password: process.env.DATABASE_PASSWORD || 'tiggpro_password',
   database: process.env.DATABASE_NAME || 'tiggpro_dev',
 };
+
+const shouldRunMigrations = (() => {
+  const raw = process.env.TYPEORM_MIGRATIONS_RUN;
+  if (raw == null || raw === '') {
+    // Default: auto-run migrations in all environments.
+    // This is intentionally opt-out (set TYPEORM_MIGRATIONS_RUN=false to disable).
+    return true;
+  }
+  return ['1', 'true', 'yes', 'y', 'on'].includes(raw.toLowerCase());
+})();
 
 export default registerAs(
   'database',
@@ -36,7 +49,13 @@ export default registerAs(
     ...dbConfig,
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     migrations: [__dirname + '/../migrations/**/*{.ts,.js}'],
-    synchronize: process.env.NODE_ENV === 'development',
+    // In dev, automatically apply pending migrations on service startup.
+    // Default is enabled; set TYPEORM_MIGRATIONS_RUN=false to disable.
+    migrationsRun: shouldRunMigrations,
+    // IMPORTANT:
+    // Never use synchronize. It will attempt destructive schema changes (especially enum renames)
+    // and can diverge from our migration-managed schema.
+    synchronize: false,
     logging: process.env.NODE_ENV === 'development',
     ssl:
       process.env.NODE_ENV === 'production'
@@ -49,7 +68,10 @@ export default registerAs(
 const cliDbConfig = parseDatabaseUrl(process.env.DATABASE_URL) || {
   host: process.env.DATABASE_HOST || 'localhost',
   port: parseInt(process.env.DATABASE_PORT || '5432', 10),
-  username: process.env.DATABASE_USERNAME || 'tiggpro_user',
+  username:
+    process.env.DATABASE_USERNAME ||
+    process.env.DATABASE_USER || // Support common docker-compose env naming
+    'tiggpro_user',
   password: process.env.DATABASE_PASSWORD || 'tiggpro_password',
   database: process.env.DATABASE_NAME || 'tiggpro_dev',
 };

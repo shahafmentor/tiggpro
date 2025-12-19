@@ -6,8 +6,19 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Chore, ChoreAssignment, TenantMember, User } from '@/entities';
-import { CreateChoreDto, UpdateChoreDto, AssignChoreDto } from './dto';
+import {
+  Chore,
+  ChoreAssignment,
+  ChoreInstance,
+  TenantMember,
+  User,
+} from '@/entities';
+import {
+  CreateChoreDto,
+  UpdateChoreDto,
+  AssignChoreDto,
+  AssignCustomChoreDto,
+} from './dto';
 import { AssignmentStatus, TenantMemberRole } from '@tiggpro/shared';
 import { RealtimeEventsService } from '@/websocket/realtime-events.service';
 
@@ -16,6 +27,8 @@ export class ChoresService {
   constructor(
     @InjectRepository(Chore)
     private choreRepository: Repository<Chore>,
+    @InjectRepository(ChoreInstance)
+    private choreInstanceRepository: Repository<ChoreInstance>,
     @InjectRepository(ChoreAssignment)
     private assignmentRepository: Repository<ChoreAssignment>,
     @InjectRepository(TenantMember)
@@ -107,12 +120,14 @@ export class ChoresService {
     }
 
     // Check if chore has active assignments
-    const activeAssignments = await this.assignmentRepository.count({
-      where: {
-        choreId,
-        status: AssignmentStatus.PENDING,
-      },
-    });
+    const activeAssignments = await this.assignmentRepository
+      .createQueryBuilder('assignment')
+      .innerJoin('assignment.choreInstance', 'choreInstance')
+      .where('choreInstance.templateChoreId = :templateChoreId', {
+        templateChoreId: choreId,
+      })
+      .andWhere('assignment.status = :status', { status: AssignmentStatus.PENDING })
+      .getCount();
 
     if (activeAssignments > 0) {
       throw new BadRequestException(
@@ -140,16 +155,28 @@ export class ChoresService {
     ]);
 
     // Verify assignee is a member of the tenant
-    await this.verifyUserMembership(tenantId, assignChoreDto.assignedTo);
+    const assigneeMembership = await this.verifyUserMembership(
+      tenantId,
+      assignChoreDto.assignedTo,
+    );
+    if (assigneeMembership.role !== TenantMemberRole.CHILD) {
+      throw new BadRequestException('Chores can only be assigned to children');
+    }
 
     // Check if there's already a pending assignment for this chore and user
-    const existingAssignment = await this.assignmentRepository.findOne({
-      where: {
-        choreId,
+    const existingAssignment = await this.assignmentRepository
+      .createQueryBuilder('assignment')
+      .innerJoin('assignment.choreInstance', 'choreInstance')
+      .where('choreInstance.templateChoreId = :templateChoreId', {
+        templateChoreId: choreId,
+      })
+      .andWhere('assignment.assignedTo = :assignedTo', {
         assignedTo: assignChoreDto.assignedTo,
+      })
+      .andWhere('assignment.status = :status', {
         status: AssignmentStatus.PENDING,
-      },
-    });
+      })
+      .getOne();
 
     if (existingAssignment) {
       throw new BadRequestException(
@@ -157,8 +184,23 @@ export class ChoresService {
       );
     }
 
+    // Create a snapshot instance at assignment time (copy-on-assign)
+    const choreInstance = this.choreInstanceRepository.create({
+      tenantId,
+      templateChoreId: chore.id,
+      title: chore.title,
+      description: chore.description,
+      pointsReward: chore.pointsReward,
+      difficultyLevel: chore.difficultyLevel,
+      estimatedDurationMinutes: chore.estimatedDurationMinutes,
+      isRecurring: chore.isRecurring,
+      recurrencePattern: chore.recurrencePattern,
+      createdBy: assignedById,
+    });
+    const savedInstance = await this.choreInstanceRepository.save(choreInstance);
+
     const assignment = this.assignmentRepository.create({
-      choreId,
+      choreInstanceId: savedInstance.id,
       assignedTo: assignChoreDto.assignedTo,
       assignedBy: assignedById,
       dueDate: new Date(assignChoreDto.dueDate),
@@ -180,8 +222,9 @@ export class ChoresService {
         tenantId,
         {
           assignmentId: savedAssignment.id,
-          choreId: chore.id,
-          choreTitle: chore.title,
+          choreInstanceId: savedInstance.id,
+          templateChoreId: chore.id,
+          choreTitle: savedInstance.title,
           assignedTo: {
             id: assignedToUser.id,
             displayName: assignedToUser.displayName,
@@ -194,13 +237,172 @@ export class ChoresService {
           },
           dueDate: savedAssignment.dueDate.toISOString(),
           priority: savedAssignment.priority,
-          pointsReward: chore.pointsReward,
+          pointsReward: savedInstance.pointsReward,
         },
         assignedById, // Exclude the assigner from receiving the notification
       );
     }
 
     return savedAssignment;
+  }
+
+  async assignCustomChore(
+    tenantId: string,
+    dto: AssignCustomChoreDto,
+    assignedById: string,
+  ): Promise<ChoreAssignment> {
+    // Verify user has permission to assign chores (ADMIN or PARENT)
+    await this.verifyUserPermission(tenantId, assignedById, [
+      TenantMemberRole.ADMIN,
+      TenantMemberRole.PARENT,
+    ]);
+
+    // Verify assignee is a child in the tenant
+    const assigneeMembership = await this.verifyUserMembership(
+      tenantId,
+      dto.assignedTo,
+    );
+    if (assigneeMembership.role !== TenantMemberRole.CHILD) {
+      throw new BadRequestException('Chores can only be assigned to children');
+    }
+
+    const dueDate = new Date(dto.dueDate);
+
+    // Duplicate prevention (exact duplicates) for one-off chores:
+    // same child + same due date + pending + same title + templateChoreId IS NULL
+    const existingOneOff = await this.assignmentRepository
+      .createQueryBuilder('assignment')
+      .innerJoin('assignment.choreInstance', 'choreInstance')
+      .where('assignment.assignedTo = :assignedTo', {
+        assignedTo: dto.assignedTo,
+      })
+      .andWhere('assignment.status = :status', {
+        status: AssignmentStatus.PENDING,
+      })
+      .andWhere('assignment.dueDate = :dueDate', { dueDate })
+      .andWhere('choreInstance.title = :title', { title: dto.title })
+      .andWhere('choreInstance.templateChoreId IS NULL')
+      .getOne();
+
+    if (existingOneOff) {
+      throw new BadRequestException(
+        'This chore is already assigned to this user for the same due date',
+      );
+    }
+
+    // Optional: create template first
+    const saveAsTemplate = dto.saveAsTemplate ?? false;
+    let templateChore: Chore | null = null;
+
+    if (saveAsTemplate) {
+      templateChore = await this.choreRepository.save(
+        this.choreRepository.create({
+          tenantId,
+          title: dto.title,
+          description: dto.description ?? null,
+          pointsReward: dto.pointsReward,
+          difficultyLevel: dto.difficultyLevel,
+          estimatedDurationMinutes: dto.estimatedDurationMinutes,
+          isRecurring: dto.isRecurring,
+          recurrencePattern: dto.recurrencePattern,
+          createdBy: assignedById,
+          isActive: true,
+        }),
+      );
+    }
+
+    // Create instance snapshot (copy-on-assign)
+    const choreInstance = this.choreInstanceRepository.create({
+      tenantId,
+      templateChoreId: templateChore?.id ?? null,
+      title: dto.title,
+      description: dto.description ?? null,
+      pointsReward: dto.pointsReward,
+      difficultyLevel: dto.difficultyLevel,
+      estimatedDurationMinutes: dto.estimatedDurationMinutes,
+      isRecurring: dto.isRecurring,
+      recurrencePattern: dto.recurrencePattern,
+      createdBy: assignedById,
+    });
+    const savedInstance = await this.choreInstanceRepository.save(choreInstance);
+
+    const assignment = this.assignmentRepository.create({
+      choreInstanceId: savedInstance.id,
+      assignedTo: dto.assignedTo,
+      assignedBy: assignedById,
+      dueDate,
+      priority: dto.priority,
+      status: AssignmentStatus.PENDING,
+    });
+    const savedAssignment = await this.assignmentRepository.save(assignment);
+
+    // Real-time event
+    const [assignedToUser, assignedByUser] = await Promise.all([
+      this.userRepository.findOne({ where: { id: dto.assignedTo } }),
+      this.userRepository.findOne({ where: { id: assignedById } }),
+    ]);
+
+    if (assignedToUser && assignedByUser) {
+      this.realtimeEventsService.emitChoreAssigned(
+        tenantId,
+        {
+          assignmentId: savedAssignment.id,
+          choreInstanceId: savedInstance.id,
+          templateChoreId: templateChore?.id ?? null,
+          choreTitle: savedInstance.title,
+          assignedTo: {
+            id: assignedToUser.id,
+            displayName: assignedToUser.displayName,
+            email: assignedToUser.email,
+          },
+          assignedBy: {
+            id: assignedByUser.id,
+            displayName: assignedByUser.displayName,
+            email: assignedByUser.email,
+          },
+          dueDate: savedAssignment.dueDate.toISOString(),
+          priority: savedAssignment.priority,
+          pointsReward: savedInstance.pointsReward,
+        },
+        assignedById,
+      );
+    }
+
+    return savedAssignment;
+  }
+
+  async getActiveAssignmentsForTemplate(
+    tenantId: string,
+    templateChoreId: string,
+    userId: string,
+  ): Promise<ChoreAssignment[]> {
+    // Verify user has permission to view assignments for templates (ADMIN or PARENT)
+    await this.verifyUserPermission(tenantId, userId, [
+      TenantMemberRole.ADMIN,
+      TenantMemberRole.PARENT,
+    ]);
+
+    // Verify template exists in this tenant
+    await this.getChoreById(templateChoreId, tenantId, userId);
+
+    return this.assignmentRepository
+      .createQueryBuilder('assignment')
+      .innerJoinAndSelect('assignment.choreInstance', 'choreInstance')
+      .leftJoinAndSelect('assignment.assignee', 'assignee')
+      .leftJoinAndSelect('assignment.assigner', 'assigner')
+      .where('choreInstance.tenantId = :tenantId', { tenantId })
+      .andWhere('choreInstance.templateChoreId = :templateChoreId', {
+        templateChoreId,
+      })
+      .andWhere('assignment.status IN (:...statuses)', {
+        statuses: [
+          AssignmentStatus.PENDING,
+          AssignmentStatus.SUBMITTED,
+          AssignmentStatus.OVERDUE,
+        ],
+      })
+      .orderBy('assignment.createdAt', 'DESC')
+      .getMany();
   }
 
   private async verifyUserMembership(

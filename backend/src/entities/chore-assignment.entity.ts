@@ -9,7 +9,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Priority, AssignmentStatus } from '@tiggpro/shared';
-import type { Chore } from './chore.entity';
+import type { ChoreInstance } from './chore-instance.entity';
 import type { User } from './user.entity';
 import type { ChoreSubmission } from './chore-submission.entity';
 
@@ -19,7 +19,7 @@ export class ChoreAssignment {
   id: string;
 
   @Column({ name: 'chore_id' })
-  choreId: string;
+  choreInstanceId: string;
 
   @Column({ name: 'assigned_to' })
   assignedTo: string;
@@ -51,9 +51,9 @@ export class ChoreAssignment {
   updatedAt: Date;
 
   // Relations
-  @ManyToOne('Chore', 'assignments')
+  @ManyToOne('ChoreInstance', 'assignments')
   @JoinColumn({ name: 'chore_id' })
-  chore?: Chore;
+  choreInstance?: ChoreInstance;
 
   @ManyToOne('User')
   @JoinColumn({ name: 'assigned_to' })

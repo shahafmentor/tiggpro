@@ -10,15 +10,22 @@ import {
 } from 'typeorm';
 import { DifficultyLevel } from '@tiggpro/shared';
 import type { RecurrencePattern } from '@tiggpro/shared';
+import type { Chore } from './chore.entity';
+import type { User } from './user.entity';
+import type { ChoreAssignment } from './chore-assignment.entity';
 
-@Entity('chores')
-export class Chore {
+@Entity('chore_instances')
+export class ChoreInstance {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ name: 'tenant_id' })
   tenantId: string;
 
+  @Column({ name: 'template_chore_id', nullable: true })
+  templateChoreId: string | null;
+
+  // Snapshot fields (copied from template chore at assignment time)
   @Column()
   title: string;
 
@@ -48,9 +55,6 @@ export class Chore {
   @Column({ name: 'created_by' })
   createdBy: string;
 
-  @Column({ name: 'is_active', default: true })
-  isActive: boolean;
-
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
@@ -62,10 +66,15 @@ export class Chore {
   @JoinColumn({ name: 'tenant_id' })
   tenant: any;
 
+  @ManyToOne('Chore')
+  @JoinColumn({ name: 'template_chore_id' })
+  templateChore?: Chore;
+
   @ManyToOne('User')
   @JoinColumn({ name: 'created_by' })
-  creator: any;
+  creator?: User;
 
-  @OneToMany('ChoreInstance', 'templateChore')
-  instances?: any[];
+  @OneToMany('ChoreAssignment', 'choreInstance')
+  assignments?: ChoreAssignment[];
 }
+

@@ -8,6 +8,7 @@ import { WebSocketModule } from '@/websocket/websocket.module';
 import {
   ChoreAssignment,
   ChoreSubmission,
+  ChoreInstance,
   TenantMember,
   Chore,
   User,
@@ -18,6 +19,7 @@ import {
     TypeOrmModule.forFeature([
       ChoreAssignment,
       ChoreSubmission,
+      ChoreInstance,
       TenantMember,
       Chore,
       User,

@@ -29,6 +29,10 @@ interface AssignChoreRequest {
   notes?: string
 }
 
+interface AssignCustomChoreRequest extends CreateChoreRequest, AssignChoreRequest {
+  saveAsTemplate?: boolean
+}
+
 interface Chore {
   id: string
   tenantId: string
@@ -43,6 +47,27 @@ interface Chore {
   isActive: boolean
   createdAt: string
   updatedAt: string
+}
+
+interface ActiveTemplateAssignment {
+  id: string
+  choreInstanceId: string
+  status: string
+  dueDate: string
+  priority: Priority
+  createdAt: string
+  assignedTo?: {
+    id: string
+    email: string
+    displayName: string
+    avatarUrl?: string
+  }
+  assignedBy?: {
+    id: string
+    email: string
+    displayName: string
+    avatarUrl?: string
+  }
 }
 
 // Removed makeAuthenticatedRequest function - now using centralized api utility from base.ts
@@ -77,13 +102,28 @@ export const choresApi = {
   async assignChore(tenantId: string, choreId: string, request: AssignChoreRequest): Promise<ApiResponse> {
     return api.post(`/tenants/${tenantId}/chores/${choreId}/assign`, request)
   },
+
+  // Assign a custom chore (one-off or save-as-template)
+  async assignCustomChore(tenantId: string, request: AssignCustomChoreRequest): Promise<ApiResponse> {
+    return api.post(`/tenants/${tenantId}/chores/assign-custom`, request)
+  },
+
+  // Template-centric: get active assignments for a chore template
+  async getActiveAssignmentsForTemplate(
+    tenantId: string,
+    choreId: string
+  ): Promise<ApiResponse<ActiveTemplateAssignment[]>> {
+    return api.get(`/tenants/${tenantId}/chores/${choreId}/assignments/active`)
+  },
 }
 
 export type {
   CreateChoreRequest,
   UpdateChoreRequest,
   AssignChoreRequest,
+  AssignCustomChoreRequest,
   Chore,
+  ActiveTemplateAssignment,
   RecurrencePattern,
   ApiResponse
 }

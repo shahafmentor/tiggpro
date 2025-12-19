@@ -3,7 +3,8 @@ import { WebSocketGateway } from './websocket.gateway';
 
 export interface ChoreAssignedEvent {
   assignmentId: string;
-  choreId: string;
+  choreInstanceId: string;
+  templateChoreId?: string | null;
   choreTitle: string;
   assignedTo: {
     id: string;

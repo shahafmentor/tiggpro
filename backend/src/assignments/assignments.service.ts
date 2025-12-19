@@ -10,7 +10,6 @@ import {
   ChoreAssignment,
   ChoreSubmission,
   TenantMember,
-  Chore,
   User,
 } from '@/entities';
 import { SubmitAssignmentDto, ReviewSubmissionDto } from './dto';
@@ -31,8 +30,6 @@ export class AssignmentsService {
     private submissionRepository: Repository<ChoreSubmission>,
     @InjectRepository(TenantMember)
     private tenantMemberRepository: Repository<TenantMember>,
-    @InjectRepository(Chore)
-    private choreRepository: Repository<Chore>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private pointsService: PointsService,
@@ -46,11 +43,13 @@ export class AssignmentsService {
     // Verify user is member of tenant
     await this.verifyUserMembership(tenantId, userId);
 
-    return this.assignmentRepository.find({
-      where: { assignedTo: userId },
-      relations: ['chore'],
-      order: { dueDate: 'ASC' },
-    });
+    return this.assignmentRepository
+      .createQueryBuilder('assignment')
+      .innerJoinAndSelect('assignment.choreInstance', 'choreInstance')
+      .where('assignment.assignedTo = :userId', { userId })
+      .andWhere('choreInstance.tenantId = :tenantId', { tenantId })
+      .orderBy('assignment.dueDate', 'ASC')
+      .getMany();
   }
 
   async getAssignmentById(
@@ -60,19 +59,15 @@ export class AssignmentsService {
   ): Promise<ChoreAssignment> {
     const assignment = await this.assignmentRepository.findOne({
       where: { id: assignmentId },
-      relations: ['chore'],
+      relations: ['choreInstance'],
     });
 
     if (!assignment) {
       throw new NotFoundException('Assignment not found');
     }
 
-    // Verify the chore belongs to the tenant
-    const chore = await this.choreRepository.findOne({
-      where: { id: assignment.choreId, tenantId },
-    });
-
-    if (!chore) {
+    // Verify the assignment belongs to the tenant (via snapshot instance)
+    if (!assignment.choreInstance || assignment.choreInstance.tenantId !== tenantId) {
       throw new NotFoundException('Assignment not found in this tenant');
     }
 
@@ -139,20 +134,19 @@ export class AssignmentsService {
     assignment.status = AssignmentStatus.SUBMITTED;
     await this.assignmentRepository.save(assignment);
 
-    // Get user details and chore details for real-time event
-    const [submittedByUser, chore] = await Promise.all([
-      this.userRepository.findOne({ where: { id: userId } }),
-      this.choreRepository.findOne({ where: { id: assignment.choreId } }),
-    ]);
+    // Get user details and chore instance details for real-time event
+    const submittedByUser = await this.userRepository.findOne({
+      where: { id: userId },
+    });
 
-    if (submittedByUser && chore) {
+    if (submittedByUser && assignment.choreInstance) {
       // Emit real-time event for assignment submission
       this.realtimeEventsService.emitAssignmentSubmitted(
-        chore.tenantId,
+        tenantId,
         {
           submissionId: savedSubmission.id,
           assignmentId: assignment.id,
-          choreTitle: chore.title,
+          choreTitle: assignment.choreInstance.title,
           submittedBy: {
             id: submittedByUser.id,
             displayName: submittedByUser.displayName,
@@ -176,7 +170,7 @@ export class AssignmentsService {
   ): Promise<ChoreSubmission> {
     const submission = await this.submissionRepository.findOne({
       where: { id: submissionId },
-      relations: ['assignment', 'assignment.chore'],
+      relations: ['assignment', 'assignment.choreInstance'],
     });
 
     if (!submission) {
@@ -185,8 +179,8 @@ export class AssignmentsService {
 
     // Verify the submission belongs to this tenant
     if (
-      !submission.assignment?.chore ||
-      submission.assignment.chore.tenantId !== tenantId
+      !submission.assignment?.choreInstance ||
+      submission.assignment.choreInstance.tenantId !== tenantId
     ) {
       throw new NotFoundException('Submission not found in this tenant');
     }
@@ -210,11 +204,11 @@ export class AssignmentsService {
     submission.reviewedBy = reviewerId;
     submission.reviewedAt = new Date();
 
-    // Set points (use chore defaults if not specified)
+    // Set points (use chore instance snapshot defaults if not specified)
     if (reviewDto.reviewStatus === ReviewStatus.APPROVED) {
       submission.pointsAwarded =
         reviewDto.pointsAwarded ??
-        submission.assignment?.chore?.pointsReward ??
+        submission.assignment?.choreInstance?.pointsReward ??
         0;
     } else {
       submission.pointsAwarded = 0;
@@ -259,14 +253,18 @@ export class AssignmentsService {
       this.userRepository.findOne({ where: { id: submission.submittedBy } }),
     ]);
 
-    if (reviewedByUser && submittedByUser && submission.assignment?.chore) {
+    if (
+      reviewedByUser &&
+      submittedByUser &&
+      submission.assignment?.choreInstance
+    ) {
       // Emit real-time event for assignment review
       this.realtimeEventsService.emitAssignmentReviewed(
         tenantId,
         {
           submissionId: savedSubmission.id,
           assignmentId: savedSubmission.assignmentId,
-          choreTitle: submission.assignment.chore.title,
+          choreTitle: submission.assignment.choreInstance.title,
           reviewStatus: savedSubmission.reviewStatus as 'approved' | 'rejected',
           reviewFeedback: savedSubmission.reviewFeedback,
           pointsAwarded: savedSubmission.pointsAwarded,
@@ -298,17 +296,18 @@ export class AssignmentsService {
       TenantMemberRole.PARENT,
     ]);
 
-    // First get all assignments for this tenant
-    const tenantAssignments = await this.assignmentRepository.find({
-      where: {
-        chore: {
-          tenantId: tenantId,
-        },
-      },
-      select: ['id'],
-    });
+    // First get all assignments for this tenant (via instance snapshot)
+    const tenantAssignments = await this.assignmentRepository
+      .createQueryBuilder('assignment')
+      .innerJoin('assignment.choreInstance', 'choreInstance')
+      .select('assignment.id', 'id')
+      .where('choreInstance.tenantId = :tenantId', { tenantId })
+      .getRawMany<{ id: string }>();
 
     const assignmentIds = tenantAssignments.map((a) => a.id);
+    if (assignmentIds.length === 0) {
+      return [];
+    }
 
     const submissions = await this.submissionRepository.find({
       where: {
@@ -317,7 +316,7 @@ export class AssignmentsService {
       },
       relations: [
         'assignment',
-        'assignment.chore',
+        'assignment.choreInstance',
         'assignment.assignee', // Include the assigned user data
         'assignment.assigner', // Include the assigner user data
       ],

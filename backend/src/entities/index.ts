@@ -2,6 +2,7 @@ export { User } from './user.entity';
 export { Tenant } from './tenant.entity';
 export { TenantMember } from './tenant-member.entity';
 export { Chore } from './chore.entity';
+export { ChoreInstance } from './chore-instance.entity';
 export { ChoreAssignment } from './chore-assignment.entity';
 export { ChoreSubmission } from './chore-submission.entity';
 export { UserPoints } from './user-points.entity';

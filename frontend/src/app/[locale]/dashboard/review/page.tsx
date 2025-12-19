@@ -24,6 +24,7 @@ export default function ReviewPage() {
   const [reviewingSubmission, setReviewingSubmission] = useState<Submission | null>(null)
   const queryClient = useQueryClient()
   const p = usePagesTranslations()
+  const tenantId = currentTenant?.tenant?.id
 
   // Check if user has permission to review submissions
   const canReview = currentTenant?.role === TenantMemberRole.ADMIN ||
@@ -31,8 +32,8 @@ export default function ReviewPage() {
 
   // Fetch pending submissions for review
   const { data: submissionsResponse, isLoading, error } = useQuery({
-    queryKey: ['pending-submissions-count', currentTenant?.tenant.id],
-    queryFn: () => currentTenant ? assignmentsApi.getPendingSubmissions(currentTenant.tenant.id) : null,
+    queryKey: ['pending-submissions-count', tenantId],
+    queryFn: () => tenantId ? assignmentsApi.getPendingSubmissions(tenantId) : null,
     enabled: !!currentTenant && !!session && canReview,
     refetchInterval: 30000, // Refetch every 30 seconds to keep data fresh
   })
@@ -87,7 +88,7 @@ export default function ReviewPage() {
                 <p className="text-sm text-muted-foreground">{p('review.failedToLoad')}</p>
               </div>
               <Button
-                onClick={() => queryClient.invalidateQueries({ queryKey: ['pending-submissions'] })}
+                onClick={() => queryClient.invalidateQueries({ queryKey: ['pending-submissions-count', tenantId] })}
                 variant="outline"
               >
                 <Loader2 className="h-4 w-4 mr-2" />
@@ -101,10 +102,15 @@ export default function ReviewPage() {
   }
 
   const handleReviewComplete = () => {
+    if (!tenantId) {
+      setReviewingSubmission(null)
+      return
+    }
     // Refresh the submissions list
-    queryClient.invalidateQueries({ queryKey: ['pending-submissions-count'] })
-    queryClient.invalidateQueries({ queryKey: ['assignments'] })
-    queryClient.invalidateQueries({ queryKey: ['chores'] })
+    queryClient.invalidateQueries({ queryKey: ['pending-submissions-count', tenantId] })
+    queryClient.invalidateQueries({ queryKey: ['pending-submissions-dashboard', tenantId] })
+    queryClient.invalidateQueries({ queryKey: ['assignments', tenantId] })
+    queryClient.invalidateQueries({ queryKey: ['chores', tenantId] })
     setReviewingSubmission(null)
   }
 

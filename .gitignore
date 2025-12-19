@@ -72,3 +72,6 @@ Thumbs.db
 # Temporary folders
 tmp/
 temp/
+
+# Issue plan docs (generated / not for commit)
+docs/issues/

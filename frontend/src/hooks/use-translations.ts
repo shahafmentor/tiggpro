@@ -36,7 +36,8 @@ export function useDashboardTranslations() {
 export function usePagesTranslations() {
   const { dictionary } = useDictionary()
 
-  return (key: string) => t(dictionary, `pages.${key}`)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (key: string, params?: Record<string, any>) => t(dictionary, `pages.${key}`, params)
 }
 
 export function useModalsTranslations() {

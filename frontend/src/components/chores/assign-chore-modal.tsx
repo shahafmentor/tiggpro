@@ -5,7 +5,7 @@ import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Priority } from '@tiggpro/shared'
+import { Priority, TenantMemberRole } from '@tiggpro/shared'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import {
@@ -35,9 +35,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { choresApi, AssignChoreRequest, Chore } from '@/lib/api/chores'
+import { choresApi, AssignChoreRequest, Chore, ActiveTemplateAssignment } from '@/lib/api/chores'
 import { tenantsApi, TenantMember } from '@/lib/api/tenants'
-import { assignmentsApi, Assignment } from '@/lib/api/assignments'
 import { useTenant } from '@/lib/contexts/tenant-context'
 import { toast } from 'sonner'
 import { User, Users, Calendar, Flag } from 'lucide-react'
@@ -74,18 +73,25 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
     enabled: !!currentTenant && !!session && open,
   })
 
-  // Fetch current assignments to check if chore is already assigned
-  const { data: assignmentsResponse } = useQuery({
-    queryKey: ['assignments', currentTenant?.tenant.id],
-    queryFn: () => currentTenant ? assignmentsApi.getUserAssignments(currentTenant.tenant.id) : null,
-    enabled: !!currentTenant && !!session && open,
+  // Template-centric: fetch active assignments for this template (to show "currently assigned" / allow reassign)
+  const { data: activeAssignmentsResponse } = useQuery({
+    queryKey: ['choreTemplateActiveAssignments', currentTenant?.tenant.id, chore?.id],
+    queryFn: () => (currentTenant && chore)
+      ? choresApi.getActiveAssignmentsForTemplate(currentTenant.tenant.id, chore.id)
+      : null,
+    enabled: !!currentTenant && !!session && open && !!chore,
   })
 
   const tenantMembers: TenantMember[] = (membersResponse?.success && membersResponse.data) ? membersResponse.data : []
-  const assignments: Assignment[] = (assignmentsResponse?.success && assignmentsResponse.data) ? assignmentsResponse.data : []
+  const childMembers = tenantMembers.filter((m) => m.role === TenantMemberRole.CHILD)
+  const hasChildren = childMembers.length > 0
+  const activeAssignments: ActiveTemplateAssignment[] =
+    (activeAssignmentsResponse?.success && activeAssignmentsResponse.data)
+      ? activeAssignmentsResponse.data
+      : []
 
-  // Find current assignment for this chore
-  const currentAssignment = chore ? assignments.find(a => a.choreId === chore.id) : null
+  // Best-effort: pick the newest active assignment to show as "currently assigned"
+  const currentAssignment = activeAssignments[0] ?? null
 
   const assignChoreSchema = getAssignChoreSchema(modalsT)
 
@@ -137,6 +143,7 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
         toast.success(modalsT('assignChore.success'))
         queryClient.invalidateQueries({ queryKey: ['chores'] })
         queryClient.invalidateQueries({ queryKey: ['assignments'] })
+        queryClient.invalidateQueries({ queryKey: ['choreTemplateActiveAssignments'] })
         form.reset()
         onOpenChange(false)
         onSuccess?.()
@@ -220,7 +227,7 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
                   <Select
                     onValueChange={field.onChange}
                     value={field.value}
-                    disabled={isSubmitting || membersLoading}
+                    disabled={isSubmitting || membersLoading || !hasChildren}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -228,7 +235,7 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {tenantMembers.map((member) => (
+                      {childMembers.map((member) => (
                         <SelectItem key={member.userId} value={member.userId}>
                           <div className="flex items-center gap-2">
                             <User className="h-4 w-4" />
@@ -242,7 +249,9 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
                     </SelectContent>
                   </Select>
                   <FormDescription>
-                    {modalsT('assignChore.assignToDescription')}
+                    {hasChildren
+                      ? modalsT('assignChore.assignToDescription')
+                      : 'No child members available to assign chores to.'}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -351,7 +360,7 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
               >
                 {commonT('cancel')}
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting || !hasChildren}>
                 {isSubmitting ?
                   (currentAssignment ? modalsT('assignChore.reassigning') : modalsT('assignChore.assigning')) :
                   (currentAssignment ? modalsT('assignChore.reassign') : modalsT('assignChore.assign'))

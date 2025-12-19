@@ -17,7 +17,7 @@ interface ReviewSubmissionRequest {
 
 interface Assignment {
   id: string
-  choreId: string
+  choreInstanceId: string
   dueDate: string
   priority: Priority
   status: AssignmentStatus

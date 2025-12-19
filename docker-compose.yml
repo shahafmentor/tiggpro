@@ -50,8 +50,9 @@ services:
       - DATABASE_HOST=postgres
       - DATABASE_PORT=5432
       - DATABASE_NAME=tiggpro_dev
-      - DATABASE_USER=tiggpro_user
+      - DATABASE_USERNAME=tiggpro_user
       - DATABASE_PASSWORD=tiggpro_password
+      - TYPEORM_MIGRATIONS_RUN=true
       - JWT_SECRET=dev-secret-key-change-in-production
       - FRONTEND_URL=http://frontend:3000
     depends_on:

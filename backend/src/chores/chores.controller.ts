@@ -19,7 +19,12 @@ import {
   ApiResponse as ApiDoc,
 } from '@nestjs/swagger';
 import { ChoresService } from './chores.service';
-import { CreateChoreDto, UpdateChoreDto, AssignChoreDto } from './dto';
+import {
+  CreateChoreDto,
+  UpdateChoreDto,
+  AssignChoreDto,
+  AssignCustomChoreDto,
+} from './dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { TenantMembershipGuard } from '@/auth/guards/tenant-membership.guard';
 import type { ApiResponse } from '@tiggpro/shared';
@@ -238,6 +243,109 @@ export class ChoresController {
         success: false,
         error:
           error instanceof Error ? error.message : 'Failed to assign chore',
+      };
+    }
+  }
+
+  @Post('assign-custom')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Assign a custom chore (one-off or save-as-template)',
+    description:
+      'Creates a chore instance directly from provided fields and assigns it to a child. Optionally saves it as a template first.',
+  })
+  @ApiParam({ name: 'tenantId', description: 'Tenant ID' })
+  @ApiDoc({ status: 201, description: 'Custom chore assigned successfully' })
+  @ApiDoc({ status: 400, description: 'Invalid request data' })
+  @ApiDoc({ status: 403, description: 'Insufficient permissions' })
+  async assignCustomChore(
+    @Param('tenantId') tenantId: string,
+    @Body() assignCustomChoreDto: AssignCustomChoreDto,
+    @Request() req: { user: { id: string } },
+  ): Promise<ApiResponse> {
+    try {
+      const assignment = await this.choresService.assignCustomChore(
+        tenantId,
+        assignCustomChoreDto,
+        req.user.id,
+      );
+
+      return {
+        success: true,
+        data: assignment,
+        message: 'Custom chore assigned successfully',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to assign custom chore',
+      };
+    }
+  }
+
+  @Get(':choreId/assignments/active')
+  @ApiOperation({
+    summary: 'Get active assignments for a chore template',
+    description:
+      'Retrieves active assignments (pending/submitted/overdue) for a chore template in the tenant',
+  })
+  @ApiParam({ name: 'tenantId', description: 'Tenant ID' })
+  @ApiParam({ name: 'choreId', description: 'Template chore ID' })
+  @ApiDoc({
+    status: 200,
+    description: 'Active template assignments retrieved successfully',
+  })
+  @ApiDoc({ status: 403, description: 'Insufficient permissions' })
+  async getActiveAssignmentsForTemplate(
+    @Param('tenantId') tenantId: string,
+    @Param('choreId') choreId: string,
+    @Request() req: { user: { id: string } },
+  ): Promise<ApiResponse> {
+    try {
+      const assignments = await this.choresService.getActiveAssignmentsForTemplate(
+        tenantId,
+        choreId,
+        req.user.id,
+      );
+
+      return {
+        success: true,
+        data: assignments.map((a) => ({
+          id: a.id,
+          choreInstanceId: a.choreInstanceId,
+          status: a.status,
+          dueDate: a.dueDate,
+          priority: a.priority,
+          createdAt: a.createdAt,
+          assignedTo: a.assignee
+            ? {
+                id: a.assignee.id,
+                email: a.assignee.email,
+                displayName: a.assignee.displayName,
+                avatarUrl: a.assignee.avatarUrl,
+              }
+            : undefined,
+          assignedBy: a.assigner
+            ? {
+                id: a.assigner.id,
+                email: a.assigner.email,
+                displayName: a.assigner.displayName,
+                avatarUrl: a.assigner.avatarUrl,
+              }
+            : undefined,
+        })),
+        message: 'Active template assignments retrieved successfully',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to get active template assignments',
       };
     }
   }

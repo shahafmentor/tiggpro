@@ -4,11 +4,23 @@ import { ChoresController } from './chores.controller';
 import { ChoresService } from './chores.service';
 import { AuthModule } from '@/auth/auth.module';
 import { WebSocketModule } from '@/websocket/websocket.module';
-import { Chore, ChoreAssignment, TenantMember, User } from '@/entities';
+import {
+  Chore,
+  ChoreAssignment,
+  ChoreInstance,
+  TenantMember,
+  User,
+} from '@/entities';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Chore, ChoreAssignment, TenantMember, User]),
+    TypeOrmModule.forFeature([
+      Chore,
+      ChoreInstance,
+      ChoreAssignment,
+      TenantMember,
+      User,
+    ]),
     AuthModule, // For guards and auth service
     WebSocketModule, // For real-time events
   ],
