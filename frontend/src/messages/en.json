@@ -122,6 +122,12 @@
   "dashboard": {
     "welcome": "Welcome back, {name}! 🎉",
     "whatsHappening": "Here's what's happening in your family today",
+    "quickActionsTitle": "Quick actions",
+    "quickActionsQuickAssignChore": "Quick assign chore",
+    "quickActionsManageChores": "Manage chores",
+    "quickActionsFamily": "Family",
+    "quickActionsReviewSubmissions": "Review submissions",
+    "quickActionsReviewRewards": "Review rewards",
     "pendingReviews": "Pending Reviews",
     "youHaveSubmissions": "You have {count} submission(s) waiting for your review.",
     "reviewSubmissions": "Review Submissions",
@@ -160,8 +166,7 @@
     "rejected": "rejected",
     "available": "available",
     "totalEarned": "Total Earned"
-  }
-  ,
+  },
   "pages": {
     "rewards": {
       "title": "Reward Redemptions",
@@ -394,8 +399,7 @@
       "title": "Create New Chore",
       "subtitle": "Add a new chore for your family members to complete"
     }
-  }
-  ,
+  },
   "modals": {
     "editChore": {
       "title": "Edit Chore",
@@ -429,6 +433,16 @@
       "reassign": "Reassign Chore",
       "assigning": "Assigning...",
       "reassigning": "Reassigning...",
+      "success": "Chore assigned successfully!",
+      "failed": "Failed to assign chore"
+    },
+    "assignCustomChore": {
+      "title": "Quick assign chore",
+      "description": "Create a one-off chore (optionally save it as a template) and assign it to a child.",
+      "saveAsTemplateLabel": "Save as template",
+      "saveAsTemplateDescription": "If enabled, this chore will also appear in Manage chores for future reuse.",
+      "assign": "Assign chore",
+      "assigning": "Assigning...",
       "success": "Chore assigned successfully!",
       "failed": "Failed to assign chore"
     },

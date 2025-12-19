@@ -28,6 +28,8 @@ import { useLocalizedRouter } from '@/hooks/use-localized-router'
 import { useDashboardTranslations } from '@/hooks/use-translations'
 import { RealtimePageWrapper } from '@/components/realtime/realtime-page-wrapper'
 import { MyPointsCard } from '@/components/gamification'
+import { QuickActions } from '@/components/dashboard/quick-actions'
+import { AssignCustomChoreModal } from '@/components/chores/assign-custom-chore-modal'
 
 export default function DashboardPage() {
   const { data: session } = useSession()
@@ -35,6 +37,7 @@ export default function DashboardPage() {
   const [submittingAssignment, setSubmittingAssignment] = useState<Assignment | null>(null)
   const [viewingAssignment, setViewingAssignment] = useState<Assignment | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('all-except-approved')
+  const [assigningCustomChore, setAssigningCustomChore] = useState(false)
 
   // User Stats (points balance)
   const { data: userStatsResponse } = useQuery({
@@ -70,7 +73,8 @@ export default function DashboardPage() {
       }
       return assignmentsApi.getUserAssignments(currentTenant.tenant.id)
     },
-    enabled: !!currentTenant?.tenant?.id && !!session?.user && !!session?.accessToken,
+    // Assignments are child-only, so don't fetch for parents/admins.
+    enabled: isChild && !!currentTenant?.tenant?.id && !!session?.user && !!session?.accessToken,
     staleTime: 30000, // 30 seconds
   })
 
@@ -117,6 +121,8 @@ export default function DashboardPage() {
 
   const pendingRedemptions: RewardRedemption[] = pendingRedemptionsResponse?.success ?
     (pendingRedemptionsResponse.data || []) : []
+
+  const hasPendingItems = pendingSubmissions.length > 0 || pendingRedemptions.length > 0
 
   return (
     <RealtimePageWrapper>
@@ -193,6 +199,17 @@ export default function DashboardPage() {
           </Card>
         )}
 
+        {/* Quick actions for Parents/Admins (only when nothing is pending) */}
+        {canReview && !hasPendingItems && (
+          <QuickActions
+            onQuickAssignChore={() => setAssigningCustomChore(true)}
+            onManageChores={() => router.push('/dashboard/chores')}
+            onFamily={() => router.push('/dashboard/family')}
+            onReviewSubmissions={() => router.push('/dashboard/review')}
+            onReviewRewards={() => router.push('/dashboard/rewards')}
+          />
+        )}
+
 
         {/* Points Balance for Kids */}
         {isChild && userStatsResponse?.success && userStatsResponse.data && (
@@ -208,73 +225,86 @@ export default function DashboardPage() {
           />
         )}
 
-        {/* My Assignments Section */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <CheckSquare className="h-5 w-5 flex-shrink-0" />
-                <span className="truncate">{t('myAssignments')}</span>
-                {allAssignments.length > 0 && (
-                  <Badge variant="secondary" className="flex-shrink-0">
-                    {allAssignments.length}
-                  </Badge>
-                )}
-              </CardTitle>
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-full sm:w-[180px]">
-                    <SelectValue placeholder={t('filterByStatus')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t('allStatuses')}</SelectItem>
-                    <SelectItem value="all-except-approved">{t('allExceptApproved')}</SelectItem>
-                    <SelectItem value="pending">{t('pendingOnly')}</SelectItem>
-                    <SelectItem value="submitted">{t('submittedOnly')}</SelectItem>
-                    <SelectItem value="approved">{t('approvedOnly')}</SelectItem>
-                    <SelectItem value="rejected">{t('rejectedOnly')}</SelectItem>
-                  </SelectContent>
-                </Select>
+        {/* My Assignments Section (Children only) */}
+        {isChild && (
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <CheckSquare className="h-5 w-5 flex-shrink-0" />
+                  <span className="truncate">{t('myAssignments')}</span>
+                  {allAssignments.length > 0 && (
+                    <Badge variant="secondary" className="flex-shrink-0">
+                      {allAssignments.length}
+                    </Badge>
+                  )}
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-full sm:w-[180px]">
+                      <SelectValue placeholder={t('filterByStatus')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{t('allStatuses')}</SelectItem>
+                      <SelectItem value="all-except-approved">{t('allExceptApproved')}</SelectItem>
+                      <SelectItem value="pending">{t('pendingOnly')}</SelectItem>
+                      <SelectItem value="submitted">{t('submittedOnly')}</SelectItem>
+                      <SelectItem value="approved">{t('approvedOnly')}</SelectItem>
+                      <SelectItem value="rejected">{t('rejectedOnly')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <AssignmentsSection
-              assignments={assignments}
-              isLoading={assignmentsLoading}
-              error={assignmentsError?.message || null}
-              isChild={isChild}
-              onViewAssignment={setViewingAssignment}
-              onSubmitAssignment={setSubmittingAssignment}
-              showHeader={false}
+            </CardHeader>
+            <CardContent>
+              <AssignmentsSection
+                assignments={assignments}
+                isLoading={assignmentsLoading}
+                error={assignmentsError?.message || null}
+                isChild={isChild}
+                onViewAssignment={setViewingAssignment}
+                onSubmitAssignment={setSubmittingAssignment}
+                showHeader={false}
+              />
+            </CardContent>
+          </Card>
+        )}
+
+
+        {/* Child-only modals */}
+        {isChild && (
+          <>
+            <SubmitAssignmentModal
+              assignment={submittingAssignment}
+              open={!!submittingAssignment}
+              onOpenChange={(open) => {
+                if (!open) setSubmittingAssignment(null)
+              }}
             />
-          </CardContent>
-        </Card>
 
+            <ChoreDetailModal
+              assignment={viewingAssignment}
+              open={!!viewingAssignment}
+              onOpenChange={(open) => {
+                if (!open) setViewingAssignment(null)
+              }}
+              canSubmit={isChild}
+              onSubmit={(assignment) => {
+                setViewingAssignment(null)
+                setSubmittingAssignment(assignment)
+              }}
+            />
+          </>
+        )}
 
-        {/* Submit Assignment Modal */}
-        <SubmitAssignmentModal
-          assignment={submittingAssignment}
-          open={!!submittingAssignment}
-          onOpenChange={(open) => {
-            if (!open) setSubmittingAssignment(null)
-          }}
-        />
-
-        {/* Chore Detail Modal for Kids */}
-        <ChoreDetailModal
-          assignment={viewingAssignment}
-          open={!!viewingAssignment}
-          onOpenChange={(open) => {
-            if (!open) setViewingAssignment(null)
-          }}
-          canSubmit={isChild}
-          onSubmit={(assignment) => {
-            setViewingAssignment(null)
-            setSubmittingAssignment(assignment)
-          }}
-        />
+        {/* Parent/Admin modals */}
+        {canReview && (
+          <AssignCustomChoreModal
+            open={assigningCustomChore}
+            onOpenChange={setAssigningCustomChore}
+          />
+        )}
 
       </div>
     </RealtimePageWrapper>

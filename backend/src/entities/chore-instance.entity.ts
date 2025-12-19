@@ -22,8 +22,8 @@ export class ChoreInstance {
   @Column({ name: 'tenant_id' })
   tenantId: string;
 
-  @Column({ name: 'template_chore_id' })
-  templateChoreId: string;
+  @Column({ name: 'template_chore_id', nullable: true })
+  templateChoreId: string | null;
 
   // Snapshot fields (copied from template chore at assignment time)
   @Column()

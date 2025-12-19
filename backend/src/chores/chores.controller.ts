@@ -19,7 +19,12 @@ import {
   ApiResponse as ApiDoc,
 } from '@nestjs/swagger';
 import { ChoresService } from './chores.service';
-import { CreateChoreDto, UpdateChoreDto, AssignChoreDto } from './dto';
+import {
+  CreateChoreDto,
+  UpdateChoreDto,
+  AssignChoreDto,
+  AssignCustomChoreDto,
+} from './dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { TenantMembershipGuard } from '@/auth/guards/tenant-membership.guard';
 import type { ApiResponse } from '@tiggpro/shared';
@@ -238,6 +243,45 @@ export class ChoresController {
         success: false,
         error:
           error instanceof Error ? error.message : 'Failed to assign chore',
+      };
+    }
+  }
+
+  @Post('assign-custom')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Assign a custom chore (one-off or save-as-template)',
+    description:
+      'Creates a chore instance directly from provided fields and assigns it to a child. Optionally saves it as a template first.',
+  })
+  @ApiParam({ name: 'tenantId', description: 'Tenant ID' })
+  @ApiDoc({ status: 201, description: 'Custom chore assigned successfully' })
+  @ApiDoc({ status: 400, description: 'Invalid request data' })
+  @ApiDoc({ status: 403, description: 'Insufficient permissions' })
+  async assignCustomChore(
+    @Param('tenantId') tenantId: string,
+    @Body() assignCustomChoreDto: AssignCustomChoreDto,
+    @Request() req: { user: { id: string } },
+  ): Promise<ApiResponse> {
+    try {
+      const assignment = await this.choresService.assignCustomChore(
+        tenantId,
+        assignCustomChoreDto,
+        req.user.id,
+      );
+
+      return {
+        success: true,
+        data: assignment,
+        message: 'Custom chore assigned successfully',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to assign custom chore',
       };
     }
   }

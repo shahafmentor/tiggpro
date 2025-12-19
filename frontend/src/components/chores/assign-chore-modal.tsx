@@ -5,7 +5,7 @@ import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Priority } from '@tiggpro/shared'
+import { Priority, TenantMemberRole } from '@tiggpro/shared'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import {
@@ -83,6 +83,8 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
   })
 
   const tenantMembers: TenantMember[] = (membersResponse?.success && membersResponse.data) ? membersResponse.data : []
+  const childMembers = tenantMembers.filter((m) => m.role === TenantMemberRole.CHILD)
+  const hasChildren = childMembers.length > 0
   const activeAssignments: ActiveTemplateAssignment[] =
     (activeAssignmentsResponse?.success && activeAssignmentsResponse.data)
       ? activeAssignmentsResponse.data
@@ -225,7 +227,7 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
                   <Select
                     onValueChange={field.onChange}
                     value={field.value}
-                    disabled={isSubmitting || membersLoading}
+                    disabled={isSubmitting || membersLoading || !hasChildren}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -233,7 +235,7 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {tenantMembers.map((member) => (
+                      {childMembers.map((member) => (
                         <SelectItem key={member.userId} value={member.userId}>
                           <div className="flex items-center gap-2">
                             <User className="h-4 w-4" />
@@ -247,7 +249,9 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
                     </SelectContent>
                   </Select>
                   <FormDescription>
-                    {modalsT('assignChore.assignToDescription')}
+                    {hasChildren
+                      ? modalsT('assignChore.assignToDescription')
+                      : 'No child members available to assign chores to.'}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -356,7 +360,7 @@ export function AssignChoreModal({ chore, open, onOpenChange, onSuccess }: Assig
               >
                 {commonT('cancel')}
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting || !hasChildren}>
                 {isSubmitting ?
                   (currentAssignment ? modalsT('assignChore.reassigning') : modalsT('assignChore.assigning')) :
                   (currentAssignment ? modalsT('assignChore.reassign') : modalsT('assignChore.assign'))

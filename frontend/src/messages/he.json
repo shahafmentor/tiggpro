@@ -122,6 +122,12 @@
   "dashboard": {
     "welcome": "ברוך הבא, {name}! 🎉",
     "whatsHappening": "הנה מה שקורה במשפחה שלך היום",
+    "quickActionsTitle": "פעולות מהירות",
+    "quickActionsQuickAssignChore": "הקצאה מהירה של מטלה",
+    "quickActionsManageChores": "ניהול מטלות",
+    "quickActionsFamily": "משפחה",
+    "quickActionsReviewSubmissions": "בדיקת הגשות",
+    "quickActionsReviewRewards": "בדיקת פרסים",
     "pendingReviews": "ממתין לבדיקה",
     "youHaveSubmissions": "יש לך {count} הגשה/ות שממתינות לבדיקה.",
     "reviewSubmissions": "בדיקת הגשות",
@@ -160,8 +166,7 @@
     "rejected": "נדחה",
     "available": "זמין",
     "totalEarned": "סך נקודות שהזכית"
-  }
-  ,
+  },
   "pages": {
     "rewards": {
       "title": "בקשות פרסים",
@@ -394,8 +399,7 @@
       "title": "יצירת מטלה חדשה",
       "subtitle": "הוסף מטלה חדשה לבני המשפחה"
     }
-  }
-  ,
+  },
   "modals": {
     "editChore": {
       "title": "עריכת מטלה",
@@ -429,6 +433,16 @@
       "reassign": "הקצה מטלה מחדש",
       "assigning": "מקצה...",
       "reassigning": "מקצה מחדש...",
+      "success": "המטלה הוקצתה בהצלחה!",
+      "failed": "נכשל בהקצאת המטלה"
+    },
+    "assignCustomChore": {
+      "title": "הקצאה מהירה של מטלה",
+      "description": "צור מטלה חד-פעמית (ובאופציה לשמור כתבנית) והקצה אותה לילד.",
+      "saveAsTemplateLabel": "שמור כתבנית",
+      "saveAsTemplateDescription": "אם מופעל, המטלה תופיע גם בניהול מטלות לשימוש עתידי.",
+      "assign": "הקצה מטלה",
+      "assigning": "מקצה...",
       "success": "המטלה הוקצתה בהצלחה!",
       "failed": "נכשל בהקצאת המטלה"
     },

@@ -29,6 +29,10 @@ interface AssignChoreRequest {
   notes?: string
 }
 
+interface AssignCustomChoreRequest extends CreateChoreRequest, AssignChoreRequest {
+  saveAsTemplate?: boolean
+}
+
 interface Chore {
   id: string
   tenantId: string
@@ -99,6 +103,11 @@ export const choresApi = {
     return api.post(`/tenants/${tenantId}/chores/${choreId}/assign`, request)
   },
 
+  // Assign a custom chore (one-off or save-as-template)
+  async assignCustomChore(tenantId: string, request: AssignCustomChoreRequest): Promise<ApiResponse> {
+    return api.post(`/tenants/${tenantId}/chores/assign-custom`, request)
+  },
+
   // Template-centric: get active assignments for a chore template
   async getActiveAssignmentsForTemplate(
     tenantId: string,
@@ -112,6 +121,7 @@ export type {
   CreateChoreRequest,
   UpdateChoreRequest,
   AssignChoreRequest,
+  AssignCustomChoreRequest,
   Chore,
   ActiveTemplateAssignment,
   RecurrencePattern,
