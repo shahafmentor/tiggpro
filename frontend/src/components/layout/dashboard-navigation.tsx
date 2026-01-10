@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import {
   Home,
   CheckSquare,
+  Calendar,
   Users,
   Eye,
   Gift
@@ -66,6 +67,12 @@ export function DashboardNavigation({ userRole, pendingCount = 0, pendingRewards
       label: navT('chores'),
       icon: CheckSquare,
       roles: [TenantMemberRole.ADMIN, TenantMemberRole.PARENT],
+    },
+    {
+      href: '/dashboard/calendar',
+      label: navT('calendar'),
+      icon: Calendar,
+      // Visible to all roles - everyone can see the calendar
     },
     {
       href: '/dashboard/review',

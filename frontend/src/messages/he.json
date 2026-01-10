@@ -2,11 +2,32 @@
   "navigation": {
     "dashboard": "בית",
     "chores": "מטלות",
+    "calendar": "לוח שנה",
     "review": "בדיקה",
     "family": "משפחה",
     "achievements": "הישגים",
     "settings": "הגדרות",
     "rewards": "פרסים"
+  },
+  "calendar": {
+    "title": "לוח מטלות",
+    "subtitle": "צפה במטלות הקרובות שלך",
+    "weekView": "שבוע",
+    "monthView": "חודש",
+    "today": "היום",
+    "noChores": "אין מטלות מתוזמנות",
+    "noChoresForDay": "אין מטלות ליום זה",
+    "filterByChild": "סנן לפי ילד",
+    "allChildren": "כל הילדים",
+    "dueToday": "לביצוע היום",
+    "upcoming": "קרוב",
+    "overdue": "באיחור",
+    "completed": "הושלם",
+    "recurringIndicator": "חוזר",
+    "previousWeek": "שבוע קודם",
+    "nextWeek": "שבוע הבא",
+    "previousMonth": "חודש קודם",
+    "nextMonth": "חודש הבא"
   },
   "chores": {
     "create": "מטלה חדשה",

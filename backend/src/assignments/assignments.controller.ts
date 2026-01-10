@@ -5,6 +5,7 @@ import {
   Put,
   Body,
   Param,
+  Query,
   UseGuards,
   Request,
   HttpCode,
@@ -90,6 +91,91 @@ export class AssignmentsController {
         success: false,
         error:
           error instanceof Error ? error.message : 'Failed to get assignments',
+      };
+    }
+  }
+
+  @Get('calendar')
+  @ApiOperation({
+    summary: 'Get assignments by date range',
+    description: 'Retrieves assignments within a date range for calendar view',
+  })
+  @ApiParam({ name: 'tenantId', description: 'Tenant ID' })
+  @ApiDoc({ status: 200, description: 'Assignments retrieved successfully' })
+  @ApiDoc({ status: 403, description: 'Insufficient permissions' })
+  async getCalendarAssignments(
+    @Param('tenantId') tenantId: string,
+    @Query('from') from: string,
+    @Query('to') to: string,
+    @Query('childId') childId: string | undefined,
+    @Request() req: { user: { id: string } },
+  ): Promise<ApiResponse> {
+    try {
+      // Validate date parameters
+      if (!from || !to) {
+        return {
+          success: false,
+          error: 'Both "from" and "to" query parameters are required',
+        };
+      }
+
+      const fromDate = new Date(from);
+      const toDate = new Date(to);
+
+      if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
+        return {
+          success: false,
+          error: 'Invalid date format. Please use ISO date format (YYYY-MM-DD)',
+        };
+      }
+
+      const assignments =
+        await this.assignmentsService.getAssignmentsByDateRange(
+          tenantId,
+          req.user.id,
+          fromDate,
+          toDate,
+          childId,
+        );
+
+      return {
+        success: true,
+        data: assignments.map((assignment) => ({
+          id: assignment.id,
+          choreInstanceId: assignment.choreInstanceId,
+          dueDate: assignment.dueDate,
+          priority: assignment.priority,
+          status: assignment.status,
+          createdAt: assignment.createdAt,
+          assignedTo: assignment.assignee
+            ? {
+                id: assignment.assignee.id,
+                displayName: assignment.assignee.displayName,
+                avatarUrl: assignment.assignee.avatarUrl,
+              }
+            : undefined,
+          chore: assignment.choreInstance
+            ? {
+                id: assignment.choreInstanceId,
+                title: assignment.choreInstance.title,
+                description: assignment.choreInstance.description,
+                pointsReward: assignment.choreInstance.pointsReward,
+                difficultyLevel: assignment.choreInstance.difficultyLevel,
+                estimatedDurationMinutes:
+                  assignment.choreInstance.estimatedDurationMinutes,
+                isRecurring: assignment.choreInstance.isRecurring,
+              }
+            : undefined,
+        })),
+        message: 'Calendar assignments retrieved successfully',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to get calendar assignments',
       };
     }
   }

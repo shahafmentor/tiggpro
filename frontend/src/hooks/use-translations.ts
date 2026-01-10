@@ -71,3 +71,9 @@ export function useLandingTranslations() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (key: string, params?: Record<string, any>) => t(dictionary, `landing.${key}`, params)
 }
+
+export function useCalendarTranslations() {
+  const { dictionary } = useDictionary()
+
+  return (key: string) => t(dictionary, `calendar.${key}`)
+}

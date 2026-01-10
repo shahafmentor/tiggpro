@@ -87,6 +87,23 @@ export interface RecurrencePattern {
   type: 'daily' | 'weekly' | 'monthly';
   daysOfWeek?: number[]; // 0-6, Sunday = 0
   dayOfMonth?: number; // 1-31
+  startDate?: string; // ISO date string - when recurrence begins (optional for templates)
+  endDate?: string; // ISO date string - when recurrence ends (optional)
+}
+
+// Chore Recurrence - tracks an active recurring assignment series
+export interface ChoreRecurrence {
+  id: string;
+  tenantId: string;
+  templateChoreId: string;
+  assignedTo: string; // Which child this recurrence is for
+  assignedBy: string; // Which parent created this recurrence
+  recurrencePattern: RecurrencePattern;
+  priority: Priority;
+  lastGeneratedDate: Date; // Track how far we've generated assignments
+  isActive: boolean; // Can be deactivated to stop generating new assignments
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // Chore Instance (snapshot) Types
