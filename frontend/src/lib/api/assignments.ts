@@ -15,6 +15,19 @@ interface ReviewSubmissionRequest {
   pointsAwarded?: number
 }
 
+interface AssignmentSubmission {
+  id: string
+  submittedAt: string
+  reviewStatus: ReviewStatus
+  reviewFeedback?: string
+  pointsAwarded?: number
+  reviewedAt?: string
+  reviewer?: {
+    id: string
+    displayName: string
+  }
+}
+
 interface Assignment {
   id: string
   choreInstanceId: string
@@ -42,6 +55,7 @@ interface Assignment {
     displayName: string
     avatarUrl?: string
   }
+  submissions?: AssignmentSubmission[]
 }
 
 interface Submission {
@@ -101,6 +115,7 @@ export const assignmentsApi = {
 
 export type {
   Assignment,
+  AssignmentSubmission,
   Submission,
   SubmitAssignmentRequest,
   ReviewSubmissionRequest,

@@ -46,9 +46,12 @@ export class AssignmentsService {
     return this.assignmentRepository
       .createQueryBuilder('assignment')
       .innerJoinAndSelect('assignment.choreInstance', 'choreInstance')
+      .leftJoinAndSelect('assignment.submissions', 'submissions')
+      .leftJoinAndSelect('submissions.reviewer', 'reviewer')
       .where('assignment.assignedTo = :userId', { userId })
       .andWhere('choreInstance.tenantId = :tenantId', { tenantId })
       .orderBy('assignment.dueDate', 'ASC')
+      .addOrderBy('submissions.submittedAt', 'DESC')
       .getMany();
   }
 

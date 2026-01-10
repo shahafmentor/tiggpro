@@ -68,6 +68,20 @@ export class AssignmentsController {
                   assignment.choreInstance.estimatedDurationMinutes,
               }
             : undefined,
+          submissions: assignment.submissions?.map((submission) => ({
+            id: submission.id,
+            submittedAt: submission.submittedAt,
+            reviewStatus: submission.reviewStatus,
+            reviewFeedback: submission.reviewFeedback,
+            pointsAwarded: submission.pointsAwarded,
+            reviewedAt: submission.reviewedAt,
+            reviewer: submission.reviewer
+              ? {
+                  id: submission.reviewer.id,
+                  displayName: submission.reviewer.displayName,
+                }
+              : undefined,
+          })),
         })),
         message: 'Assignments retrieved successfully',
       };

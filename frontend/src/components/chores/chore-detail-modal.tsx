@@ -9,9 +9,9 @@ import {
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Clock, Star, CheckSquare } from 'lucide-react'
+import { Clock, Star, CheckSquare, CheckCircle, XCircle, MessageSquare } from 'lucide-react'
 import { StatusBadge, PointsBadge, DueDateBadge } from '@/components/ui/semantic-badges'
-import { useChoresTranslations } from '@/hooks/use-translations'
+import { useChoresTranslations, usePagesTranslations } from '@/hooks/use-translations'
 
 interface ChoreDetailModalProps {
   assignment: Assignment | null
@@ -29,7 +29,13 @@ export function ChoreDetailModal({
   canSubmit = false
 }: ChoreDetailModalProps) {
   const choresT = useChoresTranslations()
+  const p = usePagesTranslations()
   if (!assignment) return null
+
+  // Get the latest submission (most recent one)
+  const latestSubmission = assignment.submissions?.length
+    ? assignment.submissions[0]
+    : null
 
   const dueDate = new Date(assignment.dueDate)
   const isOverdue = dueDate < new Date() && assignment.status === 'pending'
@@ -125,11 +131,10 @@ export function ChoreDetailModal({
                     {[...Array(3)].map((_, i) => (
                       <Star
                         key={i}
-                        className={`h-3 w-3 ${
-                          i < difficultyInfo.stars
+                        className={`h-3 w-3 ${i < difficultyInfo.stars
                             ? `${difficultyInfo.color} fill-current`
                             : 'text-gray-300 dark:text-gray-600'
-                        }`}
+                          }`}
                       />
                     ))}
                     <span className="text-xs ml-1">{getDifficultyText(assignment.chore.difficultyLevel)}</span>
@@ -161,6 +166,86 @@ export function ChoreDetailModal({
               })}</span>
             </div>
           </div>
+
+          {/* Review Information (for approved/rejected assignments) */}
+          {latestSubmission && (assignment.status === 'approved' || assignment.status === 'rejected') && (
+            <>
+              <div className="border-t border-border" />
+              <div className="space-y-3">
+                <h4 className="font-medium text-sm">{p('chores.reviewInfo')}</h4>
+
+                {/* Status message */}
+                {assignment.status === 'approved' && (
+                  <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-green-800 dark:text-green-200">
+                          {p('chores.approvedMessage')}
+                        </p>
+                        {latestSubmission.pointsAwarded && (
+                          <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+                            +{latestSubmission.pointsAwarded} {choresT('pts')}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {assignment.status === 'rejected' && (
+                  <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                    <div className="flex items-start gap-3">
+                      <XCircle className="h-5 w-5 text-red-600 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-red-800 dark:text-red-200">
+                          {p('chores.rejectedMessage')}
+                        </p>
+                        <p className="text-sm text-red-700 dark:text-red-300 mt-1">
+                          {p('chores.rejectedDescription')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Reviewer info */}
+                {latestSubmission.reviewer && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    {assignment.status === 'approved' ? (
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-red-600" />
+                    )}
+                    <span>{p('chores.reviewedByLabel')}:</span>
+                    <span className="font-medium">{latestSubmission.reviewer.displayName}</span>
+                  </div>
+                )}
+
+                {/* Review date */}
+                {latestSubmission.reviewedAt && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Clock className="h-4 w-4" />
+                    <span>{p('chores.reviewedAtLabel')}:</span>
+                    <span>{new Date(latestSubmission.reviewedAt).toLocaleString()}</span>
+                  </div>
+                )}
+
+                {/* Feedback */}
+                {latestSubmission.reviewFeedback && (
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <MessageSquare className="h-4 w-4" />
+                      <span>{p('chores.feedbackLabel')}:</span>
+                    </div>
+                    <p className="text-sm bg-muted p-3 rounded-md">
+                      {latestSubmission.reviewFeedback}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
 
           {/* Submit Button for Kids */}
           {canSubmit && assignment.status === 'pending' && onSubmit && (
