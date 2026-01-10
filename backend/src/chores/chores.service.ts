@@ -3,8 +3,6 @@ import {
   NotFoundException,
   ForbiddenException,
   BadRequestException,
-  forwardRef,
-  Inject,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -42,7 +40,6 @@ export class ChoresService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private realtimeEventsService: RealtimeEventsService,
-    @Inject(forwardRef(() => SchedulerService))
     private schedulerService: SchedulerService,
   ) {}
 
