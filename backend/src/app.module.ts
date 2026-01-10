@@ -1,6 +1,7 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from '@/app.controller';
 import { AppService } from '@/app.service';
@@ -35,6 +36,9 @@ import {
     TypeOrmModule.forRootAsync({
       useFactory: () => databaseConfig(),
     }),
+
+    // Schedule module for cron jobs
+    ScheduleModule.forRoot(),
 
     // Feature modules
     AuthModule,

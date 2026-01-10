@@ -329,6 +329,48 @@ export class AssignmentsService {
     return submissions;
   }
 
+  /**
+   * Get assignments for a date range (calendar view).
+   * Parents/Admins can see all assignments in the tenant.
+   * Children can only see their own assignments.
+   */
+  async getAssignmentsByDateRange(
+    tenantId: string,
+    userId: string,
+    fromDate: Date,
+    toDate: Date,
+    childId?: string, // Optional: filter by specific child (for parents)
+  ): Promise<ChoreAssignment[]> {
+    const userRole = await this.getUserRole(tenantId, userId);
+    const isParentOrAdmin = [
+      TenantMemberRole.ADMIN,
+      TenantMemberRole.PARENT,
+    ].includes(userRole);
+
+    const queryBuilder = this.assignmentRepository
+      .createQueryBuilder('assignment')
+      .innerJoinAndSelect('assignment.choreInstance', 'choreInstance')
+      .leftJoinAndSelect('assignment.assignee', 'assignee')
+      .where('choreInstance.tenantId = :tenantId', { tenantId })
+      .andWhere('assignment.dueDate >= :fromDate', { fromDate })
+      .andWhere('assignment.dueDate <= :toDate', { toDate });
+
+    if (isParentOrAdmin) {
+      // Parents can optionally filter by child
+      if (childId) {
+        queryBuilder.andWhere('assignment.assignedTo = :childId', { childId });
+      }
+    } else {
+      // Children can only see their own assignments
+      queryBuilder.andWhere('assignment.assignedTo = :userId', { userId });
+    }
+
+    return queryBuilder
+      .orderBy('assignment.dueDate', 'ASC')
+      .addOrderBy('assignment.createdAt', 'ASC')
+      .getMany();
+  }
+
   private async verifyUserMembership(
     tenantId: string,
     userId: string,

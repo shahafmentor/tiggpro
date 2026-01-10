@@ -5,6 +5,7 @@ export { Chore } from './chore.entity';
 export { ChoreInstance } from './chore-instance.entity';
 export { ChoreAssignment } from './chore-assignment.entity';
 export { ChoreSubmission } from './chore-submission.entity';
+export { ChoreRecurrence } from './chore-recurrence.entity';
 export { UserPoints } from './user-points.entity';
 export { Achievement } from './achievement.entity';
 export { UserAchievement } from './user-achievement.entity';

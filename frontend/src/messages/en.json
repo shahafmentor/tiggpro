@@ -2,11 +2,32 @@
   "navigation": {
     "dashboard": "Home",
     "chores": "Chores",
+    "calendar": "Calendar",
     "review": "Review",
     "family": "Family",
     "achievements": "Achievements",
     "settings": "Settings",
     "rewards": "Rewards"
+  },
+  "calendar": {
+    "title": "Chore Calendar",
+    "subtitle": "View your upcoming chores",
+    "weekView": "Week",
+    "monthView": "Month",
+    "today": "Today",
+    "noChores": "No chores scheduled",
+    "noChoresForDay": "No chores for this day",
+    "filterByChild": "Filter by child",
+    "allChildren": "All children",
+    "dueToday": "Due Today",
+    "upcoming": "Upcoming",
+    "overdue": "Overdue",
+    "completed": "Completed",
+    "recurringIndicator": "Recurring",
+    "previousWeek": "Previous Week",
+    "nextWeek": "Next Week",
+    "previousMonth": "Previous Month",
+    "nextMonth": "Next Month"
   },
   "chores": {
     "create": "New Chore",

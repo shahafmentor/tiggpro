@@ -10,6 +10,7 @@ import {
   Chore,
   ChoreAssignment,
   ChoreInstance,
+  ChoreRecurrence,
   TenantMember,
   User,
 } from '@/entities';
@@ -21,6 +22,7 @@ import {
 } from './dto';
 import { AssignmentStatus, TenantMemberRole } from '@tiggpro/shared';
 import { RealtimeEventsService } from '@/websocket/realtime-events.service';
+import { SchedulerService } from './scheduler.service';
 
 @Injectable()
 export class ChoresService {
@@ -31,11 +33,14 @@ export class ChoresService {
     private choreInstanceRepository: Repository<ChoreInstance>,
     @InjectRepository(ChoreAssignment)
     private assignmentRepository: Repository<ChoreAssignment>,
+    @InjectRepository(ChoreRecurrence)
+    private recurrenceRepository: Repository<ChoreRecurrence>,
     @InjectRepository(TenantMember)
     private tenantMemberRepository: Repository<TenantMember>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private realtimeEventsService: RealtimeEventsService,
+    private schedulerService: SchedulerService,
   ) {}
 
   async createChore(
@@ -163,7 +168,17 @@ export class ChoresService {
       throw new BadRequestException('Chores can only be assigned to children');
     }
 
-    // Check if there's already a pending assignment for this chore and user
+    // If this is a recurring chore, handle it differently
+    if (chore.isRecurring && chore.recurrencePattern) {
+      return this.createRecurringAssignment(
+        chore,
+        tenantId,
+        assignChoreDto,
+        assignedById,
+      );
+    }
+
+    // Non-recurring chore: check for existing pending assignment
     const existingAssignment = await this.assignmentRepository
       .createQueryBuilder('assignment')
       .innerJoin('assignment.choreInstance', 'choreInstance')
@@ -235,7 +250,7 @@ export class ChoresService {
             displayName: assignedByUser.displayName,
             email: assignedByUser.email,
           },
-          dueDate: savedAssignment.dueDate.toISOString(),
+          dueDate: new Date(savedAssignment.dueDate).toISOString(),
           priority: savedAssignment.priority,
           pointsReward: savedInstance.pointsReward,
         },
@@ -244,6 +259,125 @@ export class ChoresService {
     }
 
     return savedAssignment;
+  }
+
+  /**
+   * Create a recurring assignment series.
+   * This creates a ChoreRecurrence record and generates assignments for the rolling window.
+   */
+  private async createRecurringAssignment(
+    chore: Chore,
+    tenantId: string,
+    assignChoreDto: AssignChoreDto,
+    assignedById: string,
+  ): Promise<ChoreAssignment> {
+    // Check if there's already an active recurrence for this chore and user
+    const existingRecurrence = await this.recurrenceRepository.findOne({
+      where: {
+        templateChoreId: chore.id,
+        assignedTo: assignChoreDto.assignedTo,
+        isActive: true,
+      },
+    });
+
+    // If there's an existing active recurrence, end it before creating the new one
+    // This allows parents to easily re-assign with updated settings
+    if (existingRecurrence) {
+      existingRecurrence.isActive = false;
+      await this.recurrenceRepository.save(existingRecurrence);
+    }
+
+    const startDate = new Date(assignChoreDto.dueDate);
+    // Set lastGeneratedDate to the day before start so the first occurrence is included
+    const lastGeneratedDate = new Date(startDate);
+    lastGeneratedDate.setDate(lastGeneratedDate.getDate() - 1);
+
+    // Build the recurrence pattern with startDate
+    const recurrencePattern = {
+      ...chore.recurrencePattern,
+      startDate: startDate.toISOString().split('T')[0],
+    };
+
+    // Create the recurrence record
+    const recurrence = await this.recurrenceRepository.save(
+      this.recurrenceRepository.create({
+        tenantId,
+        templateChoreId: chore.id,
+        assignedTo: assignChoreDto.assignedTo,
+        assignedBy: assignedById,
+        recurrencePattern,
+        priority: assignChoreDto.priority,
+        lastGeneratedDate,
+        isActive: true,
+      }),
+    );
+
+    // Load the template chore for the scheduler
+    recurrence.templateChore = chore;
+
+    // Generate initial assignments for the rolling window
+    const createdCount = await this.schedulerService.generateInitialAssignments(recurrence);
+
+    if (createdCount === 0) {
+      // No assignments were created - this might be because the pattern doesn't match any dates
+      throw new BadRequestException(
+        'No assignments could be created for this recurrence pattern. Please check the pattern configuration.',
+      );
+    }
+
+    // Return the first created assignment
+    const firstAssignment = await this.assignmentRepository
+      .createQueryBuilder('assignment')
+      .innerJoin('assignment.choreInstance', 'choreInstance')
+      .where('choreInstance.templateChoreId = :templateChoreId', {
+        templateChoreId: chore.id,
+      })
+      .andWhere('assignment.assignedTo = :assignedTo', {
+        assignedTo: assignChoreDto.assignedTo,
+      })
+      .andWhere('assignment.status = :status', {
+        status: AssignmentStatus.PENDING,
+      })
+      .orderBy('assignment.dueDate', 'ASC')
+      .getOne();
+
+    if (!firstAssignment) {
+      throw new BadRequestException('Failed to create recurring assignments');
+    }
+
+    // Emit real-time event for the first assignment
+    const [assignedToUser, assignedByUser] = await Promise.all([
+      this.userRepository.findOne({ where: { id: assignChoreDto.assignedTo } }),
+      this.userRepository.findOne({ where: { id: assignedById } }),
+    ]);
+
+    if (assignedToUser && assignedByUser) {
+      this.realtimeEventsService.emitChoreAssigned(
+        tenantId,
+        {
+          assignmentId: firstAssignment.id,
+          choreInstanceId: firstAssignment.choreInstanceId,
+          templateChoreId: chore.id,
+          choreTitle: chore.title,
+          assignedTo: {
+            id: assignedToUser.id,
+            displayName: assignedToUser.displayName,
+            email: assignedToUser.email,
+          },
+          assignedBy: {
+            id: assignedByUser.id,
+            displayName: assignedByUser.displayName,
+            email: assignedByUser.email,
+          },
+          dueDate: new Date(firstAssignment.dueDate).toISOString(),
+          priority: firstAssignment.priority,
+          pointsReward: chore.pointsReward,
+        },
+        assignedById,
+      );
+    }
+
+    return firstAssignment;
   }
 
   async assignCustomChore(
@@ -360,7 +494,7 @@ export class ChoresService {
             displayName: assignedByUser.displayName,
             email: assignedByUser.email,
           },
-          dueDate: savedAssignment.dueDate.toISOString(),
+          dueDate: new Date(savedAssignment.dueDate).toISOString(),
           priority: savedAssignment.priority,
           pointsReward: savedInstance.pointsReward,
         },

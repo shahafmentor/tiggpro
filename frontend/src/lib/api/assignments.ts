@@ -76,6 +76,29 @@ interface Submission {
   assignment?: Assignment
 }
 
+interface CalendarAssignment {
+  id: string
+  choreInstanceId: string
+  dueDate: string
+  priority: Priority
+  status: AssignmentStatus
+  createdAt: string
+  assignedTo?: {
+    id: string
+    displayName: string
+    avatarUrl?: string
+  }
+  chore: {
+    id: string
+    title: string
+    description?: string
+    pointsReward: number
+    difficultyLevel: string
+    estimatedDurationMinutes: number
+    isRecurring?: boolean
+  }
+}
+
 // Removed makeAuthenticatedRequest function - now using centralized api utility from base.ts
 
 export const assignmentsApi = {
@@ -111,11 +134,26 @@ export const assignmentsApi = {
   async getPendingSubmissions(tenantId: string): Promise<ApiResponse<Submission[]>> {
     return api.get(`/tenants/${tenantId}/assignments/submissions/pending`)
   },
+
+  // Get assignments by date range for calendar view
+  async getCalendarAssignments(
+    tenantId: string,
+    fromDate: string, // ISO date: YYYY-MM-DD
+    toDate: string,   // ISO date: YYYY-MM-DD
+    childId?: string
+  ): Promise<ApiResponse<CalendarAssignment[]>> {
+    const params = new URLSearchParams({ from: fromDate, to: toDate })
+    if (childId) {
+      params.append('childId', childId)
+    }
+    return api.get(`/tenants/${tenantId}/assignments/calendar?${params.toString()}`)
+  },
 }
 
 export type {
   Assignment,
   AssignmentSubmission,
+  CalendarAssignment,
   Submission,
   SubmitAssignmentRequest,
   ReviewSubmissionRequest,
