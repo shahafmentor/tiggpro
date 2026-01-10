@@ -242,6 +242,10 @@ export interface RewardRedemption {
   requestedAt: Date;
   decidedAt?: Date | null;
   decidedBy?: string | null; // user id of approver
+  decidedByUser?: {
+    id: string;
+    displayName: string;
+  } | null; // approver user details when loaded
 }
 
 export interface RewardSettings {

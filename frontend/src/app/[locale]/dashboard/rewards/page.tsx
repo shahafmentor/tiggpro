@@ -12,6 +12,7 @@ import { TenantMemberRole, RewardRedemption } from '@tiggpro/shared'
 import { usePagesTranslations, useCommonTranslations } from '@/hooks/use-translations'
 import { Gift, Plus, RefreshCcw } from 'lucide-react'
 import { RewardReviewModal } from '@/components/rewards/reward-review-modal'
+import { RewardDetailsModal } from '@/components/rewards/reward-details-modal'
 import { RewardRedemptionModal } from '@/components/gamification/reward-redemption-modal'
 import { PageHeader } from '@/components/layout/page-header'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -77,6 +78,7 @@ export default function RewardsPage() {
 
   const [reviewing, setReviewing] = useState<RewardRedemption | null>(null)
   const [requestAgain, setRequestAgain] = useState<RewardRedemption | Record<string, never> | null>(null)
+  const [viewingDetails, setViewingDetails] = useState<RewardRedemption | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>(isChild ? 'all' : 'pending')
 
   const allRedemptions = redemptions?.success ? (redemptions.data || []) : []
@@ -148,6 +150,15 @@ export default function RewardsPage() {
           initialAmount={requestAgain && 'amount' in requestAgain ? (requestAgain.amount ?? undefined) : undefined}
           initialNotes={requestAgain && 'notes' in requestAgain ? (requestAgain.notes ?? undefined) : undefined}
           onSuccess={() => setRequestAgain(null)}
+        />
+        <RewardDetailsModal
+          redemption={viewingDetails}
+          open={!!viewingDetails}
+          onOpenChange={(open) => !open && setViewingDetails(null)}
+          onRequestAgain={(redemption) => {
+            setViewingDetails(null)
+            setRequestAgain(redemption)
+          }}
         />
 
         {/* Points Balance for Kids */}
@@ -258,7 +269,14 @@ export default function RewardsPage() {
                 <CardContent>
                   <div className="space-y-4">
                     {filteredRedemptions.map((redemption) => (
-                      <div key={redemption.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div
+                        key={redemption.id}
+                        className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                        onClick={() => setViewingDetails(redemption)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => e.key === 'Enter' && setViewingDetails(redemption)}
+                      >
                         <div className="flex items-center gap-3">
                           <Badge variant="secondary">{p(`rewards.types.${redemption.type}`)}</Badge>
                           <div>
@@ -274,7 +292,10 @@ export default function RewardsPage() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => setRequestAgain(redemption)}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setRequestAgain(redemption)
+                              }}
                             >
                               <RefreshCcw className="h-3 w-3 mr-1" />
                               {p('rewards.requestAgain')}

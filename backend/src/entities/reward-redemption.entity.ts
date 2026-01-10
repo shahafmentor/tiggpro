@@ -58,6 +58,10 @@ export class RewardRedemption {
   @JoinColumn({ name: 'user_id' })
   user?: User;
 
+  @ManyToOne('User')
+  @JoinColumn({ name: 'decided_by' })
+  decidedByUser?: User;
+
   @ManyToOne('Tenant')
   @JoinColumn({ name: 'tenant_id' })
   tenant?: Tenant;

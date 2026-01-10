@@ -147,7 +147,7 @@ export class RewardsService {
     const where = isReviewer ? { tenantId } : { tenantId, userId };
     const list = await this.redemptionRepo.find({
       where,
-      relations: ['user'], // Include user data to display requester information
+      relations: ['user', 'decidedByUser'], // Include user data to display requester and approver information
       order: { requestedAt: 'DESC' },
     });
     return { success: true, data: list };
