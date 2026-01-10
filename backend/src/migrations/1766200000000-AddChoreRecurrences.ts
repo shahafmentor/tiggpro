@@ -38,23 +38,23 @@ export class AddChoreRecurrences1766200000000 implements MigrationInterface {
 
     // Add foreign key constraints
     await queryRunner.query(`
-      ALTER TABLE "chore_recurrences" 
-      ADD CONSTRAINT "FK_chore_recurrences_tenant_id" 
+      ALTER TABLE "chore_recurrences"
+      ADD CONSTRAINT "FK_chore_recurrences_tenant_id"
       FOREIGN KEY ("tenant_id") REFERENCES "tenants"("id") ON DELETE CASCADE ON UPDATE NO ACTION
     `);
     await queryRunner.query(`
-      ALTER TABLE "chore_recurrences" 
-      ADD CONSTRAINT "FK_chore_recurrences_template_chore_id" 
+      ALTER TABLE "chore_recurrences"
+      ADD CONSTRAINT "FK_chore_recurrences_template_chore_id"
       FOREIGN KEY ("template_chore_id") REFERENCES "chores"("id") ON DELETE CASCADE ON UPDATE NO ACTION
     `);
     await queryRunner.query(`
-      ALTER TABLE "chore_recurrences" 
-      ADD CONSTRAINT "FK_chore_recurrences_assigned_to" 
+      ALTER TABLE "chore_recurrences"
+      ADD CONSTRAINT "FK_chore_recurrences_assigned_to"
       FOREIGN KEY ("assigned_to") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION
     `);
     await queryRunner.query(`
-      ALTER TABLE "chore_recurrences" 
-      ADD CONSTRAINT "FK_chore_recurrences_assigned_by" 
+      ALTER TABLE "chore_recurrences"
+      ADD CONSTRAINT "FK_chore_recurrences_assigned_by"
       FOREIGN KEY ("assigned_by") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION
     `);
   }
